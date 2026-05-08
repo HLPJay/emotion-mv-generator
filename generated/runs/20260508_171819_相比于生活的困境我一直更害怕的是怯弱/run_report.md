@@ -40,6 +40,10 @@
 
 - 无
 
+## Events
+
+- 无
+
 ## Music Prompt
 
 minimal cinematic ambient, deep night atmosphere, soft low piano, subtle warm pad, slow tempo, low dynamic range, no vocal, no lyrics, restrained and realistic, not dramatic, mood: 深夜独处, emotion: 自我恐惧

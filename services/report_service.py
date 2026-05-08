@@ -88,6 +88,17 @@ def _asset_list(directory: Path, pattern: str) -> list[dict]:
     ]
 
 
+def _read_events(run_dir: Path) -> list[dict]:
+    path = run_dir / "run_events.jsonl"
+    if not path.exists():
+        return []
+    events = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if line.strip():
+            events.append(json.loads(line))
+    return events
+
+
 def _duration(media_info: dict) -> float | None:
     try:
         return round(float(media_info.get("format", {}).get("duration")), 3)
@@ -113,6 +124,7 @@ def build_run_report(run_dir: Path) -> dict:
     storyboard = _read_json(run_dir / "storyboard.json") or []
     audio_plan = _read_json(run_dir / "audio_plan.json") or {}
     visual_style = _read_json(run_dir / "visual_style.json") or {}
+    events = _read_events(run_dir)
     adjusted_storyboard = _read_json(run_dir / "adjusted_storyboard.json") or []
 
     final_video = run_dir / "final.mp4"
@@ -191,6 +203,7 @@ def build_run_report(run_dir: Path) -> dict:
             "images": images,
             "subtitle_images": subtitle_images,
         },
+        "events": events,
         "warnings": warnings,
     }
     return report
@@ -208,6 +221,11 @@ def write_run_report(run_dir: Path) -> dict:
 def render_report_markdown(report: dict) -> str:
     warnings = report.get("warnings") or []
     warning_text = "\n".join(f"- {item}" for item in warnings) if warnings else "- 无"
+    events = [event for event in report.get("events", []) if event.get("status") in {"success", "failed"}]
+    event_text = "\n".join(
+        f"- {event.get('step')}: {event.get('status')} ({event.get('duration_seconds', '-') }s)"
+        for event in events
+    ) or "- 无"
     media = report["media"]
     content = report["content_summary"]
     assets = report["assets"]
@@ -252,6 +270,10 @@ def render_report_markdown(report: dict) -> str:
 ## Warnings
 
 {warning_text}
+
+## Events
+
+{event_text}
 
 ## Music Prompt
 

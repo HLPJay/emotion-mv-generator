@@ -5,6 +5,7 @@ import gradio as gr
 
 from services.audio_plan_service import build_audio_plan
 from services.emotion_service import analyze_emotion
+from services.event_service import log_event, track_step
 from services.image_service import generate_scene_images
 from services.report_service import write_run_report
 from services.run_service import create_run_dir, write_json, write_text
@@ -22,33 +23,46 @@ GENERATED_DIR.mkdir(exist_ok=True)
 DEFAULT_TEXT = "相比于生活的困境，\n我一直更害怕的是怯弱的自己。"
 
 
-def generate_reflection_video(reflection: str, visual_style_id: str = RANDOM_STYLE_ID) -> tuple[str, dict[str, Any], list[dict[str, Any]]]:
+def generate_reflection_video(
+    reflection: str,
+    visual_style_id: str = RANDOM_STYLE_ID,
+) -> tuple[str, dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any], list[dict[str, Any]], dict[str, Any], str]:
     reflection = reflection.strip()
     if not reflection:
         raise gr.Error("请先输入一句真实感悟。")
 
     run_dir = create_run_dir(reflection)
     write_text(run_dir / "input.txt", reflection)
+    log_event(run_dir, "run", "started", visual_style_id=visual_style_id)
 
-    emotion = analyze_emotion(reflection)
+    with track_step(run_dir, "emotion"):
+        emotion = analyze_emotion(reflection)
     write_json(run_dir / "emotion.json", emotion)
-    visual_style = select_visual_style(visual_style_id, reflection, emotion)
+    with track_step(run_dir, "visual_style"):
+        visual_style = select_visual_style(visual_style_id, reflection, emotion)
     write_json(run_dir / "visual_style.json", visual_style)
-    subtitle_plan = build_subtitle_plan(reflection)
+    with track_step(run_dir, "subtitle_plan"):
+        subtitle_plan = build_subtitle_plan(reflection)
     write_json(run_dir / "subtitle_plan.json", subtitle_plan)
     subtitles = subtitle_plan["subtitles"]
-    storyboard = build_storyboard(reflection, emotion, subtitles, visual_style)
+    with track_step(run_dir, "storyboard"):
+        storyboard = build_storyboard(reflection, emotion, subtitles, visual_style)
     write_json(run_dir / "storyboard.json", storyboard)
-    audio_plan = build_audio_plan(subtitle_plan, emotion, storyboard)
+    with track_step(run_dir, "audio_plan"):
+        audio_plan = build_audio_plan(subtitle_plan, emotion, storyboard)
     write_json(run_dir / "audio_plan.json", audio_plan)
     adjusted_storyboard = audio_plan["adjusted_storyboard"]
     write_json(run_dir / "adjusted_storyboard.json", adjusted_storyboard)
-    image_paths = generate_scene_images(adjusted_storyboard, emotion, run_dir / "images", visual_style)
-    video_path = compose_video(adjusted_storyboard, image_paths, emotion, audio_plan, run_dir)
+    with track_step(run_dir, "image_generation", image_count=len(adjusted_storyboard)):
+        image_paths = generate_scene_images(adjusted_storyboard, emotion, run_dir / "images", visual_style)
+    with track_step(run_dir, "video_compose"):
+        video_path = compose_video(adjusted_storyboard, image_paths, emotion, audio_plan, run_dir)
     write_text(run_dir / "output_path.txt", str(video_path))
-    write_run_report(run_dir)
+    with track_step(run_dir, "report"):
+        report = write_run_report(run_dir)
+    log_event(run_dir, "run", "success", final_video=str(video_path))
 
-    return str(video_path), emotion, adjusted_storyboard
+    return str(video_path), emotion, visual_style, subtitle_plan, audio_plan, adjusted_storyboard, report, str(run_dir)
 
 
 with gr.Blocks(title="AI Reflection Video Generator") as demo:
@@ -73,14 +87,33 @@ with gr.Blocks(title="AI Reflection Video Generator") as demo:
         with gr.Column(scale=1):
             video_output = gr.Video(label="生成结果")
 
-    with gr.Row():
-        emotion_output = gr.JSON(label="情绪解析")
-        storyboard_output = gr.JSON(label="镜头脚本")
+    with gr.Tabs():
+        with gr.Tab("核心"):
+            with gr.Row():
+                emotion_output = gr.JSON(label="情绪解析")
+                visual_style_output = gr.JSON(label="视觉风格")
+        with gr.Tab("节奏"):
+            subtitle_plan_output = gr.JSON(label="字幕节奏")
+            audio_plan_output = gr.JSON(label="音频计划")
+        with gr.Tab("分镜"):
+            storyboard_output = gr.JSON(label="镜头脚本")
+        with gr.Tab("报告"):
+            report_output = gr.JSON(label="运行报告")
+            run_dir_output = gr.Textbox(label="归档目录")
 
     generate_button.click(
         fn=generate_reflection_video,
         inputs=[reflection_input, visual_style_input],
-        outputs=[video_output, emotion_output, storyboard_output],
+        outputs=[
+            video_output,
+            emotion_output,
+            visual_style_output,
+            subtitle_plan_output,
+            audio_plan_output,
+            storyboard_output,
+            report_output,
+            run_dir_output,
+        ],
     )
 
 

@@ -62,6 +62,56 @@ visual_style.json
 
 报告中也会记录本次使用的视觉风格。
 
+视觉风格还包含连续性约束：
+
+```text
+same ordinary adult throughout
+same visual world
+consistent lighting logic
+consistent palette
+recurring scene details
+```
+
+这用于减少人物、空间和画面气质在同一条视频中频繁跳变。
+
+## 运行事件日志
+
+每次生成会写入：
+
+```text
+generated/runs/<run_id>/run_events.jsonl
+```
+
+每一行记录一个步骤事件：
+
+```json
+{"step":"image_generation","status":"success","duration_seconds":40.83}
+```
+
+用于排查：
+
+```text
+哪一步最慢
+哪一步失败
+是否生成到了 report
+最终视频路径
+```
+
+`run_report.md` 会汇总关键事件。
+
+## Gradio 调试面板
+
+页面现在包含多个调试 Tab：
+
+```text
+核心：emotion / visual_style
+节奏：subtitle_plan / audio_plan
+分镜：storyboard
+报告：run_report / run_dir
+```
+
+用于直接在页面查看内部运行结果，不必每次手动翻 run 目录。
+
 ## 替换文本大模型 API
 
 当前文本模型调用使用 OpenAI-compatible Chat Completions 格式。日常使用直接改：
@@ -190,3 +240,11 @@ generated/
 用户负责真实感悟，AI 负责视觉表达。
 
 AI 不替用户写鸡汤，不讲大道理，不强行升华，只做情绪理解、镜头生成、节奏拆解与视觉表达。
+
+## Backlog
+
+遗留设计记录见：
+
+```text
+docs/backlog.md
+```

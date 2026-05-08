@@ -59,7 +59,7 @@ def select_visual_style(style_id: str, reflection: str, emotion: dict) -> dict:
     if selected_id != RANDOM_STYLE_ID:
         for style in styles:
             if style["id"] == selected_id:
-                return {"selection": {"requested": selected_id, "resolved": style["id"], "seed": seed}, "safety_rules": SAFETY_RULES, "style": style}
+                return _build_visual_style_payload(selected_id, style, seed)
         selected_id = RANDOM_STYLE_ID
 
     rng = random.Random(seed)
@@ -67,7 +67,27 @@ def select_visual_style(style_id: str, reflection: str, emotion: dict) -> dict:
     for style in styles:
         weighted_styles.extend([style] * _style_score(style, reflection, emotion))
     style = rng.choice(weighted_styles or styles)
-    return {"selection": {"requested": RANDOM_STYLE_ID, "resolved": style["id"], "seed": seed}, "safety_rules": SAFETY_RULES, "style": style}
+    return _build_visual_style_payload(RANDOM_STYLE_ID, style, seed)
+
+
+def _build_visual_style_payload(requested_id: str, style: dict, seed: int) -> dict:
+    return {
+        "selection": {"requested": requested_id, "resolved": style["id"], "seed": seed},
+        "safety_rules": SAFETY_RULES,
+        "style": style,
+        "continuity": {
+            "subject": "same ordinary adult throughout, restrained expression, no crying, no dramatic acting",
+            "location": f"same visual world based on {style.get('location_family')}",
+            "lighting": f"consistent light logic: {style.get('light_source')}",
+            "palette": f"consistent palette: {style.get('palette')}",
+            "rules": [
+                "keep subject age and appearance consistent across shots",
+                "keep location family consistent across shots",
+                "use recurring details from scene_elements",
+                "do not switch to a different genre or visual universe",
+            ],
+        },
+    }
 
 
 def visual_style_prompt(visual_style: dict) -> str:
@@ -83,6 +103,9 @@ def visual_style_prompt(visual_style: dict) -> str:
             f"Palette: {style.get('palette')}",
             f"Camera language: {style.get('camera_language')}",
             f"Scene elements to prefer: {', '.join(style.get('scene_elements', []))}",
+            f"Continuity subject: {visual_style.get('continuity', {}).get('subject')}",
+            f"Continuity location: {visual_style.get('continuity', {}).get('location')}",
+            f"Continuity rules: {', '.join(visual_style.get('continuity', {}).get('rules', []))}",
             f"Must: {', '.join(safety.get('must', []))}",
             f"Avoid: {', '.join(safety.get('avoid', []) + style.get('avoid', []))}",
         ]
