@@ -8,7 +8,9 @@ from services.llm_service import chat_json, llm_enabled
 PUNCTUATION_RE = re.compile(r"[。！？!?；;，,\n]+")
 PAUSE_RE = re.compile(r"(\.{3,}|…+)")
 TRAILING_PUNCTUATION_RE = re.compile(r"[。！？!?；;，,.\s]+$")
+PAREN_RE = re.compile(r"[（(]([^（）()]*)[）)]")
 MAX_SPOKEN_LINES = 4
+MAX_CONTEXT_LINES = 2
 MIN_LINE_CHARS = 6
 FRAGMENT_PREFIXES = ("只是", "因为", "所以", "但是", "可是", "而是", "就", "却", "也", "还")
 FRAGMENT_EXACT = {"只是", "只是每次", "就已经", "因为", "所以", "但是", "可是", "而是"}
@@ -19,6 +21,47 @@ def _clean_sentence(sentence: str) -> str:
     if not sentence:
         return ""
     return sentence + "。"
+
+
+def _split_reflection_context(reflection: str) -> tuple[str, list[str]]:
+    contexts = [match.group(1).strip() for match in PAREN_RE.finditer(reflection) if match.group(1).strip()]
+    main = PAREN_RE.sub("", reflection).strip()
+    return main, contexts
+
+
+def _ensure_punctuation(text: str, punctuation: str = "。") -> str:
+    cleaned = text.strip()
+    if not cleaned:
+        return ""
+    if cleaned[-1] in "。！？!?；;，,":
+        return cleaned
+    return cleaned + punctuation
+
+
+def _source_lines_with_roles(source_text: str) -> list[dict]:
+    main, contexts = _split_reflection_context(source_text)
+    lines: list[dict] = []
+
+    def add_segments(text: str, role: str, limit: int) -> None:
+        parts = re.split(r"([。！？!?；;，,\n]+)", text)
+        added = 0
+        for index in range(0, len(parts), 2):
+            body = parts[index].strip()
+            if not body:
+                continue
+            punctuation = parts[index + 1].strip() if index + 1 < len(parts) else ""
+            if "\n" in punctuation:
+                punctuation = "。"
+            punctuation = punctuation[:1] if punctuation else "。"
+            lines.append({"text": _ensure_punctuation(body, punctuation), "role": role})
+            added += 1
+            if added >= limit:
+                break
+
+    add_segments(main, "primary", MAX_SPOKEN_LINES)
+    for context in contexts[:MAX_CONTEXT_LINES]:
+        add_segments(context, "secondary", MAX_CONTEXT_LINES)
+    return lines
 
 
 def build_subtitle_plan(reflection: str) -> dict:
@@ -224,26 +267,45 @@ def _merge_fragments(lines: list[str]) -> tuple[list[str], list[str]]:
     return merged, actions
 
 
-def _rebuild_rhythm(spoken_lines: list[str]) -> dict:
+def _normalize_spoken_items(spoken_lines: list[str] | list[dict]) -> list[dict]:
+    items = []
+    for line in spoken_lines:
+        if isinstance(line, dict):
+            text = line.get("text", "").strip()
+            role = line.get("role", "primary")
+        else:
+            text = str(line).strip()
+            role = "primary"
+        if text:
+            items.append({"text": text, "role": role if role in {"primary", "secondary"} else "primary"})
+    return items
+
+
+def _rebuild_rhythm(spoken_lines: list[str] | list[dict]) -> dict:
+    spoken_items = _normalize_spoken_items(spoken_lines)
     subtitles: list[str] = []
     rhythm: list[dict] = []
-    for index, line in enumerate(spoken_lines):
+    for index, item in enumerate(spoken_items):
+        line = item["text"]
+        role = item["role"]
         subtitles.append(line)
         rhythm.append(
             {
                 "text": line,
+                "role": role,
                 "pause_type": "none",
-                "duration": 2.4 if index == len(spoken_lines) - 1 else 2.1,
-                "reason": "guarded spoken line",
+                "duration": 2.15 if role == "secondary" else (2.4 if index == len(spoken_items) - 1 else 2.1),
+                "reason": "context note" if role == "secondary" else "guarded spoken line",
             }
         )
 
-        pause_type = "ending_silence" if index == len(spoken_lines) - 1 else ("short_pause" if index == 0 else "heavy_pause")
+        pause_type = "ending_silence" if index == len(spoken_items) - 1 else ("short_pause" if role == "secondary" else ("short_pause" if index == 0 else "heavy_pause"))
         duration = {"short_pause": 0.85, "heavy_pause": 1.2, "ending_silence": 1.6}[pause_type]
         subtitles.append("...")
         rhythm.append(
             {
                 "text": "...",
+                "role": role,
                 "pause_type": pause_type,
                 "duration": duration,
                 "reason": "guarded pause",
@@ -259,6 +321,14 @@ def _fallback_from_source(source_text: str) -> list[str]:
 
 def _guard_subtitle_plan(plan: dict, source_text: str) -> dict:
     spoken_lines, actions = _spoken_lines_from_plan(plan)
+    source_items = _source_lines_with_roles(source_text)
+    if source_items:
+        source_texts = [item["text"] for item in source_items]
+        if source_texts != spoken_lines:
+            actions.append("preserved_source_punctuation")
+        if any(item["role"] == "secondary" for item in source_items):
+            actions.append("marked_parenthetical_context")
+        spoken_lines = source_items
     if not spoken_lines:
         spoken_lines = _fallback_from_source(source_text)
         actions.append("fallback_to_source_text")
@@ -275,8 +345,9 @@ def _guard_subtitle_plan(plan: dict, source_text: str) -> dict:
     guarded["guard"] = {
         "changed": bool(unique_actions),
         "actions": unique_actions,
-        "spoken_count": len(spoken_lines),
+        "spoken_count": len(_normalize_spoken_items(spoken_lines)),
         "max_spoken_lines": MAX_SPOKEN_LINES,
+        "roles": {"primary": "main reflection", "secondary": "parenthetical context"},
     }
     return guarded
 

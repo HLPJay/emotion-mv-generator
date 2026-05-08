@@ -152,6 +152,8 @@ generated/runs/<run_id>/run_events.jsonl
 去除重复字幕
 限制非停顿字幕最多 4 条
 重建 short_pause / heavy_pause / ending_silence
+保留原句里的逗号、句号、问号等自然标点
+识别括号内容为 secondary 解释层
 ```
 
 输出会包含：
@@ -180,11 +182,40 @@ generated/runs/<run_id>/run_events.jsonl
 字幕视觉使用偏大的电影感样式：
 
 ```text
-字号约 62，长句自动略微缩小
+主句字号约 74，长句自动略微缩小
+括号解释内容字号约 50，位置略低，颜色略弱
 最多 2 行
-位置在画面约 69% 高度
+主句位置在画面约 69% 高度
 柔白文字 + 轻阴影
 淡入 0.28s / 淡出 0.38s
+```
+
+括号输入约定：
+
+```text
+相比于生活的困境，我一直更害怕的是怯弱的自己。（只有自己最懂自己，越害怕越回避）
+```
+
+会被拆成：
+
+```text
+primary: 相比于生活的困境，
+primary: 我一直更害怕的是怯弱的自己。
+secondary: 只有自己最懂自己，
+secondary: 越害怕越回避。
+```
+
+`secondary` 字幕会更小，且旁白使用 `secondary_voice` 里的第二音色。若第二音色不可用，会自动退回主音色，避免整条视频失败。
+
+第二音色可以在 `config/model_config.json` 的 `audio.secondary_voice_id` 中替换：
+
+```json
+{
+  "audio": {
+    "voice_id": "male-qn-qingse",
+    "secondary_voice_id": "female-shaonv"
+  }
+}
 ```
 
 ## 替换文本大模型 API

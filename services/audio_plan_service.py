@@ -6,7 +6,11 @@ def _clamp(value: float, minimum: float, maximum: float) -> float:
 
 
 def _clean_line(text: str) -> str:
-    cleaned = text.strip().rstrip("。！？!?，,；;")
+    cleaned = text.strip()
+    if not cleaned:
+        return ""
+    if cleaned[-1] in "。！？!?，,；;":
+        return cleaned
     return cleaned + "。"
 
 
@@ -55,6 +59,7 @@ def build_audio_plan(subtitle_plan: dict, emotion: dict, storyboard: list[dict])
     for item in rhythm:
         text = item.get("text", "").strip()
         pause_type = item.get("pause_type", "none")
+        role = item.get("role", "primary")
         source_duration = float(item.get("duration", 1.0))
 
         if text == "...":
@@ -66,11 +71,16 @@ def build_audio_plan(subtitle_plan: dict, emotion: dict, storyboard: list[dict])
         line = _clean_line(text)
         duration = _line_duration(line, source_duration)
         next_pause = 0.0
-        delivery = "low, restrained, intimate, like a late-night self monologue"
+        delivery = (
+            "softer, slightly closer, like a parenthetical inner note"
+            if role == "secondary"
+            else "low, restrained, intimate, like a reflective self monologue"
+        )
         breath_before = bool(narration and duration >= 2.2)
         narration.append(
             {
                 "text": line,
+                "role": role,
                 "start": round(timeline_cursor, 2),
                 "estimated_duration": duration,
                 "pause_after": next_pause,
@@ -103,6 +113,8 @@ def build_audio_plan(subtitle_plan: dict, emotion: dict, storyboard: list[dict])
         shot_copy = dict(shot)
         if rhythm_index < len(visual_durations):
             shot_copy["duration"] = visual_durations[rhythm_index]
+        if rhythm_index < len(rhythm):
+            shot_copy["subtitle_role"] = rhythm[rhythm_index].get("role", "primary")
         adjusted_storyboard.append(shot_copy)
         rhythm_index += 1
 
@@ -117,6 +129,13 @@ def build_audio_plan(subtitle_plan: dict, emotion: dict, storyboard: list[dict])
             "pitch": -1,
             "volume": 1.0,
             "emotion": "sad",
+        },
+        "secondary_voice": {
+            "model": "speech-2.8-hd",
+            "speed": 0.88,
+            "pitch": 0,
+            "volume": 0.88,
+            "emotion": "neutral",
         },
         "narration": narration,
         "music": {
