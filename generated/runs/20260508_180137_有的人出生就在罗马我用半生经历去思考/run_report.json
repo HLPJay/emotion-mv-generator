@@ -1,0 +1,285 @@
+{
+  "run_id": "20260508_180137_有的人出生就在罗马我用半生经历去思考",
+  "generated_at": "2026-05-08T18:07:30",
+  "paths": {
+    "run_dir": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_180137_有的人出生就在罗马我用半生经历去思考",
+    "final_video": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_180137_有的人出生就在罗马我用半生经历去思考\\final.mp4",
+    "narration": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_180137_有的人出生就在罗马我用半生经历去思考\\audio\\narration.mp3",
+    "bgm": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_180137_有的人出生就在罗马我用半生经历去思考\\audio\\bgm.mp3"
+  },
+  "input": {
+    "text": "有的人出生就在罗马，我用半生经历去思考到的认知，却只是他们的起点。（可能，你也缺少他们的执行力）",
+    "length": 48
+  },
+  "content_summary": {
+    "emotion": "沉默的无奈",
+    "mood": "深夜独处",
+    "tone": "冷静自述",
+    "subtitles_count": 8,
+    "subtitle_guard": {
+      "changed": false,
+      "actions": [],
+      "spoken_count": 4,
+      "max_spoken_lines": 4
+    },
+    "storyboard_count": 8,
+    "adjusted_storyboard_count": 8,
+    "target_duration": 20.45,
+    "music_prompt": "minimal cinematic ambient, deep night atmosphere, soft low piano, subtle warm pad, slow tempo, low dynamic range, no vocal, no lyrics, restrained and realistic, not dramatic, mood: 深夜独处, emotion: 沉默的无奈",
+    "visual_style": "白天公园长椅",
+    "visual_style_id": "park_bench_daylight",
+    "visual_continuity_subject": "same ordinary adult throughout the video",
+    "visual_continuity_location": "quiet park bench, trees, path, open air"
+  },
+  "models": {
+    "text": "config:model",
+    "image": "config:image.model",
+    "speech": "speech-2.8-hd",
+    "music": "music-2.6"
+  },
+  "media": {
+    "video": {
+      "info": {
+        "programs": [],
+        "streams": [
+          {
+            "index": 0,
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 1080,
+            "height": 1920
+          },
+          {
+            "index": 1,
+            "codec_name": "aac",
+            "codec_type": "audio",
+            "sample_rate": "44100",
+            "channels": 2
+          }
+        ],
+        "format": {
+          "duration": "22.470000",
+          "size": "18557298"
+        },
+        "exists": true
+      },
+      "duration": 22.47,
+      "resolution": "1080x1920",
+      "has_audio": true,
+      "volume": {
+        "exists": true,
+        "mean_volume": "-28.3 dB",
+        "max_volume": "-6.6 dB"
+      }
+    },
+    "narration": {
+      "info": {
+        "programs": [],
+        "streams": [
+          {
+            "index": 0,
+            "codec_name": "mp3",
+            "codec_type": "audio",
+            "sample_rate": "32000",
+            "channels": 1
+          }
+        ],
+        "format": {
+          "duration": "21.672000",
+          "size": "348468"
+        },
+        "exists": true
+      },
+      "duration": 21.672
+    },
+    "bgm": {
+      "info": {
+        "programs": [],
+        "streams": [
+          {
+            "index": 0,
+            "codec_name": "mp3",
+            "codec_type": "audio",
+            "sample_rate": "44100",
+            "channels": 2
+          }
+        ],
+        "format": {
+          "duration": "143.438367",
+          "size": "4592002"
+        },
+        "exists": true
+      },
+      "duration": 143.438
+    }
+  },
+  "assets": {
+    "images": [
+      {
+        "name": "scene_01.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_180137_有的人出生就在罗马我用半生经历去思考\\images\\scene_01.png",
+        "size": 1610628
+      },
+      {
+        "name": "scene_02.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_180137_有的人出生就在罗马我用半生经历去思考\\images\\scene_02.png",
+        "size": 1618272
+      },
+      {
+        "name": "scene_03.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_180137_有的人出生就在罗马我用半生经历去思考\\images\\scene_03.png",
+        "size": 1770714
+      },
+      {
+        "name": "scene_04.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_180137_有的人出生就在罗马我用半生经历去思考\\images\\scene_04.png",
+        "size": 1525809
+      },
+      {
+        "name": "scene_05.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_180137_有的人出生就在罗马我用半生经历去思考\\images\\scene_05.png",
+        "size": 1683630
+      },
+      {
+        "name": "scene_06.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_180137_有的人出生就在罗马我用半生经历去思考\\images\\scene_06.png",
+        "size": 1725921
+      },
+      {
+        "name": "scene_07.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_180137_有的人出生就在罗马我用半生经历去思考\\images\\scene_07.png",
+        "size": 1721592
+      },
+      {
+        "name": "scene_08.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_180137_有的人出生就在罗马我用半生经历去思考\\images\\scene_08.png",
+        "size": 1567070
+      }
+    ],
+    "subtitle_images": [
+      {
+        "name": "subtitle_01.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_180137_有的人出生就在罗马我用半生经历去思考\\subtitles\\subtitle_01.png",
+        "size": 24287
+      },
+      {
+        "name": "subtitle_03.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_180137_有的人出生就在罗马我用半生经历去思考\\subtitles\\subtitle_03.png",
+        "size": 27604
+      },
+      {
+        "name": "subtitle_05.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_180137_有的人出生就在罗马我用半生经历去思考\\subtitles\\subtitle_05.png",
+        "size": 24253
+      },
+      {
+        "name": "subtitle_07.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_180137_有的人出生就在罗马我用半生经历去思考\\subtitles\\subtitle_07.png",
+        "size": 35416
+      }
+    ]
+  },
+  "events": [
+    {
+      "timestamp": "2026-05-08T18:01:37.491",
+      "step": "run",
+      "status": "started",
+      "visual_style_id": "park_bench_daylight"
+    },
+    {
+      "timestamp": "2026-05-08T18:01:37.492",
+      "step": "emotion",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-08T18:01:45.344",
+      "step": "emotion",
+      "status": "success",
+      "duration_seconds": 7.851
+    },
+    {
+      "timestamp": "2026-05-08T18:01:45.345",
+      "step": "visual_style",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-08T18:01:45.347",
+      "step": "visual_style",
+      "status": "success",
+      "duration_seconds": 0.001
+    },
+    {
+      "timestamp": "2026-05-08T18:01:45.347",
+      "step": "visual_continuity",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-08T18:01:45.347",
+      "step": "visual_continuity",
+      "status": "success",
+      "duration_seconds": 0.0
+    },
+    {
+      "timestamp": "2026-05-08T18:01:45.349",
+      "step": "subtitle_plan",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-08T18:01:56.958",
+      "step": "subtitle_plan",
+      "status": "success",
+      "duration_seconds": 11.608
+    },
+    {
+      "timestamp": "2026-05-08T18:01:56.962",
+      "step": "storyboard",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-08T18:02:20.813",
+      "step": "storyboard",
+      "status": "success",
+      "duration_seconds": 23.852
+    },
+    {
+      "timestamp": "2026-05-08T18:02:20.814",
+      "step": "audio_plan",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-08T18:02:20.814",
+      "step": "audio_plan",
+      "status": "success",
+      "duration_seconds": 0.001
+    },
+    {
+      "timestamp": "2026-05-08T18:02:20.816",
+      "step": "image_generation",
+      "status": "started",
+      "image_count": 8
+    },
+    {
+      "timestamp": "2026-05-08T18:02:22.950",
+      "step": "image_generation",
+      "status": "success",
+      "duration_seconds": 2.133
+    },
+    {
+      "timestamp": "2026-05-08T18:02:22.950",
+      "step": "video_compose",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-08T18:07:30.278",
+      "step": "video_compose",
+      "status": "success",
+      "duration_seconds": 307.329
+    },
+    {
+      "timestamp": "2026-05-08T18:07:30.278",
+      "step": "report",
+      "status": "started"
+    }
+  ],
+  "warnings": []
+}

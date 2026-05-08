@@ -1,0 +1,54 @@
+{
+  "subtitles": [
+    "相比于生活的困境。",
+    "...",
+    "我一直更害怕的。",
+    "...",
+    "是怯弱的自己。",
+    "..."
+  ],
+  "rhythm": [
+    {
+      "text": "相比于生活的困境。",
+      "pause_type": "none",
+      "duration": 2.1,
+      "reason": "guarded spoken line"
+    },
+    {
+      "text": "...",
+      "pause_type": "short_pause",
+      "duration": 0.85,
+      "reason": "guarded pause"
+    },
+    {
+      "text": "我一直更害怕的。",
+      "pause_type": "none",
+      "duration": 2.1,
+      "reason": "guarded spoken line"
+    },
+    {
+      "text": "...",
+      "pause_type": "heavy_pause",
+      "duration": 1.2,
+      "reason": "guarded pause"
+    },
+    {
+      "text": "是怯弱的自己。",
+      "pause_type": "none",
+      "duration": 2.4,
+      "reason": "guarded spoken line"
+    },
+    {
+      "text": "...",
+      "pause_type": "ending_silence",
+      "duration": 1.6,
+      "reason": "guarded pause"
+    }
+  ],
+  "guard": {
+    "changed": false,
+    "actions": [],
+    "spoken_count": 3,
+    "max_spoken_lines": 4
+  }
+}

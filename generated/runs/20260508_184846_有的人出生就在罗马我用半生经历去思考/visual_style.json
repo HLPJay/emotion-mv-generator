@@ -1,0 +1,67 @@
+{
+  "selection": {
+    "requested": "park_bench_daylight",
+    "resolved": "park_bench_daylight",
+    "seed": 759592638
+  },
+  "safety_rules": {
+    "visual_intent": "reflective, not depressive",
+    "must": [
+      "ordinary life realism",
+      "visible environment detail",
+      "calm self-reflection",
+      "human-scale framing",
+      "not too dark"
+    ],
+    "avoid": [
+      "hopeless mood",
+      "horror lighting",
+      "crushed black shadows",
+      "crying breakdown",
+      "thriller framing",
+      "commercial advertisement"
+    ]
+  },
+  "style": {
+    "id": "park_bench_daylight",
+    "label": "白天公园长椅",
+    "default_weight": 3,
+    "weight_keywords": [
+      "孤独",
+      "休息",
+      "生活",
+      "想明白",
+      "缓一缓",
+      "自己"
+    ],
+    "time_of_day": "daytime with soft shade",
+    "location_family": "quiet park bench, trees, path, open air",
+    "light_source": "soft daylight filtered through trees",
+    "palette": "muted green, light gray, natural skin tones",
+    "camera_language": "wide open-air frames, quiet profile, hands resting close-up",
+    "scene_elements": [
+      "长椅",
+      "树影",
+      "小路",
+      "手",
+      "阳光斑点"
+    ],
+    "avoid": [
+      "travel postcard",
+      "overly happy picnic mood",
+      "melodramatic loneliness"
+    ]
+  },
+  "continuity": {
+    "subject": "same ordinary adult throughout, restrained expression, no crying, no dramatic acting",
+    "location": "same visual world based on quiet park bench, trees, path, open air",
+    "lighting": "consistent light logic: soft daylight filtered through trees",
+    "palette": "consistent palette: muted green, light gray, natural skin tones",
+    "rules": [
+      "keep subject age and appearance consistent across shots",
+      "keep location family consistent across shots",
+      "use recurring details from scene_elements",
+      "do not switch to a different genre or visual universe"
+    ]
+  }
+}

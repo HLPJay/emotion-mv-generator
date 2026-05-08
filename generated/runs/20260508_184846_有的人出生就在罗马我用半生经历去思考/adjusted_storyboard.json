@@ -1,0 +1,65 @@
+[
+  {
+    "scene": "公园长椅全景，阳光透过树叶在地面投下斑驳光影，一位穿着简单休闲装的普通人独自坐在长椅上，目光望向远处小径，表情平静克制",
+    "subtitle": "有的人出生就在罗马。",
+    "camera": "static shot",
+    "lighting": "soft daylight filtering through tree canopy, dappled shadows on bench and ground",
+    "duration": 3.4
+  },
+  {
+    "scene": "特写主人公的手自然垂放在长椅木板上，指节微微蜷曲，指甲边缘有自然磨损，阳光在皮肤上留下柔和的光斑",
+    "subtitle": "...",
+    "camera": "slow push",
+    "lighting": "soft light creating gentle highlights on skin texture",
+    "duration": 0.85
+  },
+  {
+    "scene": "侧机位，主人公侧脸望向延伸的小路，阳光透过树叶在脸上形成明暗交替的光影，眼神若有所思，嘴唇微微抿着",
+    "subtitle": "我用半生经历去思考。",
+    "camera": "gentle handheld",
+    "lighting": "mottled light falling across profile, soft contrast on face",
+    "duration": 3.4
+  },
+  {
+    "scene": "特写头顶树冠，树叶在微风中轻轻摇曳，阳光穿过枝叶间隙在画面中形成流动的光点，树枝的影子随光影移动",
+    "subtitle": "...",
+    "camera": "static shot",
+    "lighting": "bright sky filtered through green leaves, dancing light particles",
+    "duration": 1.2
+  },
+  {
+    "scene": "主人公坐在长椅上背影，肩线微微松弛，望向远方小路延伸的方向，周围只有树叶沙沙声和远处隐约的鸟鸣",
+    "subtitle": "却只是他们的起点。",
+    "camera": "slow push",
+    "lighting": "backlit by soft diffused light, gentle rim light on shoulders",
+    "duration": 3.4
+  },
+  {
+    "scene": "低角度特写主人公的鞋子和脚部，普通运动鞋踩在石板路上，鞋面有日常使用的自然痕迹，地面散落着几片落叶",
+    "subtitle": "...",
+    "camera": "slow push",
+    "lighting": "soft ambient light revealing texture of shoes and pavement",
+    "duration": 1.2
+  },
+  {
+    "scene": "正面中景，主人公转头面向镜头方向，目光平静却带着一丝自省，嘴角没有夸张表情，只是安静地与自己对话，阳光在瞳孔中形成微弱光点",
+    "subtitle": "可能，你也缺少他们的执行力。",
+    "camera": "slow push",
+    "lighting": "front-facing soft light, natural skin tones, visible environment in background",
+    "duration": 3.4
+  },
+  {
+    "scene": "过肩镜头，主人公侧身坐在长椅上，背景是延伸的小路和远处的树木剪影，光影在空气中形成柔和的纵深感",
+    "subtitle": "...",
+    "camera": "gentle handheld",
+    "lighting": "soft side light creating depth in background path",
+    "duration": 1.6
+  },
+  {
+    "scene": "空镜，主人公起身离开后的长椅，阳光依然斑驳地洒在木板上，旁边留有一杯泡凉的茶，水面倒映着树叶光影",
+    "subtitle": "...",
+    "camera": "slow pan",
+    "lighting": "warm afternoon light, cool tea creating contrast, peaceful atmosphere",
+    "duration": 1.2
+  }
+]

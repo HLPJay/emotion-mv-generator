@@ -1,0 +1,67 @@
+{
+  "selection": {
+    "requested": "random",
+    "resolved": "afternoon_window_room",
+    "seed": 2237387343
+  },
+  "safety_rules": {
+    "visual_intent": "reflective, not depressive",
+    "must": [
+      "ordinary life realism",
+      "visible environment detail",
+      "calm self-reflection",
+      "human-scale framing",
+      "not too dark"
+    ],
+    "avoid": [
+      "hopeless mood",
+      "horror lighting",
+      "crushed black shadows",
+      "crying breakdown",
+      "thriller framing",
+      "commercial advertisement"
+    ]
+  },
+  "style": {
+    "id": "afternoon_window_room",
+    "label": "下午窗边房间",
+    "default_weight": 4,
+    "weight_keywords": [
+      "反思",
+      "自己",
+      "生活",
+      "困境",
+      "安静",
+      "想"
+    ],
+    "time_of_day": "soft afternoon",
+    "location_family": "bright apartment room, window, curtain, simple table, indoor plants",
+    "light_source": "soft afternoon window light with gentle shadows",
+    "palette": "neutral cream gray, pale green, soft warm highlights",
+    "camera_language": "still medium shots, slow close-ups, calm visible room detail",
+    "scene_elements": [
+      "窗边",
+      "窗帘",
+      "木桌",
+      "绿植",
+      "下午光"
+    ],
+    "avoid": [
+      "night gloom",
+      "overexposure",
+      "decorative lifestyle ad"
+    ]
+  },
+  "continuity": {
+    "subject": "same ordinary adult throughout, restrained expression, no crying, no dramatic acting",
+    "location": "same visual world based on bright apartment room, window, curtain, simple table, indoor plants",
+    "lighting": "consistent light logic: soft afternoon window light with gentle shadows",
+    "palette": "consistent palette: neutral cream gray, pale green, soft warm highlights",
+    "rules": [
+      "keep subject age and appearance consistent across shots",
+      "keep location family consistent across shots",
+      "use recurring details from scene_elements",
+      "do not switch to a different genre or visual universe"
+    ]
+  }
+}

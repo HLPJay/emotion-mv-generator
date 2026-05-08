@@ -1,0 +1,37 @@
+{
+  "enabled": true,
+  "model": "image-01",
+  "max_workers": 3,
+  "paths": [
+    "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_180137_有的人出生就在罗马我用半生经历去思考\\image_repro_test\\scene_01.png",
+    "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_180137_有的人出生就在罗马我用半生经历去思考\\image_repro_test\\scene_02.png",
+    "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_180137_有的人出生就在罗马我用半生经历去思考\\image_repro_test\\scene_03.png",
+    "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_180137_有的人出生就在罗马我用半生经历去思考\\image_repro_test\\scene_04.png",
+    "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_180137_有的人出生就在罗马我用半生经历去思考\\image_repro_test\\scene_05.png",
+    "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_180137_有的人出生就在罗马我用半生经历去思考\\image_repro_test\\scene_06.png",
+    "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_180137_有的人出生就在罗马我用半生经历去思考\\image_repro_test\\scene_07.png",
+    "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_180137_有的人出生就在罗马我用半生经历去思考\\image_repro_test\\scene_08.png"
+  ],
+  "fallback_detected": true,
+  "fallback_indices": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+  ],
+  "note": "placeholder fallback images are usually generated in seconds and may contain CINEMATIC LIFE SHOT text",
+  "errors": {
+    "2": "MiniMax image generation failed: {'id': '064cea52f2c57967326a105fef2ee46a', 'data': None, 'base_resp': {'status_code': 2013, 'status_msg': 'invalid params, prompt length must be less than 1500'}}",
+    "1": "MiniMax image generation failed: {'id': '064cea5288c39b5cb65b700f949a6561', 'data': None, 'base_resp': {'status_code': 2013, 'status_msg': 'invalid params, prompt length must be less than 1500'}}",
+    "3": "MiniMax image generation failed: {'id': '064cea523a8a223ee06614a31a2e5fdb', 'data': None, 'base_resp': {'status_code': 2013, 'status_msg': 'invalid params, prompt length must be less than 1500'}}",
+    "5": "MiniMax image generation failed: {'id': '064cea536a19a6ffae34f78d45f037d1', 'data': None, 'base_resp': {'status_code': 2013, 'status_msg': 'invalid params, prompt length must be less than 1500'}}",
+    "6": "MiniMax image generation failed: {'id': '064cea537f51717e1b2b91a204b26b59', 'data': None, 'base_resp': {'status_code': 2013, 'status_msg': 'invalid params, prompt length must be less than 1500'}}",
+    "4": "MiniMax image generation failed: {'id': '064cea53148e8cf51686f5d9f6546573', 'data': None, 'base_resp': {'status_code': 2013, 'status_msg': 'invalid params, prompt length must be less than 1500'}}",
+    "8": "MiniMax image generation failed: {'id': '064cea54fe971c16ca68c283d0f1fc16', 'data': None, 'base_resp': {'status_code': 2013, 'status_msg': 'invalid params, prompt length must be less than 1500'}}",
+    "7": "MiniMax image generation failed: {'id': '064cea54cb0e1185ceb7f28915f11c1a', 'data': None, 'base_resp': {'status_code': 2013, 'status_msg': 'invalid params, prompt length must be less than 1500'}}"
+  }
+}

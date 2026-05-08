@@ -1,0 +1,10 @@
+{"timestamp": "2026-05-08T18:56:26.892", "step": "run", "status": "started", "visual_style_id": "random"}
+{"timestamp": "2026-05-08T18:56:26.893", "step": "emotion", "status": "started"}
+{"timestamp": "2026-05-08T18:56:34.502", "step": "emotion", "status": "success", "duration_seconds": 7.61}
+{"timestamp": "2026-05-08T18:56:34.505", "step": "visual_style", "status": "started"}
+{"timestamp": "2026-05-08T18:56:34.506", "step": "visual_style", "status": "success", "duration_seconds": 0.001}
+{"timestamp": "2026-05-08T18:56:34.506", "step": "visual_continuity", "status": "started"}
+{"timestamp": "2026-05-08T18:56:34.507", "step": "visual_continuity", "status": "success", "duration_seconds": 0.0}
+{"timestamp": "2026-05-08T18:56:34.507", "step": "subtitle_plan", "status": "started"}
+{"timestamp": "2026-05-08T18:56:52.848", "step": "subtitle_plan", "status": "success", "duration_seconds": 18.341}
+{"timestamp": "2026-05-08T18:56:52.848", "step": "storyboard", "status": "started"}

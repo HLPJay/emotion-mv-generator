@@ -10,16 +10,13 @@ from pathlib import Path
 import requests
 from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps
 
-from services.visual_continuity_service import visual_continuity_prompt
-from services.visual_style_service import visual_style_prompt
-
-
 ROOT = Path(__file__).resolve().parents[1]
 IMAGE_DIR = ROOT / "generated" / "images"
 CONFIG_PATH = ROOT / "config" / "model_config.json"
 IMAGE_DIR.mkdir(parents=True, exist_ok=True)
 
 SIZE = (1080, 1920)
+MAX_IMAGE_PROMPT_CHARS = 1400
 
 
 class ImageGenerationError(RuntimeError):
@@ -97,24 +94,36 @@ def _build_image_prompt(
     visual_continuity: dict | None = None,
 ) -> str:
     style = emotion.get("style", {})
-    return "\n".join(
+    style_data = (visual_style or {}).get("style", {})
+    continuity = visual_continuity or {}
+    subject = continuity.get("subject", {})
+    location = continuity.get("location", {})
+    lighting = continuity.get("lighting", {})
+    palette = continuity.get("palette", {})
+    recurring = ", ".join(location.get("recurring_objects", [])[:4])
+
+    prompt = "\n".join(
         [
-            "Realistic cinematic vertical photography, 9:16 frame.",
-            visual_style_prompt(visual_style) if visual_style else "Reflective, not depressive. Visible environment detail. Not too dark.",
-            visual_continuity_prompt(visual_continuity),
-            f"Scene: {shot['scene']}",
-            f"Mood: {emotion.get('mood', 'quiet late night')}",
-            f"Emotion: {emotion.get('emotion', 'subtle introspection')}",
-            f"Camera: {shot.get('camera', 'slow push')}",
-            f"Lighting: {shot.get('lighting', 'low blue gray night light')}",
-            f"Palette: {style.get('palette', 'low saturation blue gray')}",
-            f"Texture: {style.get('texture', 'subtle film grain')}",
-            "Ordinary life, quiet room, human-scale details, restrained emotion.",
-            "Reflective but not hopeless, calm but not gloomy, gentle contrast, visible light.",
-            "No subtitles, no text, no logo, no watermark, no poster design.",
-            "Not sci-fi, not fantasy, not advertising, not glossy commercial, not horror, not pitch black.",
+            "Realistic cinematic vertical photo, 9:16.",
+            "Reflective, not depressive. Calm self-reflection, ordinary life realism, visible details, not too dark.",
+            f"Scene: {_limit_text(shot['scene'], 360)}",
+            f"Style: {style_data.get('label', 'quiet reflective realism')}; {style_data.get('time_of_day', '')}; {style_data.get('location_family', '')}.",
+            f"Same subject: {subject.get('identity', 'same ordinary adult')}, {subject.get('appearance', 'simple everyday clothing')}.",
+            f"Continuity: same visual world, recurring objects: {recurring}.",
+            f"Lighting: {lighting.get('main_source', shot.get('lighting', 'soft available light'))}; {lighting.get('brightness', 'gentle contrast')}.",
+            f"Palette: {palette.get('base', style.get('palette', 'low saturation neutral tones'))}. Texture: {style.get('texture', 'subtle film grain')}.",
+            f"Camera: {shot.get('camera', 'slow push')}. Emotion: {emotion.get('emotion', 'subtle introspection')}.",
+            "Avoid: text, subtitles, logo, watermark, poster design, horror, pitch black, crying, glossy commercial, sci-fi, fantasy.",
         ]
     )
+    return _limit_text(prompt, MAX_IMAGE_PROMPT_CHARS)
+
+
+def _limit_text(text: str, max_chars: int) -> str:
+    text = " ".join(text.split())
+    if len(text) <= max_chars:
+        return text
+    return text[: max_chars - 3].rstrip() + "..."
 
 
 def _resize_and_save(image: Image.Image, path: Path) -> Path:
@@ -218,12 +227,12 @@ def _generate_placeholder_image(shot: dict, emotion: dict, index: int, output_di
 def generate_scene_images(
     storyboard: list[dict],
     emotion: dict,
-    output_dir: Path | None = None,
+    output_dir: str | Path | None = None,
     visual_style: dict | None = None,
     visual_continuity: dict | None = None,
 ) -> list[Path]:
     config = _image_config()
-    output_dir = output_dir or IMAGE_DIR
+    output_dir = Path(output_dir) if output_dir is not None else IMAGE_DIR
     output_dir.mkdir(parents=True, exist_ok=True)
     for old_image in output_dir.glob("scene_*.png"):
         old_image.unlink()
@@ -232,7 +241,8 @@ def generate_scene_images(
         if config["enabled"]:
             try:
                 return _generate_minimax_image(shot, emotion, index, output_dir, visual_style, visual_continuity)
-            except Exception:
+            except Exception as exc:
+                errors[index] = str(exc)
                 if not config["fallback_on_error"]:
                     raise
                 return _generate_placeholder_image(shot, emotion, index, output_dir)
@@ -241,10 +251,25 @@ def generate_scene_images(
     indexed_shots = list(enumerate(storyboard, start=1))
     max_workers = max(1, min(config["max_workers"], len(indexed_shots) or 1))
     results: dict[int, Path] = {}
+    errors: dict[int, str] = {}
+
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = {executor.submit(generate_one, index, shot): index for index, shot in indexed_shots}
         for future in as_completed(futures):
             index = futures[future]
             results[index] = future.result()
 
-    return [results[index] for index, _ in indexed_shots]
+    paths = [results[index] for index, _ in indexed_shots]
+    metadata = {
+        "enabled": config["enabled"],
+        "model": config["model"],
+        "max_prompt_chars": MAX_IMAGE_PROMPT_CHARS,
+        "max_workers": max_workers,
+        "paths": [str(path) for path in paths],
+        "fallback_detected": bool(errors) or not config["enabled"],
+        "fallback_indices": sorted(errors),
+        "note": "placeholder fallback images are usually generated in seconds and may contain CINEMATIC LIFE SHOT text",
+        "errors": errors,
+    }
+    (output_dir / "image_generation_metadata.json").write_text(json.dumps(metadata, ensure_ascii=False, indent=2), encoding="utf-8")
+    return paths

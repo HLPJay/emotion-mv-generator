@@ -1,0 +1,20 @@
+{"timestamp": "2026-05-08T18:48:46.212", "step": "run", "status": "started", "visual_style_id": "park_bench_daylight"}
+{"timestamp": "2026-05-08T18:48:46.214", "step": "emotion", "status": "started"}
+{"timestamp": "2026-05-08T18:48:52.944", "step": "emotion", "status": "success", "duration_seconds": 6.731}
+{"timestamp": "2026-05-08T18:48:52.947", "step": "visual_style", "status": "started"}
+{"timestamp": "2026-05-08T18:48:52.947", "step": "visual_style", "status": "success", "duration_seconds": 0.0}
+{"timestamp": "2026-05-08T18:48:52.947", "step": "visual_continuity", "status": "started"}
+{"timestamp": "2026-05-08T18:48:52.948", "step": "visual_continuity", "status": "success", "duration_seconds": 0.0}
+{"timestamp": "2026-05-08T18:48:52.948", "step": "subtitle_plan", "status": "started"}
+{"timestamp": "2026-05-08T18:49:03.617", "step": "subtitle_plan", "status": "success", "duration_seconds": 10.668}
+{"timestamp": "2026-05-08T18:49:03.618", "step": "storyboard", "status": "started"}
+{"timestamp": "2026-05-08T18:49:24.137", "step": "storyboard", "status": "success", "duration_seconds": 20.52}
+{"timestamp": "2026-05-08T18:49:24.140", "step": "audio_plan", "status": "started"}
+{"timestamp": "2026-05-08T18:49:24.140", "step": "audio_plan", "status": "success", "duration_seconds": 0.0}
+{"timestamp": "2026-05-08T18:49:24.141", "step": "image_generation", "status": "started", "image_count": 9}
+{"timestamp": "2026-05-08T18:51:15.896", "step": "image_generation", "status": "success", "duration_seconds": 111.754}
+{"timestamp": "2026-05-08T18:51:15.896", "step": "video_compose", "status": "started"}
+{"timestamp": "2026-05-08T18:56:26.575", "step": "video_compose", "status": "success", "duration_seconds": 310.679}
+{"timestamp": "2026-05-08T18:56:26.576", "step": "report", "status": "started"}
+{"timestamp": "2026-05-08T18:56:26.774", "step": "report", "status": "success", "duration_seconds": 0.199}
+{"timestamp": "2026-05-08T18:56:26.774", "step": "run", "status": "success", "final_video": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_184846_有的人出生就在罗马我用半生经历去思考\\final.mp4"}

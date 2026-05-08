@@ -255,6 +255,14 @@ MiniMax 示例，前提是你的账号接口支持 OpenAI-compatible chat comple
 python scripts\test_image_step.py
 ```
 
+图片生成排查：
+
+- 每次生成会在图片目录写入 `image_generation_metadata.json`。
+- `fallback_detected=false` 表示真实图片 API 成功。
+- `fallback_detected=true` 表示至少有一张图退回了本地占位图，具体原因看 `errors` 和 `fallback_indices`。
+- MiniMax image-01 对 prompt 长度有限制，当前项目会把图片 prompt 压缩到 `1400` 字符以内，避免触发 `prompt length must be less than 1500`。
+- 如果页面里图片带有 `CINEMATIC LIFE SHOT` 测试字样，基本可以判断是本地占位图，不是真实 API 图片。
+
 关闭真实模型、回到本地规则：
 
 ```json
