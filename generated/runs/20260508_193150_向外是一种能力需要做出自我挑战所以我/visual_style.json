@@ -1,0 +1,67 @@
+{
+  "selection": {
+    "requested": "random",
+    "resolved": "subway_window_reflection",
+    "seed": 3289040223
+  },
+  "safety_rules": {
+    "visual_intent": "reflective, not depressive",
+    "must": [
+      "ordinary life realism",
+      "visible environment detail",
+      "calm self-reflection",
+      "human-scale framing",
+      "not too dark"
+    ],
+    "avoid": [
+      "hopeless mood",
+      "horror lighting",
+      "crushed black shadows",
+      "crying breakdown",
+      "thriller framing",
+      "commercial advertisement"
+    ]
+  },
+  "style": {
+    "id": "subway_window_reflection",
+    "label": "地铁窗影",
+    "default_weight": 1,
+    "weight_keywords": [
+      "孤独",
+      "旁观",
+      "迷茫",
+      "人群",
+      "城市",
+      "回避"
+    ],
+    "time_of_day": "late evening commute",
+    "location_family": "subway car, platform, reflective window, moving city lights",
+    "light_source": "soft train interior light and passing city reflections",
+    "palette": "blue gray, muted steel, soft skin tones",
+    "camera_language": "window reflection, profile close-up, quiet movement, shallow depth of field",
+    "scene_elements": [
+      "车窗倒影",
+      "空座位",
+      "站台灯",
+      "移动光影",
+      "沉默侧脸"
+    ],
+    "avoid": [
+      "crowd chaos",
+      "action scene",
+      "hopeless isolation"
+    ]
+  },
+  "continuity": {
+    "subject": "same ordinary adult throughout, restrained expression, no crying, no dramatic acting",
+    "location": "same visual world based on subway car, platform, reflective window, moving city lights",
+    "lighting": "consistent light logic: soft train interior light and passing city reflections",
+    "palette": "consistent palette: blue gray, muted steel, soft skin tones",
+    "rules": [
+      "keep subject age and appearance consistent across shots",
+      "keep location family consistent across shots",
+      "use recurring details from scene_elements",
+      "do not switch to a different genre or visual universe"
+    ]
+  }
+}

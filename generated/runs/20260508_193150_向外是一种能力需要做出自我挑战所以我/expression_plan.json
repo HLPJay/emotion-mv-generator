@@ -1,0 +1,75 @@
+{
+  "profile_id": "ordinary_reflection",
+  "profile_label": "普通人反思",
+  "description": "不消沉、不鸡汤、不朗诵；有痛感、有自省、有行动前的迟疑。",
+  "emotion": {
+    "emotion": "试探性决心",
+    "mood": "深夜独自探索",
+    "tone": "真诚坦白"
+  },
+  "units": [
+    {
+      "id": "unit_01",
+      "role": "primary",
+      "semantic_role": "setup",
+      "subtitle_text": "向外是一种能力，",
+      "spoken_text": "向外是一种能力，",
+      "subtitle_style": "primary",
+      "emphasis_words": [],
+      "voice_layer": "main",
+      "speed": 0.82,
+      "pitch": -1,
+      "volume": 1.0,
+      "emotion": "sad",
+      "pause_after": 0.75,
+      "intensity": 0.35,
+      "breath_before": false,
+      "camera_intent": "establishing"
+    },
+    {
+      "id": "unit_02",
+      "role": "primary",
+      "semantic_role": "core_admission",
+      "subtitle_text": "需要做出自我挑战。",
+      "spoken_text": "需要做出自我挑战。",
+      "subtitle_style": "primary",
+      "emphasis_words": [
+        "挑战"
+      ],
+      "voice_layer": "main",
+      "speed": 0.8,
+      "pitch": -1,
+      "volume": 1.0,
+      "emotion": "sad",
+      "pause_after": 1.25,
+      "intensity": 0.7,
+      "breath_before": true,
+      "camera_intent": "slow_push_close"
+    },
+    {
+      "id": "unit_03",
+      "role": "secondary",
+      "semantic_role": "context_note",
+      "subtitle_text": "所以我用ai帮我跨出了这个第一步。",
+      "spoken_text": "所以我用ai帮我跨出了这个第一步。",
+      "subtitle_style": "secondary",
+      "emphasis_words": [
+        "ai"
+      ],
+      "voice_layer": "inner",
+      "speed": 0.88,
+      "pitch": 0,
+      "volume": 0.86,
+      "emotion": "neutral",
+      "pause_after": 0.75,
+      "intensity": 0.32,
+      "breath_before": false,
+      "camera_intent": "detail_cutaway"
+    }
+  ],
+  "controls": {
+    "meaning_preservation": "strict",
+    "rewrite_level": "low",
+    "principle": "AI changes delivery, not the user's core thought."
+  }
+}

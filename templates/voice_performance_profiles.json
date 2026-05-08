@@ -1,0 +1,64 @@
+{
+  "ordinary_reflection": {
+    "label": "普通人反思",
+    "description": "不消沉、不鸡汤、不朗诵；有痛感、有自省、有行动前的迟疑。",
+    "voices": {
+      "main": {
+        "voice_id": "male-qn-qingse",
+        "speed": 0.82,
+        "pitch": -1,
+        "volume": 1.0,
+        "emotion": "sad"
+      },
+      "inner": {
+        "voice_id": "female-shaonv",
+        "speed": 0.88,
+        "pitch": 0,
+        "volume": 0.86,
+        "emotion": "neutral"
+      },
+      "direct": {
+        "voice_id": "male-qn-qingse",
+        "speed": 0.84,
+        "pitch": -1,
+        "volume": 0.94,
+        "emotion": "neutral"
+      }
+    },
+    "semantic_roles": {
+      "setup": {
+        "pause_after": 0.75,
+        "intensity": 0.35,
+        "camera_intent": "establishing"
+      },
+      "turn": {
+        "pause_after": 1.0,
+        "intensity": 0.52,
+        "camera_intent": "slow_push"
+      },
+      "core_admission": {
+        "pause_after": 1.25,
+        "intensity": 0.7,
+        "breath_before": true,
+        "camera_intent": "slow_push_close"
+      },
+      "context_note": {
+        "pause_after": 0.75,
+        "intensity": 0.32,
+        "voice_layer": "inner",
+        "camera_intent": "detail_cutaway"
+      },
+      "question": {
+        "pause_after": 1.2,
+        "intensity": 0.45,
+        "voice_layer": "direct",
+        "camera_intent": "static_hold"
+      },
+      "ending_echo": {
+        "pause_after": 1.6,
+        "intensity": 0.24,
+        "camera_intent": "hold_silence"
+      }
+    }
+  }
+}

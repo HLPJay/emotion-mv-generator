@@ -33,12 +33,59 @@ SCENE_BANK = {
 }
 
 
+def _expression_by_subtitle(expression_plan: dict | None) -> dict:
+    mapping = {}
+    if expression_plan:
+        for unit in expression_plan.get("units", []):
+            mapping[unit.get("subtitle_text")] = unit
+    return mapping
+
+
+def _blank_shot(subtitle: str, index: int, unit: dict | None = None) -> dict:
+    unit = unit or {}
+    is_pause = subtitle == "..."
+    return {
+        "scene": "画面留白，只有微弱光线和缓慢呼吸感" if is_pause else "安静的生活化反思镜头，人物在自然光里短暂停住",
+        "subtitle": subtitle,
+        "subtitle_role": unit.get("role", "primary"),
+        "semantic_role": unit.get("semantic_role", "pause" if is_pause else "setup"),
+        "camera_intent": unit.get("camera_intent", ""),
+        "camera": CAMERAS[index % len(CAMERAS)],
+        "lighting": LIGHTING[index % len(LIGHTING)],
+        "duration": 1.2 if is_pause else 2.4,
+    }
+
+
+def _normalize_storyboard(storyboard: list[dict], subtitles: list[str], expression_plan: dict | None = None) -> list[dict]:
+    expression_map = _expression_by_subtitle(expression_plan)
+    by_subtitle = {}
+    for shot in storyboard:
+        subtitle = shot.get("subtitle")
+        if subtitle and subtitle not in by_subtitle:
+            by_subtitle[subtitle] = shot
+
+    normalized = []
+    for index, subtitle in enumerate(subtitles):
+        unit = expression_map.get(subtitle, {})
+        source = by_subtitle.get(subtitle) or (storyboard[index] if index < len(storyboard) else {})
+        shot = _blank_shot(subtitle, index, unit)
+        shot.update({key: value for key, value in source.items() if value not in (None, "")})
+        shot["subtitle"] = subtitle
+        shot["subtitle_role"] = unit.get("role", shot.get("subtitle_role", "primary"))
+        shot["semantic_role"] = unit.get("semantic_role", shot.get("semantic_role", "pause" if subtitle == "..." else "setup"))
+        shot["camera_intent"] = unit.get("camera_intent", shot.get("camera_intent", ""))
+        shot["duration"] = 1.2 if subtitle == "..." else float(shot.get("duration", 2.4))
+        normalized.append(shot)
+    return normalized
+
+
 def build_storyboard(
     reflection: str,
     emotion: dict,
     subtitles: list[str],
     visual_style: dict | None = None,
     visual_continuity: dict | None = None,
+    expression_plan: dict | None = None,
 ) -> list[dict]:
     if llm_enabled():
         system_prompt = """
@@ -70,6 +117,9 @@ def build_storyboard(
 字幕：
 {subtitles}
 
+表达导演计划：
+{expression_plan or {}}
+
 视觉风格设定：
 {visual_style_prompt(visual_style) if visual_style else "ordinary reflective realism, not depressive, visible light"}
 
@@ -84,7 +134,7 @@ def build_storyboard(
 - duration: 数字，只有字幕完全等于 "..." 时才填 1.2，其他字幕填 2.4
 """
         result = chat_json(system_prompt, user_prompt, temperature=0.45)
-        return result["storyboard"]
+        return _normalize_storyboard(result["storyboard"], subtitles, expression_plan)
 
     keywords = emotion.get("visual_keywords", [])
     preferred_elements = (visual_style or {}).get("style", {}).get("scene_elements", [])
@@ -96,9 +146,12 @@ def build_storyboard(
     if not scenes:
         scenes = ["深夜房间，一个人安静坐着，像是在和自己对话"]
 
+    expression_by_subtitle = _expression_by_subtitle(expression_plan)
+
     storyboard = []
     scene_index = 0
     for index, subtitle in enumerate(subtitles):
+        unit = expression_by_subtitle.get(subtitle, {})
         if subtitle == "...":
             scene = "画面留白，只有微弱光线和缓慢呼吸感"
         else:
@@ -109,6 +162,9 @@ def build_storyboard(
             {
                 "scene": scene,
                 "subtitle": subtitle,
+                "subtitle_role": unit.get("role", "primary"),
+                "semantic_role": unit.get("semantic_role", "pause" if subtitle == "..." else "setup"),
+                "camera_intent": unit.get("camera_intent", ""),
                 "camera": CAMERAS[index % len(CAMERAS)],
                 "lighting": LIGHTING[index % len(LIGHTING)],
                 "duration": 2.4 if subtitle != "..." else 1.2,

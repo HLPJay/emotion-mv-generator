@@ -133,12 +133,51 @@ generated/runs/<run_id>/run_events.jsonl
 
 ```text
 核心：emotion / visual_style
-节奏：subtitle_plan / audio_plan
+节奏：expression_plan / subtitle_plan / audio_plan
 分镜：storyboard
 报告：run_report / run_dir
 ```
 
 用于直接在页面查看内部运行结果，不必每次手动翻 run 目录。
+
+## Expression Plan
+
+项目现在有一层统一的表达导演层：
+
+```text
+用户输入
+→ expression_plan
+→ subtitle_plan
+→ audio_plan
+→ storyboard
+```
+
+`expression_plan` 会识别：
+
+```text
+primary: 主体感悟
+secondary: 括号解释
+question: 追问句
+setup / turn / core_admission / context_note / question / ending_echo
+```
+
+每个表达单元都会带有：
+
+```text
+subtitle_text
+spoken_text
+emphasis_words
+voice_layer
+speed / pitch / volume
+pause_after
+camera_intent
+```
+
+这样字幕、声音、镜头不再各自理解原文，而是共用同一份表达控制计划。配置文件在：
+
+```text
+templates/voice_performance_profiles.json
+```
 
 ## Subtitle Guard
 

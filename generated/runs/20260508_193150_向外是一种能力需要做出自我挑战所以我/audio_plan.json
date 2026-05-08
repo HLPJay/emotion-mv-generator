@@ -1,0 +1,169 @@
+{
+  "target_duration": 15.83,
+  "lead_in": 0.8,
+  "tail_silence": 1.2,
+  "voice": {
+    "model": "speech-2.8-hd",
+    "voice_id": "male-qn-qingse",
+    "speed": 0.82,
+    "pitch": -1,
+    "volume": 1.0,
+    "emotion": "sad"
+  },
+  "secondary_voice": {
+    "model": "speech-2.8-hd",
+    "speed": 0.88,
+    "pitch": 0,
+    "volume": 0.88,
+    "emotion": "neutral"
+  },
+  "direct_voice": {
+    "model": "speech-2.8-hd",
+    "speed": 0.84,
+    "pitch": -1,
+    "volume": 0.94,
+    "emotion": "neutral"
+  },
+  "narration": [
+    {
+      "text": "向外是一种能力，",
+      "subtitle_text": "向外是一种能力，",
+      "role": "primary",
+      "semantic_role": "setup",
+      "voice_layer": "main",
+      "unit_id": "unit_01",
+      "emphasis_words": [],
+      "speed": 0.82,
+      "pitch": -1,
+      "volume": 1.0,
+      "emotion": "sad",
+      "start": 0.8,
+      "estimated_duration": 3.13,
+      "pause_after": 1.05,
+      "delivery": "low, restrained, intimate, like a reflective self monologue",
+      "breath_before": false
+    },
+    {
+      "text": "需要做出自我挑战。",
+      "subtitle_text": "需要做出自我挑战。",
+      "role": "primary",
+      "semantic_role": "core_admission",
+      "voice_layer": "main",
+      "unit_id": "unit_02",
+      "emphasis_words": [
+        "挑战"
+      ],
+      "speed": 0.8,
+      "pitch": -1,
+      "volume": 1.0,
+      "emotion": "sad",
+      "start": 4.98,
+      "estimated_duration": 3.4,
+      "pause_after": 1.25,
+      "delivery": "low, restrained, intimate, like a reflective self monologue",
+      "breath_before": true
+    },
+    {
+      "text": "所以我用ai帮我跨出了这个第一步。",
+      "subtitle_text": "所以我用ai帮我跨出了这个第一步。",
+      "role": "secondary",
+      "semantic_role": "context_note",
+      "voice_layer": "inner",
+      "unit_id": "unit_03",
+      "emphasis_words": [
+        "ai"
+      ],
+      "speed": 0.88,
+      "pitch": 0,
+      "volume": 0.86,
+      "emotion": "neutral",
+      "start": 9.63,
+      "estimated_duration": 3.4,
+      "pause_after": 1.6,
+      "delivery": "softer, slightly closer, like a parenthetical inner note",
+      "breath_before": true
+    }
+  ],
+  "music": {
+    "model": "music-2.6",
+    "prompt": "minimal cinematic ambient, deep night atmosphere, soft low piano, subtle warm pad, slow tempo, low dynamic range, no vocal, no lyrics, restrained and realistic, not dramatic, mood: 深夜独自探索, emotion: 试探性决心",
+    "duration": 18.83,
+    "volume": 0.22,
+    "fade_in": 1.2,
+    "fade_out": 2.5
+  },
+  "mix": {
+    "narration_volume": 1.0,
+    "music_volume": 0.22,
+    "duck_music_under_voice": true,
+    "ambient_fallback_volume": 0.18
+  },
+  "adjusted_storyboard": [
+    {
+      "scene": "地铁车厢内，窗外城市灯光缓慢流动。空荡的车厢里，年轻人侧身坐着，目光望向车窗外，神情平静而若有所思。",
+      "subtitle": "向外是一种能力，",
+      "subtitle_role": "primary",
+      "semantic_role": "setup",
+      "camera_intent": "establishing",
+      "camera": "slow pan",
+      "lighting": "soft subway interior light with city lights reflection on window",
+      "duration": 3.13,
+      "unit_id": "unit_01"
+    },
+    {
+      "scene": "车窗玻璃映出模糊的城市灯火，年轻人的侧影与窗外流动的光影重叠。倒影中可见他平静的轮廓。",
+      "subtitle": "...",
+      "subtitle_role": "primary",
+      "semantic_role": "setup",
+      "camera_intent": "",
+      "camera": "static shot",
+      "lighting": "city lights reflection on glass, gentle blue-gray tones",
+      "duration": 1.05,
+      "unit_id": "unit_01"
+    },
+    {
+      "scene": "车窗反射的城市光影，灯火模糊成柔和的光斑。站台灯光偶尔掠过车窗，为画面添上一层淡淡的暖色。",
+      "subtitle": "需要做出自我挑战。",
+      "subtitle_role": "primary",
+      "semantic_role": "core_admission",
+      "camera_intent": "slow_push_close",
+      "camera": "slow push",
+      "lighting": "subway platform light flickering through window, soft contrast",
+      "duration": 3.4,
+      "unit_id": "unit_02"
+    },
+    {
+      "scene": "车窗玻璃映出模糊的城市灯火，年轻人的侧影与窗外流动的光影重叠。倒影中可见他平静的轮廓。",
+      "subtitle": "...",
+      "subtitle_role": "primary",
+      "semantic_role": "core_admission",
+      "camera_intent": "",
+      "camera": "static shot",
+      "lighting": "city lights reflection on glass, gentle blue-gray tones",
+      "duration": 1.25,
+      "unit_id": "unit_02"
+    },
+    {
+      "scene": "年轻人低着头，手机屏幕的微光映在脸上。蓝色的界面光与地铁灯光交织，表情专注而平静。",
+      "subtitle": "所以我用ai帮我跨出了这个第一步。",
+      "subtitle_role": "secondary",
+      "semantic_role": "context_note",
+      "camera_intent": "detail_cutaway",
+      "camera": "slow zoom",
+      "lighting": "phone screen glow with soft subway ambient light",
+      "duration": 3.4,
+      "unit_id": "unit_03"
+    },
+    {
+      "scene": "车窗玻璃映出模糊的城市灯火，年轻人的侧影与窗外流动的光影重叠。倒影中可见他平静的轮廓。",
+      "subtitle": "...",
+      "subtitle_role": "secondary",
+      "semantic_role": "context_note",
+      "camera_intent": "",
+      "camera": "static shot",
+      "lighting": "city lights reflection on glass, gentle blue-gray tones",
+      "duration": 1.6,
+      "unit_id": "unit_03"
+    }
+  ]
+}

@@ -60,6 +60,7 @@ def build_audio_plan(subtitle_plan: dict, emotion: dict, storyboard: list[dict])
         text = item.get("text", "").strip()
         pause_type = item.get("pause_type", "none")
         role = item.get("role", "primary")
+        semantic_role = item.get("semantic_role", "setup")
         source_duration = float(item.get("duration", 1.0))
 
         if text == "...":
@@ -68,7 +69,7 @@ def build_audio_plan(subtitle_plan: dict, emotion: dict, storyboard: list[dict])
             visual_durations.append(pause)
             continue
 
-        line = _clean_line(text)
+        line = _clean_line(item.get("spoken_text") or text)
         duration = _line_duration(line, source_duration)
         next_pause = 0.0
         delivery = (
@@ -76,11 +77,20 @@ def build_audio_plan(subtitle_plan: dict, emotion: dict, storyboard: list[dict])
             if role == "secondary"
             else "low, restrained, intimate, like a reflective self monologue"
         )
-        breath_before = bool(narration and duration >= 2.2)
+        breath_before = bool(item.get("breath_before") or (narration and duration >= 2.2))
         narration.append(
             {
                 "text": line,
+                "subtitle_text": text,
                 "role": role,
+                "semantic_role": semantic_role,
+                "voice_layer": item.get("voice_layer", "inner" if role == "secondary" else ("direct" if role == "question" else "main")),
+                "unit_id": item.get("unit_id"),
+                "emphasis_words": item.get("emphasis_words", []),
+                "speed": item.get("speed"),
+                "pitch": item.get("pitch"),
+                "volume": item.get("volume", 0.88 if role == "secondary" else 1.0),
+                "emotion": item.get("emotion"),
                 "start": round(timeline_cursor, 2),
                 "estimated_duration": duration,
                 "pause_after": next_pause,
@@ -115,6 +125,8 @@ def build_audio_plan(subtitle_plan: dict, emotion: dict, storyboard: list[dict])
             shot_copy["duration"] = visual_durations[rhythm_index]
         if rhythm_index < len(rhythm):
             shot_copy["subtitle_role"] = rhythm[rhythm_index].get("role", "primary")
+            shot_copy["semantic_role"] = rhythm[rhythm_index].get("semantic_role", "setup")
+            shot_copy["unit_id"] = rhythm[rhythm_index].get("unit_id")
         adjusted_storyboard.append(shot_copy)
         rhythm_index += 1
 
@@ -135,6 +147,13 @@ def build_audio_plan(subtitle_plan: dict, emotion: dict, storyboard: list[dict])
             "speed": 0.88,
             "pitch": 0,
             "volume": 0.88,
+            "emotion": "neutral",
+        },
+        "direct_voice": {
+            "model": "speech-2.8-hd",
+            "speed": 0.84,
+            "pitch": -1,
+            "volume": 0.94,
             "emotion": "neutral",
         },
         "narration": narration,

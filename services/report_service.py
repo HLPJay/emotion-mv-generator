@@ -121,6 +121,7 @@ def build_run_report(run_dir: Path) -> dict:
     input_text = _read_text(run_dir / "input.txt")
     emotion = _read_json(run_dir / "emotion.json") or {}
     subtitle_plan = _read_json(run_dir / "subtitle_plan.json") or {}
+    expression_plan = _read_json(run_dir / "expression_plan.json") or {}
     storyboard = _read_json(run_dir / "storyboard.json") or []
     audio_plan = _read_json(run_dir / "audio_plan.json") or {}
     visual_style = _read_json(run_dir / "visual_style.json") or {}
@@ -131,6 +132,7 @@ def build_run_report(run_dir: Path) -> dict:
     final_video = run_dir / "final.mp4"
     narration = run_dir / "audio" / "narration.mp3"
     bgm = run_dir / "audio" / "bgm.mp3"
+    narration_segments = _asset_list(run_dir / "audio", "narration_*.mp3")
 
     video_info = _probe_media(final_video)
     narration_info = _probe_media(narration)
@@ -147,8 +149,8 @@ def build_run_report(run_dir: Path) -> dict:
         warnings.append("final.mp4 未检测到音频流")
     if len(images) != len(adjusted_storyboard):
         warnings.append("图片数量与调整后分镜数量不一致")
-    if not narration.exists():
-        warnings.append("旁白文件 narration.mp3 不存在")
+    if not narration.exists() and not narration_segments:
+        warnings.append("旁白文件不存在，未找到 narration.mp3 或 narration_*.mp3")
     if not bgm.exists():
         warnings.append("BGM 文件 bgm.mp3 不存在，可能使用了 fallback ambient")
     guard = subtitle_plan.get("guard") or {}
@@ -164,6 +166,7 @@ def build_run_report(run_dir: Path) -> dict:
             "run_dir": str(run_dir),
             "final_video": str(final_video),
             "narration": str(narration),
+            "narration_segments": [item["path"] for item in narration_segments],
             "bgm": str(bgm),
         },
         "input": {
@@ -176,6 +179,18 @@ def build_run_report(run_dir: Path) -> dict:
             "tone": emotion.get("tone"),
             "subtitles_count": len(subtitle_plan.get("subtitles", [])),
             "subtitle_guard": guard,
+            "expression_profile": expression_plan.get("profile_label"),
+            "expression_units_count": len(expression_plan.get("units", [])),
+            "expression_roles": [
+                {
+                    "text": unit.get("subtitle_text"),
+                    "role": unit.get("role"),
+                    "semantic_role": unit.get("semantic_role"),
+                    "voice_layer": unit.get("voice_layer"),
+                    "emphasis_words": unit.get("emphasis_words", []),
+                }
+                for unit in expression_plan.get("units", [])
+            ],
             "storyboard_count": len(storyboard),
             "adjusted_storyboard_count": len(adjusted_storyboard),
             "target_duration": audio_plan.get("target_duration"),
@@ -211,6 +226,7 @@ def build_run_report(run_dir: Path) -> dict:
         "assets": {
             "images": images,
             "subtitle_images": subtitle_images,
+            "narration_segments": narration_segments,
         },
         "events": events,
         "warnings": warnings,
@@ -248,9 +264,11 @@ def render_report_markdown(report: dict) -> str:
 - Mood: {content.get('mood')}
 - Tone: {content.get('tone')}
 - Visual Style: {content.get('visual_style')} (`{content.get('visual_style_id')}`)
+- Expression Profile: {content.get('expression_profile')}
 
 ## Structure
 
+- Expression Units: {content.get('expression_units_count')}
 - Subtitles: {content.get('subtitles_count')}
 - Subtitle Guard Changed: {content.get('subtitle_guard', {}).get('changed')}
 - Storyboard: {content.get('storyboard_count')}
@@ -271,6 +289,7 @@ def render_report_markdown(report: dict) -> str:
 
 - Images: {len(assets.get('images', []))}
 - Subtitle PNGs: {len(assets.get('subtitle_images', []))}
+- Narration Segments: {len(assets.get('narration_segments', []))}
 
 ## Models
 

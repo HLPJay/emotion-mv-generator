@@ -117,13 +117,23 @@ def _request_tts(text: str, voice_plan: dict, output: Path, config: dict) -> Pat
     return output
 
 
-def _line_voice_plan(audio_plan: dict, role: str) -> dict:
-    if role == "secondary":
+def _line_voice_plan(audio_plan: dict, item: dict) -> dict:
+    role = item.get("role", "primary")
+    voice_layer = item.get("voice_layer") or ("inner" if role == "secondary" else ("direct" if role == "question" else "main"))
+    if voice_layer == "inner" or role == "secondary":
         secondary = dict(audio_plan.get("secondary_voice", {}))
         if "voice_id" not in secondary:
             secondary["voice_id"] = _audio_config()["secondary_voice_id"]
-        return secondary
-    return audio_plan.get("voice", {})
+        base = secondary
+    elif voice_layer == "direct" or role == "question":
+        base = dict(audio_plan.get("direct_voice", {}) or audio_plan.get("voice", {}))
+    else:
+        base = dict(audio_plan.get("voice", {}))
+
+    for key in ("speed", "pitch", "volume", "emotion"):
+        if item.get(key) is not None:
+            base[key] = item[key]
+    return base
 
 
 def generate_narration_audio_segments(audio_plan: dict, output_dir: Path | None = None) -> list[dict]:
@@ -150,7 +160,7 @@ def generate_narration_audio_segments(audio_plan: dict, output_dir: Path | None 
         role = item.get("role", "primary")
         output = output_dir / f"narration_{index:02d}_{role}.mp3"
         try:
-            path = _request_tts(text, _line_voice_plan(audio_plan, role), output, config)
+            path = _request_tts(text, _line_voice_plan(audio_plan, item), output, config)
         except Exception:
             if role != "secondary":
                 raise

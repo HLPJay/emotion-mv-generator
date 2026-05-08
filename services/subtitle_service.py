@@ -131,6 +131,64 @@ pause_type 只能使用：
     return _guard_subtitle_plan({"subtitles": subtitles, "rhythm": rhythm}, reflection)
 
 
+def build_subtitle_plan_from_expression(expression_plan: dict) -> dict:
+    subtitles: list[str] = []
+    rhythm: list[dict] = []
+    units = expression_plan.get("units", [])
+    for index, unit in enumerate(units):
+        text = unit.get("subtitle_text", "").strip()
+        if not text:
+            continue
+        role = unit.get("role", "primary")
+        semantic_role = unit.get("semantic_role", "setup")
+        subtitles.append(text)
+        rhythm.append(
+            {
+                "text": text,
+                "role": role,
+                "semantic_role": semantic_role,
+                "pause_type": "none",
+                "duration": 2.15 if role == "secondary" else 2.3,
+                "reason": f"expression:{semantic_role}",
+                "unit_id": unit.get("id"),
+                "spoken_text": unit.get("spoken_text", text),
+                "emphasis_words": unit.get("emphasis_words", []),
+                "voice_layer": unit.get("voice_layer", "main"),
+                "speed": unit.get("speed"),
+                "pitch": unit.get("pitch"),
+                "volume": unit.get("volume"),
+                "emotion": unit.get("emotion"),
+                "breath_before": unit.get("breath_before", False),
+            }
+        )
+        pause_type = "ending_silence" if index == len(units) - 1 else ("short_pause" if role == "secondary" else "heavy_pause")
+        pause_after = float(unit.get("pause_after", 1.0))
+        subtitles.append("...")
+        rhythm.append(
+            {
+                "text": "...",
+                "role": role,
+                "semantic_role": semantic_role,
+                "pause_type": pause_type,
+                "duration": 1.6 if pause_type == "ending_silence" else pause_after,
+                "reason": f"expression_pause:{semantic_role}",
+                "unit_id": unit.get("id"),
+            }
+        )
+    return {
+        "subtitles": subtitles,
+        "rhythm": rhythm,
+        "guard": {
+            "changed": False,
+            "actions": ["built_from_expression_plan"],
+            "spoken_count": len(units),
+            "max_spoken_lines": None,
+            "note": "expression_plan controls line count; legacy Subtitle Guard limit is bypassed here",
+            "roles": {"primary": "main reflection", "secondary": "parenthetical context", "question": "direct question"},
+        },
+    }
+
+
 def _normalize_plan(result: dict) -> dict:
     subtitles = result.get("subtitles") or [item.get("text", "") for item in result.get("rhythm", [])]
     subtitles = [text for text in subtitles if isinstance(text, str) and text.strip()]
