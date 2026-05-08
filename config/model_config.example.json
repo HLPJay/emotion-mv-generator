@@ -1,0 +1,18 @@
+{
+  "enabled": true,
+  "provider": "deepseek",
+  "api_base": "https://api.minimaxi.com/v1",
+  "model": "MiniMax-M2.7-highspeed",
+  "api_key": "replace_with_your_api_key",
+  "image": {
+    "enabled": true,
+    "provider": "minimax",
+    "api_base": "https://api.minimaxi.com/v1",
+    "model": "image-01",
+    "api_key": "",
+    "aspect_ratio": "9:16",
+    "response_format": "base64",
+    "prompt_optimizer": true,
+    "fallback_on_error": true
+  }
+}

@@ -1,0 +1,18 @@
+﻿{
+    "enabled":  true,
+    "provider":  "minimax",
+    "api_base":  "https://api.minimaxi.com/v1",
+    "model":  "MiniMax-M2.7-highspeed",
+    "api_key":  "sk-cp-31qlf5SGB3w5ZPHbn26Z3l0XsdmIcUy-4i-Krewzmjp8f3mOYyHMnVg3l1zTnUQuSXSPhXmJG-6wygUgMT1rWoqVgq254wXjZHzdxxJCwCcEiRhTViNMnK8",
+    "image":  {
+                  "enabled":  true,
+                  "provider":  "minimax",
+                  "api_base":  "https://api.minimaxi.com/v1",
+                  "model":  "image-01",
+                  "api_key":  "",
+                  "aspect_ratio":  "9:16",
+                  "response_format":  "base64",
+                  "prompt_optimizer":  true,
+                  "fallback_on_error":  true
+              }
+}
