@@ -1,0 +1,20 @@
+{"timestamp": "2026-05-08T21:03:26.889", "step": "run", "status": "started", "visual_style_id": "natural_daylight_film", "visual_world_id": "workspace_reality"}
+{"timestamp": "2026-05-08T21:03:26.894", "step": "emotion", "status": "started"}
+{"timestamp": "2026-05-08T21:03:36.735", "step": "emotion", "status": "success", "duration_seconds": 9.842}
+{"timestamp": "2026-05-08T21:03:36.742", "step": "visual_style", "status": "started"}
+{"timestamp": "2026-05-08T21:03:36.744", "step": "visual_style", "status": "success", "duration_seconds": 0.002}
+{"timestamp": "2026-05-08T21:03:36.746", "step": "visual_continuity", "status": "started"}
+{"timestamp": "2026-05-08T21:03:36.748", "step": "visual_continuity", "status": "success", "duration_seconds": 0.002}
+{"timestamp": "2026-05-08T21:03:36.751", "step": "expression_plan", "status": "started"}
+{"timestamp": "2026-05-08T21:03:36.755", "step": "expression_plan", "status": "success", "duration_seconds": 0.004}
+{"timestamp": "2026-05-08T21:03:36.759", "step": "visual_poetic_plan", "status": "started"}
+{"timestamp": "2026-05-08T21:03:36.762", "step": "visual_poetic_plan", "status": "success", "duration_seconds": 0.003}
+{"timestamp": "2026-05-08T21:03:36.766", "step": "subtitle_plan", "status": "started"}
+{"timestamp": "2026-05-08T21:03:36.768", "step": "subtitle_plan", "status": "success", "duration_seconds": 0.002}
+{"timestamp": "2026-05-08T21:03:36.772", "step": "storyboard", "status": "started"}
+{"timestamp": "2026-05-08T21:04:11.082", "step": "storyboard", "status": "success", "duration_seconds": 34.311}
+{"timestamp": "2026-05-08T21:04:11.087", "step": "audio_plan", "status": "started"}
+{"timestamp": "2026-05-08T21:04:11.088", "step": "audio_plan", "status": "success", "duration_seconds": 0.002}
+{"timestamp": "2026-05-08T21:04:11.099", "step": "image_generation", "status": "started", "image_count": 6}
+{"timestamp": "2026-05-08T21:05:27.175", "step": "image_generation", "status": "success", "duration_seconds": 76.076}
+{"timestamp": "2026-05-08T21:05:27.175", "step": "video_compose", "status": "started"}

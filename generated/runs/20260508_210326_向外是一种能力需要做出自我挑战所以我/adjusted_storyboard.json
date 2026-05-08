@@ -1,0 +1,68 @@
+[
+  {
+    "scene": "深夜室内全景，工作台上的电脑亮着微弱的光，窗外城市灯隐约可见",
+    "subtitle": "向外是一种能力，",
+    "subtitle_role": "primary",
+    "semantic_role": "setup",
+    "camera_intent": "establishing",
+    "camera": "slow push",
+    "lighting": "screen glow with faint city lights through window",
+    "duration": 3.13,
+    "unit_id": "unit_01"
+  },
+  {
+    "scene": "屏幕光影微变，指尖悬停在键盘上方",
+    "subtitle": "...",
+    "subtitle_role": "primary",
+    "semantic_role": "setup",
+    "camera_intent": "establishing",
+    "camera": "static shot",
+    "lighting": "screen glow shifting subtly",
+    "duration": 1.05,
+    "unit_id": "unit_01"
+  },
+  {
+    "scene": "推近电脑屏幕，显示着输入框和闪烁的光标",
+    "subtitle": "需要做出自我挑战。",
+    "subtitle_role": "primary",
+    "semantic_role": "core_admission",
+    "camera_intent": "slow_push_close",
+    "camera": "slow push",
+    "lighting": "brightened screen glow",
+    "duration": 3.4,
+    "unit_id": "unit_02"
+  },
+  {
+    "scene": "AI对话界面亮起，回复的文字逐行显示",
+    "subtitle": "...",
+    "subtitle_role": "primary",
+    "semantic_role": "core_admission",
+    "camera_intent": "slow_push_close",
+    "camera": "static shot",
+    "lighting": "ai response text illuminating",
+    "duration": 1.25,
+    "unit_id": "unit_02"
+  },
+  {
+    "scene": "手指轻轻靠近发布按钮，屏幕光投在指尖上",
+    "subtitle": "所以我用ai帮我跨出了这个第一步。",
+    "subtitle_role": "secondary",
+    "semantic_role": "context_note",
+    "camera_intent": "detail_cutaway",
+    "camera": "slow push",
+    "lighting": "soft screen light on fingertip",
+    "duration": 3.4,
+    "unit_id": "unit_03"
+  },
+  {
+    "scene": "发布按钮的光亮微微增强，屏幕光色温微微转暖",
+    "subtitle": "...",
+    "subtitle_role": "secondary",
+    "semantic_role": "context_note",
+    "camera_intent": "detail_cutaway",
+    "camera": "static shot",
+    "lighting": "publish button glow slightly warmer",
+    "duration": 1.6,
+    "unit_id": "unit_03"
+  }
+]

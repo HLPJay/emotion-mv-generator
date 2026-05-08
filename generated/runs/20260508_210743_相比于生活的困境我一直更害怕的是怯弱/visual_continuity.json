@@ -1,0 +1,26 @@
+{
+  "subject": {
+    "identity": "same ordinary adult throughout the video",
+    "age_range": "late 20s to late 30s",
+    "appearance": "natural face, simple everyday clothing, restrained expression",
+    "expression": "calm self-reflection, no crying, no dramatic pain"
+  },
+  "location": {
+    "primary_space": "selected visual world from visual_poetic_plan",
+    "recurring_objects": [],
+    "spatial_rules": [
+      "all shots should follow visual_poetic_plan.world",
+      "use different angles within the same visual world",
+      "reuse recurring symbols from visual_poetic_plan as visual anchors",
+      "avoid sudden jumps to unrelated locations"
+    ]
+  },
+  "lighting": {
+    "main_source": "diffused light through mist or haze, soft distant glow",
+    "brightness": "visible details, gentle contrast, no crushed black"
+  },
+  "palette": {
+    "base": "mist gray, soft blue, pale gold highlights",
+    "rule": "keep color and contrast consistent across all shots"
+  }
+}

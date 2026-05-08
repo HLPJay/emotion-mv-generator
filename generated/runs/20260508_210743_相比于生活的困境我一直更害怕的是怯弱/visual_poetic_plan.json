@@ -1,0 +1,47 @@
+{
+  "archetype": {
+    "id": "return_to_roots",
+    "label": "回到根处",
+    "core_relation": "distance_to_origin",
+    "emotional_motion": "from drifting to remembering what matters",
+    "match_score": 0
+  },
+  "world": {
+    "id": "ordinary_life",
+    "label": "普通生活",
+    "texture": "真实生活、自然光、普通人、房间、门口、街边",
+    "match_score": 9,
+    "selection_mode": "auto_theme_best_fit"
+  },
+  "motif": {
+    "visual_metaphor": "回到根处在普通生活中展开：真实生活、自然光、普通人、房间、门口、街边",
+    "recurring_symbols": [
+      "窗光",
+      "门",
+      "背包",
+      "笔记本",
+      "街道"
+    ],
+    "progression": [
+      "安静停住",
+      "看见外部",
+      "靠近边界",
+      "开始行动",
+      "留白"
+    ],
+    "avoid": [
+      "unrelated random locations",
+      "commercial poster look",
+      "sci-fi robot unless the selected world requires cosmos symbolism",
+      "pitch black depressed imagery",
+      "text, subtitles, logos, watermarks",
+      "different protagonist across shots"
+    ]
+  },
+  "continuity_rules": [
+    "one video must stay in one visual world",
+    "repeat the same recurring symbols across shots",
+    "keep the same protagonist and light logic",
+    "every shot must serve the archetype relation and emotional motion"
+  ]
+}

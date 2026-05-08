@@ -1,0 +1,128 @@
+{
+  "target_duration": 11.18,
+  "lead_in": 0.8,
+  "tail_silence": 1.2,
+  "voice": {
+    "model": "speech-2.8-hd",
+    "voice_id": "male-qn-qingse",
+    "speed": 0.82,
+    "pitch": -1,
+    "volume": 1.0,
+    "emotion": "sad"
+  },
+  "secondary_voice": {
+    "model": "speech-2.8-hd",
+    "speed": 0.86,
+    "pitch": -2,
+    "volume": 0.84,
+    "emotion": "neutral"
+  },
+  "direct_voice": {
+    "model": "speech-2.8-hd",
+    "speed": 0.84,
+    "pitch": -1,
+    "volume": 0.94,
+    "emotion": "neutral"
+  },
+  "narration": [
+    {
+      "text": "相比生活的困境，",
+      "subtitle_text": "相比于生活的困境，",
+      "role": "primary",
+      "semantic_role": "setup",
+      "voice_layer": "main",
+      "unit_id": "unit_01",
+      "emphasis_words": [],
+      "speed": 0.82,
+      "pitch": -1,
+      "volume": 1.0,
+      "emotion": "sad",
+      "start": 0.8,
+      "estimated_duration": 3.13,
+      "pause_after": 1.05,
+      "delivery": "low, restrained, intimate, like a reflective self monologue",
+      "breath_before": false
+    },
+    {
+      "text": "我一直更害怕的是怯弱的自己。",
+      "subtitle_text": "我一直更害怕的是怯弱的自己。",
+      "role": "primary",
+      "semantic_role": "ending_echo",
+      "voice_layer": "main",
+      "unit_id": "unit_02",
+      "emphasis_words": [
+        "更害怕",
+        "怯弱的自己"
+      ],
+      "speed": 0.82,
+      "pitch": -1,
+      "volume": 1.0,
+      "emotion": "sad",
+      "start": 4.98,
+      "estimated_duration": 3.4,
+      "pause_after": 1.6,
+      "delivery": "low, restrained, intimate, like a reflective self monologue",
+      "breath_before": true
+    }
+  ],
+  "music": {
+    "model": "music-2.6",
+    "prompt": "minimal cinematic ambient, deep night atmosphere, soft low piano, subtle warm pad, slow tempo, low dynamic range, no vocal, no lyrics, restrained and realistic, not dramatic, mood: 深夜独处, emotion: 自省",
+    "duration": 14.18,
+    "volume": 0.22,
+    "fade_in": 1.2,
+    "fade_out": 2.5
+  },
+  "mix": {
+    "narration_volume": 1.0,
+    "music_volume": 0.22,
+    "duck_music_under_voice": true,
+    "ambient_fallback_volume": 0.18
+  },
+  "adjusted_storyboard": [
+    {
+      "scene": "空荡的卧室全景，月光从窗帘缝隙透入，房间里只有一张单人床和一个小边桌，安静得能听见自己的呼吸",
+      "subtitle": "相比于生活的困境，",
+      "subtitle_role": "primary",
+      "semantic_role": "setup",
+      "camera_intent": "establishing",
+      "camera": "slow push",
+      "lighting": "cool moonlight through thin curtains, soft shadows on wall",
+      "duration": 3.13,
+      "unit_id": "unit_01"
+    },
+    {
+      "scene": "窗台上放着一杯已经冷掉的水，水面倒映着模糊的窗框轮廓，水中没有热气升起",
+      "subtitle": "...",
+      "subtitle_role": "primary",
+      "semantic_role": "setup",
+      "camera_intent": "establishing",
+      "camera": "static shot",
+      "lighting": "dim ambient room light with faint window glow on water surface",
+      "duration": 1.05,
+      "unit_id": "unit_01"
+    },
+    {
+      "scene": "镜头缓缓推进到坐在床边的人，双手搭在膝盖上，侧脸被月光勾勒出淡淡的轮廓",
+      "subtitle": "我一直更害怕的是怯弱的自己。",
+      "subtitle_role": "primary",
+      "semantic_role": "ending_echo",
+      "camera_intent": "hold_silence",
+      "camera": "slow push",
+      "lighting": "soft side light from window, gentle shadow on face",
+      "duration": 3.4,
+      "unit_id": "unit_02"
+    },
+    {
+      "scene": "一面老旧的穿衣镜，镜中人的倒影有些模糊，像是隔着一层薄雾在审视自己",
+      "subtitle": "...",
+      "subtitle_role": "primary",
+      "semantic_role": "ending_echo",
+      "camera_intent": "hold_silence",
+      "camera": "static shot",
+      "lighting": "reflected room light, soft blue-gray tone on mirror surface",
+      "duration": 1.6,
+      "unit_id": "unit_02"
+    }
+  ]
+}

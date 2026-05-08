@@ -1,0 +1,56 @@
+{
+  "profile_id": "ordinary_reflection",
+  "profile_label": "普通人反思",
+  "description": "不消沉、不鸡汤、不朗诵；有痛感、有自省、有行动前的迟疑。",
+  "emotion": {
+    "emotion": "自省",
+    "mood": "深夜独处",
+    "tone": "内心独白"
+  },
+  "units": [
+    {
+      "id": "unit_01",
+      "role": "primary",
+      "semantic_role": "setup",
+      "subtitle_text": "相比于生活的困境，",
+      "spoken_text": "相比生活的困境，",
+      "subtitle_style": "primary",
+      "emphasis_words": [],
+      "voice_layer": "main",
+      "speed": 0.82,
+      "pitch": -1,
+      "volume": 1.0,
+      "emotion": "sad",
+      "pause_after": 0.75,
+      "intensity": 0.35,
+      "breath_before": false,
+      "camera_intent": "establishing"
+    },
+    {
+      "id": "unit_02",
+      "role": "primary",
+      "semantic_role": "ending_echo",
+      "subtitle_text": "我一直更害怕的是怯弱的自己。",
+      "spoken_text": "我一直更害怕的是怯弱的自己。",
+      "subtitle_style": "primary",
+      "emphasis_words": [
+        "更害怕",
+        "怯弱的自己"
+      ],
+      "voice_layer": "main",
+      "speed": 0.82,
+      "pitch": -1,
+      "volume": 1.0,
+      "emotion": "sad",
+      "pause_after": 1.6,
+      "intensity": 0.24,
+      "breath_before": false,
+      "camera_intent": "hold_silence"
+    }
+  ],
+  "controls": {
+    "meaning_preservation": "strict",
+    "rewrite_level": "low",
+    "principle": "AI changes delivery, not the user's core thought."
+  }
+}

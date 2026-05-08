@@ -1,0 +1,318 @@
+{
+  "run_id": "20260508_210743_相比于生活的困境我一直更害怕的是怯弱",
+  "generated_at": "2026-05-08T21:12:29",
+  "paths": {
+    "run_dir": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_210743_相比于生活的困境我一直更害怕的是怯弱",
+    "final_video": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_210743_相比于生活的困境我一直更害怕的是怯弱\\final.mp4",
+    "narration": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_210743_相比于生活的困境我一直更害怕的是怯弱\\audio\\narration.mp3",
+    "narration_segments": [
+      "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_210743_相比于生活的困境我一直更害怕的是怯弱\\audio\\narration_01_primary.mp3",
+      "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_210743_相比于生活的困境我一直更害怕的是怯弱\\audio\\narration_02_primary.mp3"
+    ],
+    "bgm": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_210743_相比于生活的困境我一直更害怕的是怯弱\\audio\\bgm.mp3"
+  },
+  "input": {
+    "text": "相比于生活的困境，\n我一直更害怕的是怯弱的自己。",
+    "length": 24
+  },
+  "content_summary": {
+    "emotion": "自省",
+    "mood": "深夜独处",
+    "tone": "内心独白",
+    "subtitles_count": 4,
+    "subtitle_guard": {
+      "changed": false,
+      "actions": [
+        "built_from_expression_plan"
+      ],
+      "spoken_count": 2,
+      "max_spoken_lines": null,
+      "note": "expression_plan controls line count; legacy Subtitle Guard limit is bypassed here",
+      "roles": {
+        "primary": "main reflection",
+        "secondary": "parenthetical context",
+        "question": "direct question"
+      }
+    },
+    "expression_profile": "普通人反思",
+    "visual_archetype": "回到根处",
+    "visual_world": "普通生活",
+    "visual_motif_symbols": [
+      "窗光",
+      "门",
+      "背包",
+      "笔记本",
+      "街道"
+    ],
+    "expression_units_count": 2,
+    "expression_roles": [
+      {
+        "text": "相比于生活的困境，",
+        "role": "primary",
+        "semantic_role": "setup",
+        "voice_layer": "main",
+        "emphasis_words": []
+      },
+      {
+        "text": "我一直更害怕的是怯弱的自己。",
+        "role": "primary",
+        "semantic_role": "ending_echo",
+        "voice_layer": "main",
+        "emphasis_words": [
+          "更害怕",
+          "怯弱的自己"
+        ]
+      }
+    ],
+    "storyboard_count": 4,
+    "adjusted_storyboard_count": 4,
+    "target_duration": 11.18,
+    "music_prompt": "minimal cinematic ambient, deep night atmosphere, soft low piano, subtle warm pad, slow tempo, low dynamic range, no vocal, no lyrics, restrained and realistic, not dramatic, mood: 深夜独处, emotion: 自省",
+    "visual_style": "薄雾诗意光",
+    "visual_style_id": "misty_poetic_light",
+    "visual_continuity_subject": "same ordinary adult throughout the video",
+    "visual_continuity_location": "selected visual world from visual_poetic_plan"
+  },
+  "models": {
+    "text": "config:model",
+    "image": "config:image.model",
+    "speech": "speech-2.8-hd",
+    "music": "music-2.6"
+  },
+  "media": {
+    "video": {
+      "info": {
+        "programs": [],
+        "streams": [
+          {
+            "index": 0,
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 1080,
+            "height": 1920
+          },
+          {
+            "index": 1,
+            "codec_name": "aac",
+            "codec_type": "audio",
+            "sample_rate": "44100",
+            "channels": 2
+          }
+        ],
+        "format": {
+          "duration": "13.050000",
+          "size": "15670122"
+        },
+        "exists": true
+      },
+      "duration": 13.05,
+      "resolution": "1080x1920",
+      "has_audio": true,
+      "volume": {
+        "exists": true,
+        "mean_volume": "-29.6 dB",
+        "max_volume": "-8.1 dB"
+      }
+    },
+    "narration": {
+      "info": {
+        "exists": false
+      },
+      "duration": null
+    },
+    "bgm": {
+      "info": {
+        "programs": [],
+        "streams": [
+          {
+            "index": 0,
+            "codec_name": "mp3",
+            "codec_type": "audio",
+            "sample_rate": "44100",
+            "channels": 2
+          }
+        ],
+        "format": {
+          "duration": "147.382857",
+          "size": "4718226"
+        },
+        "exists": true
+      },
+      "duration": 147.383
+    }
+  },
+  "assets": {
+    "images": [
+      {
+        "name": "scene_01.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_210743_相比于生活的困境我一直更害怕的是怯弱\\images\\scene_01.png",
+        "size": 1285541
+      },
+      {
+        "name": "scene_02.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_210743_相比于生活的困境我一直更害怕的是怯弱\\images\\scene_02.png",
+        "size": 1195633
+      },
+      {
+        "name": "scene_03.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_210743_相比于生活的困境我一直更害怕的是怯弱\\images\\scene_03.png",
+        "size": 1207048
+      },
+      {
+        "name": "scene_04.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_210743_相比于生活的困境我一直更害怕的是怯弱\\images\\scene_04.png",
+        "size": 1248869
+      }
+    ],
+    "subtitle_images": [
+      {
+        "name": "subtitle_01.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_210743_相比于生活的困境我一直更害怕的是怯弱\\subtitles\\subtitle_01.png",
+        "size": 24206
+      },
+      {
+        "name": "subtitle_03.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_210743_相比于生活的困境我一直更害怕的是怯弱\\subtitles\\subtitle_03.png",
+        "size": 31677
+      }
+    ],
+    "narration_segments": [
+      {
+        "name": "narration_01_primary.mp3",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_210743_相比于生活的困境我一直更害怕的是怯弱\\audio\\narration_01_primary.mp3",
+        "size": 59892
+      },
+      {
+        "name": "narration_02_primary.mp3",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_210743_相比于生活的困境我一直更害怕的是怯弱\\audio\\narration_02_primary.mp3",
+        "size": 118068
+      }
+    ]
+  },
+  "events": [
+    {
+      "timestamp": "2026-05-08T21:07:43.635",
+      "step": "run",
+      "status": "started",
+      "visual_style_id": "random",
+      "visual_world_id": "random"
+    },
+    {
+      "timestamp": "2026-05-08T21:07:43.635",
+      "step": "emotion",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-08T21:07:54.447",
+      "step": "emotion",
+      "status": "success",
+      "duration_seconds": 10.812
+    },
+    {
+      "timestamp": "2026-05-08T21:07:54.449",
+      "step": "visual_style",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-08T21:07:54.450",
+      "step": "visual_style",
+      "status": "success",
+      "duration_seconds": 0.0
+    },
+    {
+      "timestamp": "2026-05-08T21:07:54.451",
+      "step": "visual_continuity",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-08T21:07:54.452",
+      "step": "visual_continuity",
+      "status": "success",
+      "duration_seconds": 0.0
+    },
+    {
+      "timestamp": "2026-05-08T21:07:54.453",
+      "step": "expression_plan",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-08T21:07:54.453",
+      "step": "expression_plan",
+      "status": "success",
+      "duration_seconds": 0.0
+    },
+    {
+      "timestamp": "2026-05-08T21:07:54.453",
+      "step": "visual_poetic_plan",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-08T21:07:54.454",
+      "step": "visual_poetic_plan",
+      "status": "success",
+      "duration_seconds": 0.0
+    },
+    {
+      "timestamp": "2026-05-08T21:07:54.454",
+      "step": "subtitle_plan",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-08T21:07:54.454",
+      "step": "subtitle_plan",
+      "status": "success",
+      "duration_seconds": 0.0
+    },
+    {
+      "timestamp": "2026-05-08T21:07:54.455",
+      "step": "storyboard",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-08T21:08:14.210",
+      "step": "storyboard",
+      "status": "success",
+      "duration_seconds": 19.755
+    },
+    {
+      "timestamp": "2026-05-08T21:08:14.211",
+      "step": "audio_plan",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-08T21:08:14.211",
+      "step": "audio_plan",
+      "status": "success",
+      "duration_seconds": 0.0
+    },
+    {
+      "timestamp": "2026-05-08T21:08:14.213",
+      "step": "image_generation",
+      "status": "started",
+      "image_count": 4
+    },
+    {
+      "timestamp": "2026-05-08T21:09:09.070",
+      "step": "image_generation",
+      "status": "success",
+      "duration_seconds": 54.857
+    },
+    {
+      "timestamp": "2026-05-08T21:09:09.071",
+      "step": "video_compose",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-08T21:12:29.512",
+      "step": "video_compose",
+      "status": "success",
+      "duration_seconds": 200.442
+    },
+    {
+      "timestamp": "2026-05-08T21:12:29.513",
+      "step": "report",
+      "status": "started"
+    }
+  ],
+  "warnings": []
+}

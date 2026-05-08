@@ -1,0 +1,47 @@
+{
+  "archetype": {
+    "id": "threshold_crossing",
+    "label": "跨过边界",
+    "core_relation": "inside_to_outside",
+    "emotional_motion": "from hesitation to first action",
+    "match_score": 15
+  },
+  "world": {
+    "id": "workspace_reality",
+    "label": "现实工作台",
+    "texture": "电脑、草稿、AI 对话、待办、发布动作，但不做科技海报",
+    "match_score": 99,
+    "selection_mode": "manual_world_theme_archetype"
+  },
+  "motif": {
+    "visual_metaphor": "跨过边界在现实工作台中展开：电脑、草稿、AI 对话、待办、发布动作，但不做科技海报",
+    "recurring_symbols": [
+      "电脑",
+      "草稿",
+      "AI 对话界面",
+      "键盘",
+      "发布按钮"
+    ],
+    "progression": [
+      "打开草稿",
+      "停在输入框",
+      "AI 对话给出回应",
+      "手指靠近发布按钮",
+      "屏幕光变亮"
+    ],
+    "avoid": [
+      "unrelated random locations",
+      "commercial poster look",
+      "sci-fi robot unless the selected world requires cosmos symbolism",
+      "pitch black depressed imagery",
+      "text, subtitles, logos, watermarks",
+      "different protagonist across shots"
+    ]
+  },
+  "continuity_rules": [
+    "one video must stay in one visual world",
+    "repeat the same recurring symbols across shots",
+    "keep the same protagonist and light logic",
+    "every shot must serve the archetype relation and emotional motion"
+  ]
+}

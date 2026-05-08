@@ -1,0 +1,61 @@
+{
+  "selection": {
+    "requested": "random",
+    "resolved": "misty_poetic_light",
+    "seed": 3979254439
+  },
+  "safety_rules": {
+    "visual_intent": "reflective, not depressive",
+    "must": [
+      "ordinary life realism",
+      "visible environment detail",
+      "calm self-reflection",
+      "human-scale framing",
+      "not too dark"
+    ],
+    "avoid": [
+      "hopeless mood",
+      "horror lighting",
+      "crushed black shadows",
+      "crying breakdown",
+      "thriller framing",
+      "commercial advertisement"
+    ]
+  },
+  "style": {
+    "id": "misty_poetic_light",
+    "label": "薄雾诗意光",
+    "default_weight": 4,
+    "weight_keywords": [
+      "向外",
+      "挑战",
+      "第一步",
+      "远方",
+      "路",
+      "世界"
+    ],
+    "lighting_style": "diffused light through mist or haze, soft distant glow",
+    "color_palette": "mist gray, soft blue, pale gold highlights",
+    "contrast": "low to medium contrast with visible depth layers",
+    "texture": "cinematic haze, subtle grain, realistic atmosphere",
+    "camera_language": "slow push, gentle wide frames, detail cutaways with depth",
+    "mood": "open, hesitant, quietly hopeful",
+    "avoid": [
+      "fantasy painting",
+      "overdramatic fog",
+      "dark horror mist"
+    ]
+  },
+  "continuity": {
+    "subject": "same ordinary adult throughout, restrained expression, no crying, no dramatic acting",
+    "location": "same visual world from visual_poetic_plan, not from visual style",
+    "lighting": "consistent light logic: diffused light through mist or haze, soft distant glow",
+    "palette": "consistent palette: mist gray, soft blue, pale gold highlights",
+    "rules": [
+      "keep subject age and appearance consistent across shots",
+      "do not override the selected visual world",
+      "use recurring symbols from visual_poetic_plan",
+      "do not switch to a different genre or visual universe"
+    ]
+  }
+}

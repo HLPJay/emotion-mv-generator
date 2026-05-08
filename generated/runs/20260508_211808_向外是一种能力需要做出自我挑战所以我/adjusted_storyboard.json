@@ -1,0 +1,68 @@
+[
+  {
+    "scene": "低角度中景，人物站在潮线内侧，双脚浸在浅浅的海水中，远处是无边的海面和灰蓝色的天空，风吹动衣角",
+    "subtitle": "向外是一种能力，",
+    "subtitle_role": "primary",
+    "semantic_role": "setup",
+    "camera_intent": "establishing",
+    "camera": "slow push",
+    "lighting": "soft natural daylight, visible environment detail, gentle contrast",
+    "duration": 3.13,
+    "unit_id": "unit_01"
+  },
+  {
+    "scene": "海水轻轻漫过脚边，溅起细碎的白色水花，沙子被冲刷出湿润的光泽",
+    "subtitle": "...",
+    "subtitle_role": "primary",
+    "semantic_role": "setup",
+    "camera_intent": "establishing",
+    "camera": "static shot",
+    "lighting": "soft natural daylight, visible environment detail, gentle contrast",
+    "duration": 1.05,
+    "unit_id": "unit_01"
+  },
+  {
+    "scene": "特写人物向前迈出一步，脚印深深陷入湿润的沙滩，镜头缓缓推近那串脚印",
+    "subtitle": "需要做出自我挑战。",
+    "subtitle_role": "primary",
+    "semantic_role": "core_admission",
+    "camera_intent": "slow_push_close",
+    "camera": "slow push",
+    "lighting": "soft natural daylight, visible environment detail, gentle contrast",
+    "duration": 3.4,
+    "unit_id": "unit_02"
+  },
+  {
+    "scene": "另一串脚印在沙滩上延伸，被潮水缓缓浸润，海水倒映出模糊的倒影",
+    "subtitle": "...",
+    "subtitle_role": "primary",
+    "semantic_role": "core_admission",
+    "camera_intent": "slow_push_close",
+    "camera": "slow pan",
+    "lighting": "soft natural daylight, visible environment detail, gentle contrast",
+    "duration": 1.25,
+    "unit_id": "unit_02"
+  },
+  {
+    "scene": "中景，人物站在潮水边缘，望向远方开阔的海面，海风轻拂发丝，镜头缓慢推向人物背影与海面的关系",
+    "subtitle": "所以我用ai帮我跨出了这个第一步。",
+    "subtitle_role": "secondary",
+    "semantic_role": "context_note",
+    "camera_intent": "detail_cutaway",
+    "camera": "slow push",
+    "lighting": "soft natural daylight, visible environment detail, gentle contrast",
+    "duration": 3.4,
+    "unit_id": "unit_03"
+  },
+  {
+    "scene": "远景，海岸线蜿蜒向远方，天空与海面在远处交汇，几只海鸟掠过海面，画面逐渐拉开",
+    "subtitle": "...",
+    "subtitle_role": "secondary",
+    "semantic_role": "context_note",
+    "camera_intent": "detail_cutaway",
+    "camera": "slow zoom",
+    "lighting": "soft natural daylight, visible environment detail, gentle contrast",
+    "duration": 1.6,
+    "unit_id": "unit_03"
+  }
+]
