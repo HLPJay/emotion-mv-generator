@@ -150,6 +150,11 @@ def build_run_report(run_dir: Path) -> dict:
         warnings.append("旁白文件 narration.mp3 不存在")
     if not bgm.exists():
         warnings.append("BGM 文件 bgm.mp3 不存在，可能使用了 fallback ambient")
+    guard = subtitle_plan.get("guard") or {}
+    if guard.get("changed"):
+        warnings.append(f"subtitle_guard_changed: {', '.join(guard.get('actions', []))}")
+    if len(subtitle_plan.get("subtitles", [])) > 8:
+        warnings.append("字幕节奏项超过 8 条")
 
     report = {
         "run_id": run_dir.name,
@@ -169,6 +174,7 @@ def build_run_report(run_dir: Path) -> dict:
             "mood": emotion.get("mood"),
             "tone": emotion.get("tone"),
             "subtitles_count": len(subtitle_plan.get("subtitles", [])),
+            "subtitle_guard": guard,
             "storyboard_count": len(storyboard),
             "adjusted_storyboard_count": len(adjusted_storyboard),
             "target_duration": audio_plan.get("target_duration"),
@@ -243,6 +249,7 @@ def render_report_markdown(report: dict) -> str:
 ## Structure
 
 - Subtitles: {content.get('subtitles_count')}
+- Subtitle Guard Changed: {content.get('subtitle_guard', {}).get('changed')}
 - Storyboard: {content.get('storyboard_count')}
 - Adjusted Storyboard: {content.get('adjusted_storyboard_count')}
 - Target Duration: {content.get('target_duration')}s

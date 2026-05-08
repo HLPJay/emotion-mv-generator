@@ -112,6 +112,35 @@ generated/runs/<run_id>/run_events.jsonl
 
 用于直接在页面查看内部运行结果，不必每次手动翻 run 目录。
 
+## Subtitle Guard
+
+字幕模型输出后会经过规则守门，避免字幕重复、过长或停顿混乱。
+
+守门逻辑：
+
+```text
+标准化字幕文本
+拆分附着在句尾的 ...
+去除重复字幕
+限制非停顿字幕最多 4 条
+重建 short_pause / heavy_pause / ending_silence
+```
+
+输出会包含：
+
+```json
+{
+  "guard": {
+    "changed": true,
+    "actions": ["normalized_subtitle_text", "rebuilt_pause_sequence"],
+    "spoken_count": 3,
+    "max_spoken_lines": 4
+  }
+}
+```
+
+报告中如果字幕被守门器修正，会出现 `subtitle_guard_changed` warning。
+
 ## 替换文本大模型 API
 
 当前文本模型调用使用 OpenAI-compatible Chat Completions 格式。日常使用直接改：
