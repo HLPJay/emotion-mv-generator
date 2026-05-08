@@ -42,3 +42,25 @@ services/input_parser_service.py
 - `storyboard_service`: `main_text + context_note + subtitles`
 - `audio_plan`: subtitles only
 - `image_prompt`: storyboard + context_note
+
+## Key Visual + I2I 连续性实验
+
+当前先采用文字连续性控制：
+
+```text
+subject / location / recurring objects / lighting / palette
+```
+
+后续可实验更强一致性：
+
+```text
+1. 先用 T2I 生成 key_visual.png
+2. 后续镜头使用 image-to-image 参考 key_visual
+3. 控制不同景别、角度和动作
+```
+
+注意风险：
+
+- 首图不好会带偏整条视频。
+- I2I 可能导致镜头过于相似。
+- 情绪 MV 不一定需要同一张脸完全一致，更需要同一气质、空间和光线。

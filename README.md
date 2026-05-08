@@ -36,6 +36,14 @@ templates/visual_styles.json
 
 ```text
 morning_room_reflection   清晨房间反思
+afternoon_window_room     下午窗边房间
+daytime_workspace_reflection 白天工位反思
+library_quiet_table       图书馆安静桌面
+daytime_bus_window        白天公交窗边
+sunny_sidewalk_pause      白天街边停顿
+kitchen_morning_stillness 早晨厨房静思
+park_bench_daylight       白天公园长椅
+bookstore_afternoon       下午书店角落
 rainy_evening_commute     雨后通勤
 late_office_afterhours    下班后办公室
 subway_window_reflection  地铁窗影
@@ -44,6 +52,8 @@ quiet_cafe_corner         安静咖啡馆
 city_walk_dusk            黄昏城市慢行
 small_apartment_window    小房间窗边
 ```
+
+默认随机会更偏向白天、清晨、下午和自然光场景；夜晚/通勤/办公室等仍可手动指定。
 
 所有风格都遵守统一底线：
 
@@ -73,6 +83,24 @@ recurring scene details
 ```
 
 这用于减少人物、空间和画面气质在同一条视频中频繁跳变。
+
+同时每次生成会保存：
+
+```text
+visual_continuity.json
+```
+
+它会明确本条视频的：
+
+```text
+subject
+location
+recurring_objects
+lighting
+palette
+```
+
+并注入分镜与图片 prompt。当前使用文字连续性控制；更强的 `key visual + image-to-image` 方案记录在 `docs/backlog.md`。
 
 ## 运行事件日志
 

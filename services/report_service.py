@@ -124,6 +124,7 @@ def build_run_report(run_dir: Path) -> dict:
     storyboard = _read_json(run_dir / "storyboard.json") or []
     audio_plan = _read_json(run_dir / "audio_plan.json") or {}
     visual_style = _read_json(run_dir / "visual_style.json") or {}
+    visual_continuity = _read_json(run_dir / "visual_continuity.json") or {}
     events = _read_events(run_dir)
     adjusted_storyboard = _read_json(run_dir / "adjusted_storyboard.json") or []
 
@@ -181,6 +182,8 @@ def build_run_report(run_dir: Path) -> dict:
             "music_prompt": (audio_plan.get("music") or {}).get("prompt"),
             "visual_style": (visual_style.get("style") or {}).get("label"),
             "visual_style_id": (visual_style.get("style") or {}).get("id"),
+            "visual_continuity_subject": (visual_continuity.get("subject") or {}).get("identity"),
+            "visual_continuity_location": (visual_continuity.get("location") or {}).get("primary_space"),
         },
         "models": {
             "text": "config:model",

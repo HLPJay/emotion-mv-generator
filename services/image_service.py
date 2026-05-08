@@ -10,6 +10,7 @@ from pathlib import Path
 import requests
 from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps
 
+from services.visual_continuity_service import visual_continuity_prompt
 from services.visual_style_service import visual_style_prompt
 
 
@@ -89,12 +90,18 @@ def _draw_scene_card(draw: ImageDraw.ImageDraw, scene: str) -> None:
         y += 62
 
 
-def _build_image_prompt(shot: dict, emotion: dict, visual_style: dict | None = None) -> str:
+def _build_image_prompt(
+    shot: dict,
+    emotion: dict,
+    visual_style: dict | None = None,
+    visual_continuity: dict | None = None,
+) -> str:
     style = emotion.get("style", {})
     return "\n".join(
         [
             "Realistic cinematic vertical photography, 9:16 frame.",
             visual_style_prompt(visual_style) if visual_style else "Reflective, not depressive. Visible environment detail. Not too dark.",
+            visual_continuity_prompt(visual_continuity),
             f"Scene: {shot['scene']}",
             f"Mood: {emotion.get('mood', 'quiet late night')}",
             f"Emotion: {emotion.get('emotion', 'subtle introspection')}",
@@ -117,7 +124,14 @@ def _resize_and_save(image: Image.Image, path: Path) -> Path:
     return path
 
 
-def _generate_minimax_image(shot: dict, emotion: dict, index: int, output_dir: Path, visual_style: dict | None = None) -> Path:
+def _generate_minimax_image(
+    shot: dict,
+    emotion: dict,
+    index: int,
+    output_dir: Path,
+    visual_style: dict | None = None,
+    visual_continuity: dict | None = None,
+) -> Path:
     config = _image_config()
     api_key = config["api_key"].strip()
     if not api_key:
@@ -127,7 +141,7 @@ def _generate_minimax_image(shot: dict, emotion: dict, index: int, output_dir: P
     url = f"{api_base}/image_generation" if api_base.endswith("/v1") else f"{api_base}/v1/image_generation"
     payload = {
         "model": config["model"],
-        "prompt": _build_image_prompt(shot, emotion, visual_style),
+        "prompt": _build_image_prompt(shot, emotion, visual_style, visual_continuity),
         "aspect_ratio": config["aspect_ratio"],
         "response_format": config["response_format"],
         "n": 1,
@@ -206,6 +220,7 @@ def generate_scene_images(
     emotion: dict,
     output_dir: Path | None = None,
     visual_style: dict | None = None,
+    visual_continuity: dict | None = None,
 ) -> list[Path]:
     config = _image_config()
     output_dir = output_dir or IMAGE_DIR
@@ -216,7 +231,7 @@ def generate_scene_images(
     def generate_one(index: int, shot: dict) -> Path:
         if config["enabled"]:
             try:
-                return _generate_minimax_image(shot, emotion, index, output_dir, visual_style)
+                return _generate_minimax_image(shot, emotion, index, output_dir, visual_style, visual_continuity)
             except Exception:
                 if not config["fallback_on_error"]:
                     raise

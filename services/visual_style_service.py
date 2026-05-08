@@ -48,7 +48,8 @@ def _seed_from_text(text: str) -> int:
 
 def _style_score(style: dict, text: str, emotion: dict) -> int:
     haystack = f"{text} {emotion.get('emotion', '')} {emotion.get('mood', '')} {emotion.get('tone', '')}"
-    return sum(2 for keyword in style.get("weight_keywords", []) if keyword in haystack) + 1
+    base = int(style.get("default_weight", 1))
+    return sum(2 for keyword in style.get("weight_keywords", []) if keyword in haystack) + base
 
 
 def select_visual_style(style_id: str, reflection: str, emotion: dict) -> dict:

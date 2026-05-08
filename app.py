@@ -13,6 +13,7 @@ from services.storyboard_service import build_storyboard
 from services.subtitle_service import build_subtitle_plan
 from services.video_service import compose_video
 from services.visual_style_service import RANDOM_STYLE_ID, select_visual_style, visual_style_choices
+from services.visual_continuity_service import build_visual_continuity
 
 
 ROOT = Path(__file__).parent
@@ -41,12 +42,15 @@ def generate_reflection_video(
     with track_step(run_dir, "visual_style"):
         visual_style = select_visual_style(visual_style_id, reflection, emotion)
     write_json(run_dir / "visual_style.json", visual_style)
+    with track_step(run_dir, "visual_continuity"):
+        visual_continuity = build_visual_continuity(visual_style)
+    write_json(run_dir / "visual_continuity.json", visual_continuity)
     with track_step(run_dir, "subtitle_plan"):
         subtitle_plan = build_subtitle_plan(reflection)
     write_json(run_dir / "subtitle_plan.json", subtitle_plan)
     subtitles = subtitle_plan["subtitles"]
     with track_step(run_dir, "storyboard"):
-        storyboard = build_storyboard(reflection, emotion, subtitles, visual_style)
+        storyboard = build_storyboard(reflection, emotion, subtitles, visual_style, visual_continuity)
     write_json(run_dir / "storyboard.json", storyboard)
     with track_step(run_dir, "audio_plan"):
         audio_plan = build_audio_plan(subtitle_plan, emotion, storyboard)
@@ -54,7 +58,7 @@ def generate_reflection_video(
     adjusted_storyboard = audio_plan["adjusted_storyboard"]
     write_json(run_dir / "adjusted_storyboard.json", adjusted_storyboard)
     with track_step(run_dir, "image_generation", image_count=len(adjusted_storyboard)):
-        image_paths = generate_scene_images(adjusted_storyboard, emotion, run_dir / "images", visual_style)
+        image_paths = generate_scene_images(adjusted_storyboard, emotion, run_dir / "images", visual_style, visual_continuity)
     with track_step(run_dir, "video_compose"):
         video_path = compose_video(adjusted_storyboard, image_paths, emotion, audio_plan, run_dir)
     write_text(run_dir / "output_path.txt", str(video_path))
