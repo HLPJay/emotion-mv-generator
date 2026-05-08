@@ -3,8 +3,6 @@ from __future__ import annotations
 
 def build_visual_continuity(visual_style: dict) -> dict:
     style = visual_style.get("style", {})
-    elements = style.get("scene_elements", [])
-    recurring_objects = elements[:4] if elements else ["window", "desk", "cup", "notebook"]
 
     return {
         "subject": {
@@ -14,21 +12,21 @@ def build_visual_continuity(visual_style: dict) -> dict:
             "expression": "calm self-reflection, no crying, no dramatic pain",
         },
         "location": {
-            "primary_space": style.get("location_family", "ordinary lived-in space"),
-            "recurring_objects": recurring_objects,
+            "primary_space": "selected visual world from visual_poetic_plan",
+            "recurring_objects": [],
             "spatial_rules": [
-                "all shots should feel like the same visual world",
-                "use different angles within the same location family",
-                "reuse recurring objects as visual anchors",
+                "all shots should follow visual_poetic_plan.world",
+                "use different angles within the same visual world",
+                "reuse recurring symbols from visual_poetic_plan as visual anchors",
                 "avoid sudden jumps to unrelated locations",
             ],
         },
         "lighting": {
-            "main_source": style.get("light_source", "soft available light"),
+            "main_source": style.get("lighting_style", "soft available light"),
             "brightness": "visible details, gentle contrast, no crushed black",
         },
         "palette": {
-            "base": style.get("palette", "low saturation neutral tones"),
+            "base": style.get("color_palette", "low saturation neutral tones"),
             "rule": "keep color and contrast consistent across all shots",
         },
     }

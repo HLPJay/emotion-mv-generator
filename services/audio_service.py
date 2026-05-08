@@ -35,7 +35,7 @@ def _audio_config() -> dict:
         "model": audio_config.get("model", "speech-2.8-hd"),
         "api_key": audio_config.get("api_key") or config.get("api_key", ""),
         "voice_id": audio_config.get("voice_id", "male-qn-qingse"),
-        "secondary_voice_id": audio_config.get("secondary_voice_id", "female-shaonv"),
+        "secondary_voice_id": audio_config.get("secondary_voice_id", "male-qn-qingse"),
         "speed": float(audio_config.get("speed", 0.88)),
         "vol": float(audio_config.get("vol", 1.0)),
         "pitch": int(audio_config.get("pitch", -1)),

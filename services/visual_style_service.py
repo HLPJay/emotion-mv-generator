@@ -30,13 +30,23 @@ SAFETY_RULES = {
     ],
 }
 
+DEFAULT_STYLE = {
+    "lighting_style": "soft available light with visible environment detail",
+    "color_palette": "low saturation neutral tones",
+    "contrast": "gentle contrast, no crushed shadows",
+    "texture": "subtle film grain and realistic photographic texture",
+    "camera_language": "slow, human-scale cinematic framing",
+    "mood": "calm reflective realism",
+    "avoid": [],
+}
+
 
 def load_visual_styles() -> list[dict]:
     return json.loads(VISUAL_STYLES_PATH.read_text(encoding="utf-8"))
 
 
 def visual_style_choices() -> list[tuple[str, str]]:
-    choices = [("随机", RANDOM_STYLE_ID)]
+    choices = [("随机：影像质感", RANDOM_STYLE_ID)]
     choices.extend((style["label"], style["id"]) for style in load_visual_styles())
     return choices
 
@@ -78,13 +88,13 @@ def _build_visual_style_payload(requested_id: str, style: dict, seed: int) -> di
         "style": style,
         "continuity": {
             "subject": "same ordinary adult throughout, restrained expression, no crying, no dramatic acting",
-            "location": f"same visual world based on {style.get('location_family')}",
-            "lighting": f"consistent light logic: {style.get('light_source')}",
-            "palette": f"consistent palette: {style.get('palette')}",
+            "location": "same visual world from visual_poetic_plan, not from visual style",
+            "lighting": f"consistent light logic: {style.get('lighting_style', DEFAULT_STYLE['lighting_style'])}",
+            "palette": f"consistent palette: {style.get('color_palette', DEFAULT_STYLE['color_palette'])}",
             "rules": [
                 "keep subject age and appearance consistent across shots",
-                "keep location family consistent across shots",
-                "use recurring details from scene_elements",
+                "do not override the selected visual world",
+                "use recurring symbols from visual_poetic_plan",
                 "do not switch to a different genre or visual universe",
             ],
         },
@@ -98,12 +108,13 @@ def visual_style_prompt(visual_style: dict) -> str:
         [
             f"Visual intent: {safety.get('visual_intent')}",
             f"Style variant: {style.get('label')} ({style.get('id')})",
-            f"Time of day: {style.get('time_of_day')}",
-            f"Location family: {style.get('location_family')}",
-            f"Light source: {style.get('light_source')}",
-            f"Palette: {style.get('palette')}",
-            f"Camera language: {style.get('camera_language')}",
-            f"Scene elements to prefer: {', '.join(style.get('scene_elements', []))}",
+            f"Lighting style: {style.get('lighting_style', DEFAULT_STYLE['lighting_style'])}",
+            f"Color palette: {style.get('color_palette', DEFAULT_STYLE['color_palette'])}",
+            f"Contrast: {style.get('contrast', DEFAULT_STYLE['contrast'])}",
+            f"Texture: {style.get('texture', DEFAULT_STYLE['texture'])}",
+            f"Camera language: {style.get('camera_language', DEFAULT_STYLE['camera_language'])}",
+            f"Mood: {style.get('mood', DEFAULT_STYLE['mood'])}",
+            "Do not choose locations or scene objects from visual style; locations come from visual_poetic_plan.",
             f"Continuity subject: {visual_style.get('continuity', {}).get('subject')}",
             f"Continuity location: {visual_style.get('continuity', {}).get('location')}",
             f"Continuity rules: {', '.join(visual_style.get('continuity', {}).get('rules', []))}",

@@ -23,7 +23,7 @@
                   "model":  "speech-2.8-hd",
                   "api_key":  "",
                   "voice_id":  "male-qn-qingse",
-                  "secondary_voice_id":  "female-shaonv",
+                  "secondary_voice_id":  "male-qn-qingse",
                   "speed":  0.82,
                   "vol":  1,
                   "pitch":  -1,

@@ -24,7 +24,23 @@ python app.py
 
 ## 视觉风格控制
 
-视频默认使用 `随机` 视觉风格。随机不是固定滤镜，而是根据输入文本和情绪做稳定随机选择：同一句输入通常会选择同一个风格，方便复现；不同输入会自然产生差异。
+视频默认使用 `随机：影像质感`。视觉风格只控制摄影质感，不再控制场景。
+
+两个下拉框职责不同：
+
+```text
+意境世界 = 内容舞台 / 视觉母题 / 象征关系
+视觉风格 = 光线 / 色彩 / 颗粒 / 镜头质感
+```
+
+例如：
+
+```text
+意境世界：山路远方
+视觉风格：薄雾诗意光
+```
+
+表示镜头仍然发生在山路远方，但画面采用薄雾、柔光、低对比的诗意摄影质感。
 
 可选风格定义在：
 
@@ -35,25 +51,16 @@ templates/visual_styles.json
 当前内置：
 
 ```text
-morning_room_reflection   清晨房间反思
-afternoon_window_room     下午窗边房间
-daytime_workspace_reflection 白天工位反思
-library_quiet_table       图书馆安静桌面
-daytime_bus_window        白天公交窗边
-sunny_sidewalk_pause      白天街边停顿
-kitchen_morning_stillness 早晨厨房静思
-park_bench_daylight       白天公园长椅
-bookstore_afternoon       下午书店角落
-rainy_evening_commute     雨后通勤
-late_office_afterhours    下班后办公室
-subway_window_reflection  地铁窗影
-warm_table_lamp           暖色台灯
-quiet_cafe_corner         安静咖啡馆
-city_walk_dusk            黄昏城市慢行
-small_apartment_window    小房间窗边
+natural_daylight_film     自然日光胶片
+warm_memory_film          温柔回忆胶片
+cool_clear_reflection     冷静清透反思
+misty_poetic_light        薄雾诗意光
+wide_sublime_cinema       开阔宏大电影感
+rain_after_clarity        雨后清明
+minimal_quiet_realism     极简安静现实
 ```
 
-默认随机会更偏向白天、清晨、下午和自然光场景；夜晚/通勤/办公室等仍可手动指定。
+默认随机会根据文案和情绪选择合适的影像质感；具体场景由 `visual_poetic_plan` 的意境世界决定。
 
 所有风格都遵守统一底线：
 
@@ -76,10 +83,10 @@ visual_style.json
 
 ```text
 same ordinary adult throughout
-same visual world
+same visual world from visual_poetic_plan
 consistent lighting logic
 consistent palette
-recurring scene details
+recurring symbols from visual_poetic_plan
 ```
 
 这用于减少人物、空间和画面气质在同一条视频中频繁跳变。
@@ -179,6 +186,59 @@ camera_intent
 templates/voice_performance_profiles.json
 ```
 
+## Visual Poetic Plan
+
+为了避免图片和主题脱节，项目新增了视觉意境层：
+
+```text
+expression_plan
+→ visual_poetic_plan
+→ storyboard
+→ image prompt
+```
+
+`visual_poetic_plan` 不把场景固定成电脑前，而是先选择：
+
+```text
+visual_archetype: 视觉原型，例如跨过边界、开始上路、从遗留到行动
+visual_world: 视觉世界，例如普通生活、城市白天、农村亲情、山路远方、海边远望、星空宇宙、火车旅途
+motif: 本条视频反复出现的视觉符号和镜头推进
+```
+
+一条视频只会选择一个视觉世界，并要求：
+
+```text
+same world
+same recurring symbols
+same protagonist
+same light logic
+same emotional progression
+```
+
+配置文件在：
+
+```text
+templates/visual_poetic_worlds.json
+```
+
+这样同一个主题可以有多种意境表达，但同一条视频内部不会乱跳世界。
+
+页面里可以手动选择“意境世界”：
+
+```text
+自动：根据主题选择最适合
+普通生活
+现实工作台
+城市白天
+农村亲情
+山路远方
+海边远望
+星空宇宙
+火车旅途
+```
+
+默认是自动主题适配：先根据文案、表达计划和情绪选择最贴近的意境世界；如果多个世界同样适合，会做稳定选择；如果没有明显主题线索，才用稳定兜底。手动选择时，只固定 `visual_world`，`visual_archetype` 仍然会根据文案主题匹配，所以不会变成生硬套场景。
+
 ## Subtitle Guard
 
 字幕模型输出后会经过规则守门，避免字幕重复、过长或停顿混乱。
@@ -244,7 +304,7 @@ secondary: 只有自己最懂自己，
 secondary: 越害怕越回避。
 ```
 
-`secondary` 字幕会更小，且旁白使用 `secondary_voice` 里的第二音色。若第二音色不可用，会自动退回主音色，避免整条视频失败。
+`secondary` 字幕会更小，且旁白使用 `secondary_voice` 的内心补充音色。默认仍然是男声，只是更轻、更低、更近；若第二音色不可用，会自动退回主音色，避免整条视频失败。
 
 第二音色可以在 `config/model_config.json` 的 `audio.secondary_voice_id` 中替换：
 
@@ -252,7 +312,7 @@ secondary: 越害怕越回避。
 {
   "audio": {
     "voice_id": "male-qn-qingse",
-    "secondary_voice_id": "female-shaonv"
+    "secondary_voice_id": "male-qn-qingse"
   }
 }
 ```

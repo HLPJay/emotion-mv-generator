@@ -122,6 +122,7 @@ def build_run_report(run_dir: Path) -> dict:
     emotion = _read_json(run_dir / "emotion.json") or {}
     subtitle_plan = _read_json(run_dir / "subtitle_plan.json") or {}
     expression_plan = _read_json(run_dir / "expression_plan.json") or {}
+    visual_poetic_plan = _read_json(run_dir / "visual_poetic_plan.json") or {}
     storyboard = _read_json(run_dir / "storyboard.json") or []
     audio_plan = _read_json(run_dir / "audio_plan.json") or {}
     visual_style = _read_json(run_dir / "visual_style.json") or {}
@@ -180,6 +181,9 @@ def build_run_report(run_dir: Path) -> dict:
             "subtitles_count": len(subtitle_plan.get("subtitles", [])),
             "subtitle_guard": guard,
             "expression_profile": expression_plan.get("profile_label"),
+            "visual_archetype": (visual_poetic_plan.get("archetype") or {}).get("label"),
+            "visual_world": (visual_poetic_plan.get("world") or {}).get("label"),
+            "visual_motif_symbols": ((visual_poetic_plan.get("motif") or {}).get("recurring_symbols") or []),
             "expression_units_count": len(expression_plan.get("units", [])),
             "expression_roles": [
                 {
@@ -265,6 +269,8 @@ def render_report_markdown(report: dict) -> str:
 - Tone: {content.get('tone')}
 - Visual Style: {content.get('visual_style')} (`{content.get('visual_style_id')}`)
 - Expression Profile: {content.get('expression_profile')}
+- Visual Archetype: {content.get('visual_archetype')}
+- Visual World: {content.get('visual_world')}
 
 ## Structure
 

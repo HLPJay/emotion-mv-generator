@@ -15,6 +15,7 @@ from services.subtitle_service import build_subtitle_plan_from_expression
 from services.video_service import compose_video
 from services.visual_style_service import RANDOM_STYLE_ID, select_visual_style, visual_style_choices
 from services.visual_continuity_service import build_visual_continuity
+from services.visual_poetic_service import RANDOM_WORLD_ID, build_visual_poetic_plan, visual_world_choices
 
 
 ROOT = Path(__file__).parent
@@ -28,14 +29,15 @@ DEFAULT_TEXT = "相比于生活的困境，\n我一直更害怕的是怯弱的�
 def generate_reflection_video(
     reflection: str,
     visual_style_id: str = RANDOM_STYLE_ID,
-) -> tuple[str, dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any], list[dict[str, Any]], dict[str, Any], str]:
+    visual_world_id: str = RANDOM_WORLD_ID,
+) -> tuple[str, dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any], list[dict[str, Any]], dict[str, Any], str]:
     reflection = reflection.strip()
     if not reflection:
         raise gr.Error("请先输入一句真实感悟。")
 
     run_dir = create_run_dir(reflection)
     write_text(run_dir / "input.txt", reflection)
-    log_event(run_dir, "run", "started", visual_style_id=visual_style_id)
+    log_event(run_dir, "run", "started", visual_style_id=visual_style_id, visual_world_id=visual_world_id)
 
     with track_step(run_dir, "emotion"):
         emotion = analyze_emotion(reflection)
@@ -49,12 +51,15 @@ def generate_reflection_video(
     with track_step(run_dir, "expression_plan"):
         expression_plan = build_expression_plan(reflection, emotion)
     write_json(run_dir / "expression_plan.json", expression_plan)
+    with track_step(run_dir, "visual_poetic_plan"):
+        visual_poetic_plan = build_visual_poetic_plan(reflection, expression_plan, emotion, visual_world_id)
+    write_json(run_dir / "visual_poetic_plan.json", visual_poetic_plan)
     with track_step(run_dir, "subtitle_plan"):
         subtitle_plan = build_subtitle_plan_from_expression(expression_plan)
     write_json(run_dir / "subtitle_plan.json", subtitle_plan)
     subtitles = subtitle_plan["subtitles"]
     with track_step(run_dir, "storyboard"):
-        storyboard = build_storyboard(reflection, emotion, subtitles, visual_style, visual_continuity, expression_plan)
+        storyboard = build_storyboard(reflection, emotion, subtitles, visual_style, visual_continuity, expression_plan, visual_poetic_plan)
     write_json(run_dir / "storyboard.json", storyboard)
     with track_step(run_dir, "audio_plan"):
         audio_plan = build_audio_plan(subtitle_plan, emotion, storyboard)
@@ -62,7 +67,7 @@ def generate_reflection_video(
     adjusted_storyboard = audio_plan["adjusted_storyboard"]
     write_json(run_dir / "adjusted_storyboard.json", adjusted_storyboard)
     with track_step(run_dir, "image_generation", image_count=len(adjusted_storyboard)):
-        image_paths = generate_scene_images(adjusted_storyboard, emotion, run_dir / "images", visual_style, visual_continuity)
+        image_paths = generate_scene_images(adjusted_storyboard, emotion, run_dir / "images", visual_style, visual_continuity, visual_poetic_plan)
     with track_step(run_dir, "video_compose"):
         video_path = compose_video(adjusted_storyboard, image_paths, emotion, audio_plan, run_dir)
     write_text(run_dir / "output_path.txt", str(video_path))
@@ -70,7 +75,7 @@ def generate_reflection_video(
         report = write_run_report(run_dir)
     log_event(run_dir, "run", "success", final_video=str(video_path))
 
-    return str(video_path), emotion, visual_style, expression_plan, subtitle_plan, audio_plan, adjusted_storyboard, report, str(run_dir)
+    return str(video_path), emotion, visual_style, expression_plan, visual_poetic_plan, subtitle_plan, audio_plan, adjusted_storyboard, report, str(run_dir)
 
 
 with gr.Blocks(title="AI Reflection Video Generator") as demo:
@@ -90,6 +95,11 @@ with gr.Blocks(title="AI Reflection Video Generator") as demo:
                 value=RANDOM_STYLE_ID,
                 label="视觉风格",
             )
+            visual_world_input = gr.Dropdown(
+                choices=visual_world_choices(),
+                value=RANDOM_WORLD_ID,
+                label="意境世界",
+            )
             generate_button = gr.Button("生成视频", variant="primary")
 
         with gr.Column(scale=1):
@@ -100,6 +110,7 @@ with gr.Blocks(title="AI Reflection Video Generator") as demo:
             with gr.Row():
                 emotion_output = gr.JSON(label="情绪解析")
                 visual_style_output = gr.JSON(label="视觉风格")
+                visual_poetic_output = gr.JSON(label="视觉意境")
         with gr.Tab("节奏"):
             expression_plan_output = gr.JSON(label="表达导演")
             subtitle_plan_output = gr.JSON(label="字幕节奏")
@@ -112,12 +123,13 @@ with gr.Blocks(title="AI Reflection Video Generator") as demo:
 
     generate_button.click(
         fn=generate_reflection_video,
-        inputs=[reflection_input, visual_style_input],
+        inputs=[reflection_input, visual_style_input, visual_world_input],
         outputs=[
             video_output,
             emotion_output,
             visual_style_output,
             expression_plan_output,
+            visual_poetic_output,
             subtitle_plan_output,
             audio_plan_output,
             storyboard_output,

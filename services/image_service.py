@@ -92,6 +92,7 @@ def _build_image_prompt(
     emotion: dict,
     visual_style: dict | None = None,
     visual_continuity: dict | None = None,
+    visual_poetic_plan: dict | None = None,
 ) -> str:
     style = emotion.get("style", {})
     style_data = (visual_style or {}).get("style", {})
@@ -101,13 +102,22 @@ def _build_image_prompt(
     lighting = continuity.get("lighting", {})
     palette = continuity.get("palette", {})
     recurring = ", ".join(location.get("recurring_objects", [])[:4])
+    poetic = visual_poetic_plan or {}
+    poetic_world = poetic.get("world", {})
+    poetic_archetype = poetic.get("archetype", {})
+    motif = poetic.get("motif", {})
+    motif_symbols = ", ".join((motif.get("recurring_symbols") or shot.get("recurring_symbols") or [])[:5])
+    motif_progression = " -> ".join((motif.get("progression") or [])[:5])
 
     prompt = "\n".join(
         [
             "Realistic cinematic vertical photo, 9:16.",
             "Reflective, not depressive. Calm self-reflection, ordinary life realism, visible details, not too dark.",
+            f"One-video visual world: {poetic_world.get('label', shot.get('visual_world', 'ordinary reflective world'))}; {poetic_world.get('texture', '')}.",
+            f"Visual archetype: {poetic_archetype.get('label', '')}; relation: {poetic_archetype.get('core_relation', '')}; motion: {poetic_archetype.get('emotional_motion', '')}.",
+            f"Shared motif symbols in this shot: {motif_symbols}. Progression: {motif_progression}.",
             f"Scene: {_limit_text(shot['scene'], 360)}",
-            f"Style: {style_data.get('label', 'quiet reflective realism')}; {style_data.get('time_of_day', '')}; {style_data.get('location_family', '')}.",
+            f"Image style: {style_data.get('label', 'quiet reflective realism')}; lighting: {style_data.get('lighting_style', '')}; palette: {style_data.get('color_palette', '')}; texture: {style_data.get('texture', '')}.",
             f"Same subject: {subject.get('identity', 'same ordinary adult')}, {subject.get('appearance', 'simple everyday clothing')}.",
             f"Continuity: same visual world, recurring objects: {recurring}.",
             f"Lighting: {lighting.get('main_source', shot.get('lighting', 'soft available light'))}; {lighting.get('brightness', 'gentle contrast')}.",
@@ -140,6 +150,7 @@ def _generate_minimax_image(
     output_dir: Path,
     visual_style: dict | None = None,
     visual_continuity: dict | None = None,
+    visual_poetic_plan: dict | None = None,
 ) -> Path:
     config = _image_config()
     api_key = config["api_key"].strip()
@@ -150,7 +161,7 @@ def _generate_minimax_image(
     url = f"{api_base}/image_generation" if api_base.endswith("/v1") else f"{api_base}/v1/image_generation"
     payload = {
         "model": config["model"],
-        "prompt": _build_image_prompt(shot, emotion, visual_style, visual_continuity),
+        "prompt": _build_image_prompt(shot, emotion, visual_style, visual_continuity, visual_poetic_plan),
         "aspect_ratio": config["aspect_ratio"],
         "response_format": config["response_format"],
         "n": 1,
@@ -230,6 +241,7 @@ def generate_scene_images(
     output_dir: str | Path | None = None,
     visual_style: dict | None = None,
     visual_continuity: dict | None = None,
+    visual_poetic_plan: dict | None = None,
 ) -> list[Path]:
     config = _image_config()
     output_dir = Path(output_dir) if output_dir is not None else IMAGE_DIR
@@ -240,7 +252,7 @@ def generate_scene_images(
     def generate_one(index: int, shot: dict) -> Path:
         if config["enabled"]:
             try:
-                return _generate_minimax_image(shot, emotion, index, output_dir, visual_style, visual_continuity)
+                return _generate_minimax_image(shot, emotion, index, output_dir, visual_style, visual_continuity, visual_poetic_plan)
             except Exception as exc:
                 errors[index] = str(exc)
                 if not config["fallback_on_error"]:

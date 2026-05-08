@@ -11,10 +11,10 @@
         "emotion": "sad"
       },
       "inner": {
-        "voice_id": "female-shaonv",
-        "speed": 0.88,
-        "pitch": 0,
-        "volume": 0.86,
+        "voice_id": "male-qn-qingse",
+        "speed": 0.86,
+        "pitch": -2,
+        "volume": 0.84,
         "emotion": "neutral"
       },
       "direct": {

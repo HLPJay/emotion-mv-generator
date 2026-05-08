@@ -1,0 +1,98 @@
+{
+  "archetypes": {
+    "threshold_crossing": {
+      "label": "跨过边界",
+      "core_relation": "inside_to_outside",
+      "emotional_motion": "from hesitation to first action",
+      "keywords": ["向外", "跨出", "第一步", "挑战", "开始", "走出", "突破"]
+    },
+    "path_beginning": {
+      "label": "开始上路",
+      "core_relation": "stillness_to_motion",
+      "emotional_motion": "from thinking to doing",
+      "keywords": ["行动", "执行", "坚持", "目标", "规划", "路上", "开始"]
+    },
+    "unfinished_to_action": {
+      "label": "从遗留到行动",
+      "core_relation": "unfinished_to_started",
+      "emotional_motion": "from delay to concrete action",
+      "keywords": ["待办", "遗留", "闭环", "产品", "实现", "发布", "完成"]
+    },
+    "wide_world_calling": {
+      "label": "开阔世界召唤",
+      "core_relation": "small_self_to_big_world",
+      "emotional_motion": "from narrowness to a wider horizon",
+      "keywords": ["世界", "认知", "罗马", "起点", "星辰", "大海", "时代"]
+    },
+    "storm_to_clear": {
+      "label": "从混乱到清明",
+      "core_relation": "noise_to_clarity",
+      "emotional_motion": "from anxiety to discernment",
+      "keywords": ["焦虑", "信息", "爆炸", "恐慌", "明辨", "答案"]
+    },
+    "return_to_roots": {
+      "label": "回到根处",
+      "core_relation": "distance_to_origin",
+      "emotional_motion": "from drifting to remembering what matters",
+      "keywords": ["亲情", "农村", "家", "半生", "经历", "回头"]
+    }
+  },
+  "worlds": {
+    "ordinary_life": {
+      "label": "普通生活",
+      "texture": "真实生活、自然光、普通人、房间、门口、街边",
+      "symbols": ["窗光", "门", "背包", "笔记本", "街道"],
+      "progression": ["安静停住", "看见外部", "靠近边界", "开始行动", "留白"],
+      "keywords": ["自己", "生活", "普通", "害怕", "回避"]
+    },
+    "workspace_reality": {
+      "label": "现实工作台",
+      "texture": "电脑、草稿、AI 对话、待办、发布动作，但不做科技海报",
+      "symbols": ["电脑", "草稿", "AI 对话界面", "键盘", "发布按钮"],
+      "progression": ["打开草稿", "停在输入框", "AI 对话给出回应", "手指靠近发布按钮", "屏幕光变亮"],
+      "keywords": ["AI", "ai", "产品", "待办", "电脑", "token", "开发"]
+    },
+    "city_daylight": {
+      "label": "城市白天",
+      "texture": "白天城市、地铁、路口、人群边缘、真实通勤",
+      "symbols": ["地铁门", "路口", "斑马线", "人群", "晨光"],
+      "progression": ["站在人群边缘", "车门打开", "走向出口", "穿过路口", "城市远处变开阔"],
+      "keywords": ["职业", "工作", "岗位", "面试", "公司", "城市"]
+    },
+    "rural_family": {
+      "label": "农村亲情",
+      "texture": "清晨院子、土路、家人目送、朴素生活、温和不煽情",
+      "symbols": ["院门", "土路", "背包", "晨光", "家人背影"],
+      "progression": ["院子里收拾东西", "家人在门边安静看着", "手扶院门", "跨过门槛", "土路通向远方"],
+      "keywords": ["家", "亲情", "农村", "半生", "经历", "父母"]
+    },
+    "mountain_path": {
+      "label": "山路远方",
+      "texture": "山路、晨雾、远处光、一个人的背影、现实诗意",
+      "symbols": ["山路", "晨雾", "背影", "远处光", "脚步"],
+      "progression": ["站在山路起点", "雾里出现路径", "脚步向前", "山路转弯", "远方光线打开"],
+      "keywords": ["挑战", "坚持", "目标", "向外", "跨出", "路"]
+    },
+    "ocean_shore": {
+      "label": "海边远望",
+      "texture": "海岸线、潮水、风、开阔天空、孤独但不消沉",
+      "symbols": ["海岸线", "潮水", "脚印", "远方", "风"],
+      "progression": ["站在潮线内侧", "潮水靠近脚边", "留下脚印", "看向海面", "天空变开阔"],
+      "keywords": ["大海", "世界", "开阔", "恐慌", "答案"]
+    },
+    "star_cosmos": {
+      "label": "星空宇宙",
+      "texture": "星空、旷野、微光路径、小小的人面对巨大世界",
+      "symbols": ["星空", "旷野", "微光小路", "远处光点", "人的剪影"],
+      "progression": ["人在旷野停住", "脚下出现微光", "星空更清晰", "向远处光点走去", "人显得很小但坚定"],
+      "keywords": ["星辰", "宇宙", "大千世界", "认知", "时代", "第一性原理"]
+    },
+    "train_journey": {
+      "label": "火车旅途",
+      "texture": "车窗、站台、远行、普通人的迁移和开始",
+      "symbols": ["火车窗", "站台", "行李", "车票", "远方铁轨"],
+      "progression": ["坐在车窗边", "手握车票", "站台后退", "窗外变开阔", "铁轨伸向远方"],
+      "keywords": ["职业规划", "人生", "经历", "起点", "选择"]
+    }
+  }
+}

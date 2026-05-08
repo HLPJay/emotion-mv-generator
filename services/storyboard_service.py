@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from services.llm_service import chat_json, llm_enabled
 from services.visual_continuity_service import visual_continuity_prompt
+from services.visual_poetic_service import visual_poetic_prompt
 from services.visual_style_service import visual_style_prompt
 
 
@@ -45,7 +46,7 @@ def _blank_shot(subtitle: str, index: int, unit: dict | None = None) -> dict:
     unit = unit or {}
     is_pause = subtitle == "..."
     return {
-        "scene": "画面留白，只有微弱光线和缓慢呼吸感" if is_pause else "安静的生活化反思镜头，人物在自然光里短暂停住",
+        "scene": "画面留白，只有微弱光线和缓慢呼吸感" if is_pause else "安静的生活化反思镜头，人物在统一意境世界里短暂停住",
         "subtitle": subtitle,
         "subtitle_role": unit.get("role", "primary"),
         "semantic_role": unit.get("semantic_role", "pause" if is_pause else "setup"),
@@ -61,13 +62,17 @@ def _normalize_storyboard(storyboard: list[dict], subtitles: list[str], expressi
     by_subtitle = {}
     for shot in storyboard:
         subtitle = shot.get("subtitle")
-        if subtitle and subtitle not in by_subtitle:
+        if subtitle and subtitle != "..." and subtitle not in by_subtitle:
             by_subtitle[subtitle] = shot
 
     normalized = []
+    previous_unit = {}
     for index, subtitle in enumerate(subtitles):
-        unit = expression_map.get(subtitle, {})
-        source = by_subtitle.get(subtitle) or (storyboard[index] if index < len(storyboard) else {})
+        unit = expression_map.get(subtitle, previous_unit if subtitle == "..." else {})
+        if subtitle != "...":
+            previous_unit = unit
+        indexed = storyboard[index] if index < len(storyboard) and storyboard[index].get("subtitle") == subtitle else {}
+        source = indexed or by_subtitle.get(subtitle) or {}
         shot = _blank_shot(subtitle, index, unit)
         shot.update({key: value for key, value in source.items() if value not in (None, "")})
         shot["subtitle"] = subtitle
@@ -86,6 +91,7 @@ def build_storyboard(
     visual_style: dict | None = None,
     visual_continuity: dict | None = None,
     expression_plan: dict | None = None,
+    visual_poetic_plan: dict | None = None,
 ) -> list[dict]:
     if llm_enabled():
         system_prompt = """
@@ -120,6 +126,9 @@ def build_storyboard(
 表达导演计划：
 {expression_plan or {}}
 
+视觉意境计划：
+{visual_poetic_prompt(visual_poetic_plan)}
+
 视觉风格设定：
 {visual_style_prompt(visual_style) if visual_style else "ordinary reflective realism, not depressive, visible light"}
 
@@ -137,10 +146,14 @@ def build_storyboard(
         return _normalize_storyboard(result["storyboard"], subtitles, expression_plan)
 
     keywords = emotion.get("visual_keywords", [])
-    preferred_elements = (visual_style or {}).get("style", {}).get("scene_elements", [])
-    if visual_continuity:
-        preferred_elements = visual_continuity.get("location", {}).get("recurring_objects", preferred_elements)
-    scenes = [f"{element}里的生活化反思镜头" for element in preferred_elements] or [
+    preferred_elements = []
+    poetic_progression = ((visual_poetic_plan or {}).get("motif") or {}).get("progression", [])
+    poetic_symbols = ((visual_poetic_plan or {}).get("motif") or {}).get("recurring_symbols", [])
+    poetic_world = ((visual_poetic_plan or {}).get("world") or {}).get("label", "")
+    scenes = [
+        f"{poetic_world}意境中，{step}，反复出现{', '.join(poetic_symbols[:3])}，真实电影感"
+        for step in poetic_progression
+    ] or [
         SCENE_BANK.get(keyword, f"{keyword}的生活化电影镜头") for keyword in keywords
     ]
     if not scenes:
@@ -165,6 +178,8 @@ def build_storyboard(
                 "subtitle_role": unit.get("role", "primary"),
                 "semantic_role": unit.get("semantic_role", "pause" if subtitle == "..." else "setup"),
                 "camera_intent": unit.get("camera_intent", ""),
+                "visual_world": poetic_world,
+                "recurring_symbols": poetic_symbols,
                 "camera": CAMERAS[index % len(CAMERAS)],
                 "lighting": LIGHTING[index % len(LIGHTING)],
                 "duration": 2.4 if subtitle != "..." else 1.2,

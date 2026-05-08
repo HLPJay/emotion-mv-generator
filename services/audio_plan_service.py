@@ -144,9 +144,9 @@ def build_audio_plan(subtitle_plan: dict, emotion: dict, storyboard: list[dict])
         },
         "secondary_voice": {
             "model": "speech-2.8-hd",
-            "speed": 0.88,
-            "pitch": 0,
-            "volume": 0.88,
+            "speed": 0.86,
+            "pitch": -2,
+            "volume": 0.84,
             "emotion": "neutral",
         },
         "direct_voice": {
