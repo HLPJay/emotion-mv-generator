@@ -1,0 +1,54 @@
+{
+  "selection": {
+    "requested": "random",
+    "resolved": "late_office_afterhours",
+    "seed": 3680938670
+  },
+  "safety_rules": {
+    "visual_intent": "reflective, not depressive",
+    "must": [
+      "ordinary life realism",
+      "visible environment detail",
+      "calm self-reflection",
+      "human-scale framing",
+      "not too dark"
+    ],
+    "avoid": [
+      "hopeless mood",
+      "horror lighting",
+      "crushed black shadows",
+      "crying breakdown",
+      "thriller framing",
+      "commercial advertisement"
+    ]
+  },
+  "style": {
+    "id": "late_office_afterhours",
+    "label": "下班后办公室",
+    "weight_keywords": [
+      "工作",
+      "职业",
+      "迷茫",
+      "努力",
+      "焦虑",
+      "加班"
+    ],
+    "time_of_day": "after work evening",
+    "location_family": "quiet office, elevator hall, empty desks, computer screen",
+    "light_source": "soft office light, monitor glow, distant city light",
+    "palette": "muted gray, soft white, gentle amber accents",
+    "camera_language": "slow pan across empty desks, restrained close-up, ordinary workplace realism",
+    "scene_elements": [
+      "空工位",
+      "电脑屏幕",
+      "电梯间",
+      "玻璃倒影",
+      "未发出的邮件"
+    ],
+    "avoid": [
+      "corporate advertisement",
+      "sci-fi office",
+      "dramatic thriller shadows"
+    ]
+  }
+}

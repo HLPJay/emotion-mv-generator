@@ -1,0 +1,160 @@
+{
+  "run_id": "20260508_171819_相比于生活的困境我一直更害怕的是怯弱",
+  "generated_at": "2026-05-08T17:24:16",
+  "paths": {
+    "run_dir": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_171819_相比于生活的困境我一直更害怕的是怯弱",
+    "final_video": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_171819_相比于生活的困境我一直更害怕的是怯弱\\final.mp4",
+    "narration": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_171819_相比于生活的困境我一直更害怕的是怯弱\\audio\\narration.mp3",
+    "bgm": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_171819_相比于生活的困境我一直更害怕的是怯弱\\audio\\bgm.mp3"
+  },
+  "input": {
+    "text": "相比于生活的困境，我一直更害怕的是怯弱的自己。  （只有自己最懂自己，越害怕越回避）",
+    "length": 42
+  },
+  "content_summary": {
+    "emotion": "自我恐惧",
+    "mood": "深夜独处",
+    "tone": "内省低语",
+    "subtitles_count": 6,
+    "storyboard_count": 6,
+    "adjusted_storyboard_count": 6,
+    "target_duration": 16.02,
+    "music_prompt": "minimal cinematic ambient, deep night atmosphere, soft low piano, subtle warm pad, slow tempo, low dynamic range, no vocal, no lyrics, restrained and realistic, not dramatic, mood: 深夜独处, emotion: 自我恐惧",
+    "visual_style": "下班后办公室",
+    "visual_style_id": "late_office_afterhours"
+  },
+  "models": {
+    "text": "config:model",
+    "image": "config:image.model",
+    "speech": "speech-2.8-hd",
+    "music": "music-2.6"
+  },
+  "media": {
+    "video": {
+      "info": {
+        "programs": [],
+        "streams": [
+          {
+            "index": 0,
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 1080,
+            "height": 1920
+          },
+          {
+            "index": 1,
+            "codec_name": "aac",
+            "codec_type": "audio",
+            "sample_rate": "44100",
+            "channels": 2
+          }
+        ],
+        "format": {
+          "duration": "15.960000",
+          "size": "11430517"
+        },
+        "exists": true
+      },
+      "duration": 15.96,
+      "resolution": "1080x1920",
+      "has_audio": true,
+      "volume": {
+        "exists": true,
+        "mean_volume": "-25.8 dB",
+        "max_volume": "-7.1 dB"
+      }
+    },
+    "narration": {
+      "info": {
+        "programs": [],
+        "streams": [
+          {
+            "index": 0,
+            "codec_name": "mp3",
+            "codec_type": "audio",
+            "sample_rate": "32000",
+            "channels": 1
+          }
+        ],
+        "format": {
+          "duration": "15.156000",
+          "size": "244212"
+        },
+        "exists": true
+      },
+      "duration": 15.156
+    },
+    "bgm": {
+      "info": {
+        "programs": [],
+        "streams": [
+          {
+            "index": 0,
+            "codec_name": "mp3",
+            "codec_type": "audio",
+            "sample_rate": "44100",
+            "channels": 2
+          }
+        ],
+        "format": {
+          "duration": "147.147755",
+          "size": "4710703"
+        },
+        "exists": true
+      },
+      "duration": 147.148
+    }
+  },
+  "assets": {
+    "images": [
+      {
+        "name": "scene_01.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_171819_相比于生活的困境我一直更害怕的是怯弱\\images\\scene_01.png",
+        "size": 1152614
+      },
+      {
+        "name": "scene_02.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_171819_相比于生活的困境我一直更害怕的是怯弱\\images\\scene_02.png",
+        "size": 1430295
+      },
+      {
+        "name": "scene_03.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_171819_相比于生活的困境我一直更害怕的是怯弱\\images\\scene_03.png",
+        "size": 1369891
+      },
+      {
+        "name": "scene_04.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_171819_相比于生活的困境我一直更害怕的是怯弱\\images\\scene_04.png",
+        "size": 1094744
+      },
+      {
+        "name": "scene_05.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_171819_相比于生活的困境我一直更害怕的是怯弱\\images\\scene_05.png",
+        "size": 1214794
+      },
+      {
+        "name": "scene_06.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_171819_相比于生活的困境我一直更害怕的是怯弱\\images\\scene_06.png",
+        "size": 1382440
+      }
+    ],
+    "subtitle_images": [
+      {
+        "name": "subtitle_01.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_171819_相比于生活的困境我一直更害怕的是怯弱\\subtitles\\subtitle_01.png",
+        "size": 21003
+      },
+      {
+        "name": "subtitle_03.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_171819_相比于生活的困境我一直更害怕的是怯弱\\subtitles\\subtitle_03.png",
+        "size": 19286
+      },
+      {
+        "name": "subtitle_05.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_171819_相比于生活的困境我一直更害怕的是怯弱\\subtitles\\subtitle_05.png",
+        "size": 18819
+      }
+    ]
+  },
+  "warnings": []
+}

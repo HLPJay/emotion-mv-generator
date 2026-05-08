@@ -22,6 +22,46 @@ python app.py
 
 打开 Gradio 提供的本地地址，输入一句感悟即可生成视频。
 
+## 视觉风格控制
+
+视频默认使用 `随机` 视觉风格。随机不是固定滤镜，而是根据输入文本和情绪做稳定随机选择：同一句输入通常会选择同一个风格，方便复现；不同输入会自然产生差异。
+
+可选风格定义在：
+
+```text
+templates/visual_styles.json
+```
+
+当前内置：
+
+```text
+morning_room_reflection   清晨房间反思
+rainy_evening_commute     雨后通勤
+late_office_afterhours    下班后办公室
+subway_window_reflection  地铁窗影
+warm_table_lamp           暖色台灯
+quiet_cafe_corner         安静咖啡馆
+city_walk_dusk            黄昏城市慢行
+small_apartment_window    小房间窗边
+```
+
+所有风格都遵守统一底线：
+
+```text
+反思，不消沉
+有情绪，但不绝望
+生活化，不广告化
+不过黑，不惊悚
+```
+
+每次生成会在 run 目录保存：
+
+```text
+visual_style.json
+```
+
+报告中也会记录本次使用的视觉风格。
+
 ## 替换文本大模型 API
 
 当前文本模型调用使用 OpenAI-compatible Chat Completions 格式。日常使用直接改：

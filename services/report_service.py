@@ -112,6 +112,7 @@ def build_run_report(run_dir: Path) -> dict:
     subtitle_plan = _read_json(run_dir / "subtitle_plan.json") or {}
     storyboard = _read_json(run_dir / "storyboard.json") or []
     audio_plan = _read_json(run_dir / "audio_plan.json") or {}
+    visual_style = _read_json(run_dir / "visual_style.json") or {}
     adjusted_storyboard = _read_json(run_dir / "adjusted_storyboard.json") or []
 
     final_video = run_dir / "final.mp4"
@@ -160,6 +161,8 @@ def build_run_report(run_dir: Path) -> dict:
             "adjusted_storyboard_count": len(adjusted_storyboard),
             "target_duration": audio_plan.get("target_duration"),
             "music_prompt": (audio_plan.get("music") or {}).get("prompt"),
+            "visual_style": (visual_style.get("style") or {}).get("label"),
+            "visual_style_id": (visual_style.get("style") or {}).get("id"),
         },
         "models": {
             "text": "config:model",
@@ -217,6 +220,7 @@ def render_report_markdown(report: dict) -> str:
 - Emotion: {content.get('emotion')}
 - Mood: {content.get('mood')}
 - Tone: {content.get('tone')}
+- Visual Style: {content.get('visual_style')} (`{content.get('visual_style_id')}`)
 
 ## Structure
 

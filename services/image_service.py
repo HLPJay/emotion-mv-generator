@@ -10,6 +10,8 @@ from pathlib import Path
 import requests
 from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps
 
+from services.visual_style_service import visual_style_prompt
+
 
 ROOT = Path(__file__).resolve().parents[1]
 IMAGE_DIR = ROOT / "generated" / "images"
@@ -87,11 +89,12 @@ def _draw_scene_card(draw: ImageDraw.ImageDraw, scene: str) -> None:
         y += 62
 
 
-def _build_image_prompt(shot: dict, emotion: dict) -> str:
+def _build_image_prompt(shot: dict, emotion: dict, visual_style: dict | None = None) -> str:
     style = emotion.get("style", {})
     return "\n".join(
         [
             "Realistic cinematic vertical photography, 9:16 frame.",
+            visual_style_prompt(visual_style) if visual_style else "Reflective, not depressive. Visible environment detail. Not too dark.",
             f"Scene: {shot['scene']}",
             f"Mood: {emotion.get('mood', 'quiet late night')}",
             f"Emotion: {emotion.get('emotion', 'subtle introspection')}",
@@ -100,8 +103,9 @@ def _build_image_prompt(shot: dict, emotion: dict) -> str:
             f"Palette: {style.get('palette', 'low saturation blue gray')}",
             f"Texture: {style.get('texture', 'subtle film grain')}",
             "Ordinary life, quiet room, human-scale details, restrained emotion.",
+            "Reflective but not hopeless, calm but not gloomy, gentle contrast, visible light.",
             "No subtitles, no text, no logo, no watermark, no poster design.",
-            "Not sci-fi, not fantasy, not advertising, not glossy commercial.",
+            "Not sci-fi, not fantasy, not advertising, not glossy commercial, not horror, not pitch black.",
         ]
     )
 
@@ -113,7 +117,7 @@ def _resize_and_save(image: Image.Image, path: Path) -> Path:
     return path
 
 
-def _generate_minimax_image(shot: dict, emotion: dict, index: int, output_dir: Path) -> Path:
+def _generate_minimax_image(shot: dict, emotion: dict, index: int, output_dir: Path, visual_style: dict | None = None) -> Path:
     config = _image_config()
     api_key = config["api_key"].strip()
     if not api_key:
@@ -123,7 +127,7 @@ def _generate_minimax_image(shot: dict, emotion: dict, index: int, output_dir: P
     url = f"{api_base}/image_generation" if api_base.endswith("/v1") else f"{api_base}/v1/image_generation"
     payload = {
         "model": config["model"],
-        "prompt": _build_image_prompt(shot, emotion),
+        "prompt": _build_image_prompt(shot, emotion, visual_style),
         "aspect_ratio": config["aspect_ratio"],
         "response_format": config["response_format"],
         "n": 1,
@@ -197,7 +201,12 @@ def _generate_placeholder_image(shot: dict, emotion: dict, index: int, output_di
     return path
 
 
-def generate_scene_images(storyboard: list[dict], emotion: dict, output_dir: Path | None = None) -> list[Path]:
+def generate_scene_images(
+    storyboard: list[dict],
+    emotion: dict,
+    output_dir: Path | None = None,
+    visual_style: dict | None = None,
+) -> list[Path]:
     config = _image_config()
     output_dir = output_dir or IMAGE_DIR
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -207,7 +216,7 @@ def generate_scene_images(storyboard: list[dict], emotion: dict, output_dir: Pat
     def generate_one(index: int, shot: dict) -> Path:
         if config["enabled"]:
             try:
-                return _generate_minimax_image(shot, emotion, index, output_dir)
+                return _generate_minimax_image(shot, emotion, index, output_dir, visual_style)
             except Exception:
                 if not config["fallback_on_error"]:
                     raise

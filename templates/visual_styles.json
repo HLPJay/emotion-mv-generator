@@ -1,0 +1,98 @@
+[
+  {
+    "id": "morning_room_reflection",
+    "label": "清晨房间反思",
+    "weight_keywords": ["害怕", "怯弱", "改变", "自己", "开始"],
+    "time_of_day": "early morning",
+    "location_family": "small apartment room, desk, window, bed edge",
+    "light_source": "soft morning window light and gentle reflected light",
+    "palette": "low saturation neutral gray with pale warm highlights",
+    "camera_language": "quiet static frames, slow push, close details of hands and desk",
+    "scene_elements": ["窗边", "桌面", "未完成的笔记", "清晨光", "床沿"],
+    "avoid": ["overly dark frame", "hopeless expression", "horror lighting", "crying breakdown"]
+  },
+  {
+    "id": "rainy_evening_commute",
+    "label": "雨后通勤",
+    "weight_keywords": ["疲惫", "失败", "工作", "回家", "路上", "城市"],
+    "time_of_day": "early evening after rain",
+    "location_family": "bus stop, wet street, crosswalk, shop window",
+    "light_source": "street reflections, shop window glow, soft traffic light",
+    "palette": "cool gray with small warm highlights",
+    "camera_language": "static wide shots, slow close-ups, reflective glass and wet ground",
+    "scene_elements": ["公交站", "湿润街道", "橱窗光", "雨后路面", "低头的人"],
+    "avoid": ["storm disaster mood", "lonely tragedy", "overly dark street"]
+  },
+  {
+    "id": "late_office_afterhours",
+    "label": "下班后办公室",
+    "weight_keywords": ["工作", "职业", "迷茫", "努力", "焦虑", "加班"],
+    "time_of_day": "after work evening",
+    "location_family": "quiet office, elevator hall, empty desks, computer screen",
+    "light_source": "soft office light, monitor glow, distant city light",
+    "palette": "muted gray, soft white, gentle amber accents",
+    "camera_language": "slow pan across empty desks, restrained close-up, ordinary workplace realism",
+    "scene_elements": ["空工位", "电脑屏幕", "电梯间", "玻璃倒影", "未发出的邮件"],
+    "avoid": ["corporate advertisement", "sci-fi office", "dramatic thriller shadows"]
+  },
+  {
+    "id": "subway_window_reflection",
+    "label": "地铁窗影",
+    "weight_keywords": ["孤独", "旁观", "迷茫", "人群", "城市", "回避"],
+    "time_of_day": "late evening commute",
+    "location_family": "subway car, platform, reflective window, moving city lights",
+    "light_source": "soft train interior light and passing city reflections",
+    "palette": "blue gray, muted steel, soft skin tones",
+    "camera_language": "window reflection, profile close-up, quiet movement, shallow depth of field",
+    "scene_elements": ["车窗倒影", "空座位", "站台灯", "移动光影", "沉默侧脸"],
+    "avoid": ["crowd chaos", "action scene", "hopeless isolation"]
+  },
+  {
+    "id": "warm_table_lamp",
+    "label": "暖色台灯",
+    "weight_keywords": ["反思", "自己", "怯弱", "写", "拖延", "决定"],
+    "time_of_day": "quiet night with warm indoor light",
+    "location_family": "desk corner, notebook, lamp, cup, simple room",
+    "light_source": "warm table lamp with visible room detail",
+    "palette": "warm amber, muted gray, soft brown accents",
+    "camera_language": "close detail shots, slow push, intimate desk-level framing",
+    "scene_elements": ["台灯", "笔记本", "水杯", "手指", "桌面纸张"],
+    "avoid": ["black crushed shadows", "gloomy despair", "luxury product shot"]
+  },
+  {
+    "id": "quiet_cafe_corner",
+    "label": "安静咖啡馆",
+    "weight_keywords": ["关系", "失望", "一个人", "等待", "沉默", "想起"],
+    "time_of_day": "late afternoon or early evening",
+    "location_family": "quiet cafe corner, window seat, notebook, city outside",
+    "light_source": "soft window light and small warm interior lamps",
+    "palette": "muted beige gray with warm highlights and natural skin tone",
+    "camera_language": "still frames, soft close-ups, background blur, ordinary realism",
+    "scene_elements": ["窗边座位", "咖啡杯", "笔记本", "街景", "低头沉思"],
+    "avoid": ["commercial cafe ad", "romantic music video", "overly pretty influencer style"]
+  },
+  {
+    "id": "city_walk_dusk",
+    "label": "黄昏城市慢行",
+    "weight_keywords": ["未来", "迷茫", "生活", "走", "城市", "改变"],
+    "time_of_day": "dusk",
+    "location_family": "ordinary city sidewalk, crosswalk, small shops, apartment entrance",
+    "light_source": "dusk sky, shop signs, soft street lamps",
+    "palette": "muted blue gray with gentle orange dusk accents",
+    "camera_language": "slow walking shot, quiet wide frame, reflective close-up",
+    "scene_elements": ["人行道", "斑马线", "小店灯光", "楼道口", "黄昏天空"],
+    "avoid": ["tourism promo", "busy city montage", "dramatic loneliness"]
+  },
+  {
+    "id": "small_apartment_window",
+    "label": "小房间窗边",
+    "weight_keywords": ["困境", "害怕", "孤独", "停滞", "回避", "深夜"],
+    "time_of_day": "evening with visible indoor detail",
+    "location_family": "small apartment window, simple chair, curtain, ordinary belongings",
+    "light_source": "window light mixed with soft indoor lamp",
+    "palette": "neutral blue gray with small warm lamp accent",
+    "camera_language": "quiet profile, window reflection, slow zoom, human-scale framing",
+    "scene_elements": ["窗帘", "椅子", "窗外灯光", "普通房间", "侧影"],
+    "avoid": ["pitch black room", "horror mood", "despairing pose", "crying"]
+  }
+]

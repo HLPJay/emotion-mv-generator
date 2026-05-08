@@ -1,0 +1,48 @@
+{
+  "subtitles": [
+    "相比于生活的困境。",
+    "...",
+    "我一直更害怕的。",
+    "...",
+    "是怯弱的自己。",
+    "..."
+  ],
+  "rhythm": [
+    {
+      "text": "相比于生活的困境。",
+      "pause_type": "none",
+      "duration": 2.2,
+      "reason": "铺垫外部压力"
+    },
+    {
+      "text": "...",
+      "pause_type": "heavy_pause",
+      "duration": 1.3,
+      "reason": "转向内心前的停顿"
+    },
+    {
+      "text": "我一直更害怕的。",
+      "pause_type": "none",
+      "duration": 2.1,
+      "reason": "揭示内心真实"
+    },
+    {
+      "text": "...",
+      "pause_type": "heavy_pause",
+      "duration": 1.4,
+      "reason": "压住核心答案"
+    },
+    {
+      "text": "是怯弱的自己。",
+      "pause_type": "none",
+      "duration": 2.5,
+      "reason": "情绪落点"
+    },
+    {
+      "text": "...",
+      "pause_type": "ending_silence",
+      "duration": 2.0,
+      "reason": "结尾留白"
+    }
+  ]
+}

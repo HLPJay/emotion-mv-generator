@@ -1,0 +1,44 @@
+[
+  {
+    "scene": "深夜的办公区，空荡荡的工位排列着，桌面上的物品整齐摆放，只有角落的一盏小灯还亮着微光",
+    "subtitle": "相比于生活的困境。",
+    "camera": "slow pan",
+    "lighting": "dim overhead fluorescent with monitor glow from one desk",
+    "duration": 2.4
+  },
+  {
+    "scene": "镜头缓缓移动，扫过一排排空椅子，光线在地面上投下淡淡的影子",
+    "subtitle": "...",
+    "camera": "slow pan",
+    "lighting": "soft ambient office light, gentle shadows on floor",
+    "duration": 1.2
+  },
+  {
+    "scene": "一个亮着屏幕的工位前，一只手悬在键盘上方，仿佛要敲下什么却迟迟未动",
+    "subtitle": "我一直更害怕的。",
+    "camera": "gentle handheld",
+    "lighting": "monitor blue-white glow illuminating the hand",
+    "duration": 2.4
+  },
+  {
+    "scene": "办公室的玻璃隔断上映出模糊的倒影，深夜的寂静笼罩着整个空间",
+    "subtitle": "...",
+    "camera": "static shot",
+    "lighting": "distant city light filtering through glass, soft reflection",
+    "duration": 1.2
+  },
+  {
+    "scene": "电梯间的金属门面倒映出身影，那个人独自站在空荡的灯光下，低着头",
+    "subtitle": "是怯弱的自己。",
+    "camera": "slow push",
+    "lighting": "elevator hall warm amber light, gentle contrast on figure",
+    "duration": 2.4
+  },
+  {
+    "scene": "空旷的走廊尽头，安全出口的绿色指示灯安静地亮着，影子在墙角延伸",
+    "subtitle": "...",
+    "camera": "slow pan",
+    "lighting": "emergency exit green glow, soft ambient office light",
+    "duration": 1.2
+  }
+]

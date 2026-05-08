@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from services.llm_service import chat_json, llm_enabled
+from services.visual_style_service import visual_style_prompt
 
 
 CAMERAS = ["slow push", "static shot", "slow pan", "gentle handheld", "slow zoom"]
@@ -31,7 +32,7 @@ SCENE_BANK = {
 }
 
 
-def build_storyboard(reflection: str, emotion: dict, subtitles: list[str]) -> list[dict]:
+def build_storyboard(reflection: str, emotion: dict, subtitles: list[str], visual_style: dict | None = None) -> list[dict]:
     if llm_enabled():
         system_prompt = """
 你是一个生活化电影镜头导演。
@@ -45,6 +46,8 @@ def build_storyboard(reflection: str, emotion: dict, subtitles: list[str]) -> li
 - 不广告化。
 - 不科幻。
 - 不商业大片。
+- 反思而不消沉，画面不能过黑，必须保留可见环境细节。
+- 需要遵守视觉风格设定，但不要让风格覆盖用户情绪。
 - 每条字幕必须对应一个镜头。
 - 只输出 JSON，格式必须是 {"storyboard": [...]}。
 """
@@ -58,6 +61,9 @@ def build_storyboard(reflection: str, emotion: dict, subtitles: list[str]) -> li
 字幕：
 {subtitles}
 
+视觉风格设定：
+{visual_style_prompt(visual_style) if visual_style else "ordinary reflective realism, not depressive, visible light"}
+
 请输出 storyboard，每项包含：
 - scene: 中文生活化电影镜头
 - subtitle: 对应字幕，必须和输入字幕一致
@@ -69,7 +75,10 @@ def build_storyboard(reflection: str, emotion: dict, subtitles: list[str]) -> li
         return result["storyboard"]
 
     keywords = emotion.get("visual_keywords", [])
-    scenes = [SCENE_BANK.get(keyword, f"{keyword}的生活化电影镜头") for keyword in keywords]
+    preferred_elements = (visual_style or {}).get("style", {}).get("scene_elements", [])
+    scenes = [f"{element}里的生活化反思镜头" for element in preferred_elements] or [
+        SCENE_BANK.get(keyword, f"{keyword}的生活化电影镜头") for keyword in keywords
+    ]
     if not scenes:
         scenes = ["深夜房间，一个人安静坐着，像是在和自己对话"]
 
