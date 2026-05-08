@@ -9,6 +9,9 @@ PUNCTUATION_RE = re.compile(r"[。！？!?；;，,\n]+")
 PAUSE_RE = re.compile(r"(\.{3,}|…+)")
 TRAILING_PUNCTUATION_RE = re.compile(r"[。！？!?；;，,.\s]+$")
 MAX_SPOKEN_LINES = 4
+MIN_LINE_CHARS = 6
+FRAGMENT_PREFIXES = ("只是", "因为", "所以", "但是", "可是", "而是", "就", "却", "也", "还")
+FRAGMENT_EXACT = {"只是", "只是每次", "就已经", "因为", "所以", "但是", "可是", "而是"}
 
 
 def _clean_sentence(sentence: str) -> str:
@@ -173,7 +176,52 @@ def _spoken_lines_from_plan(plan: dict) -> tuple[list[str], list[str]]:
         spoken_lines = spoken_lines[:MAX_SPOKEN_LINES]
         actions.append("trimmed_to_max_spoken_lines")
 
-    return spoken_lines, actions
+    merged_lines, merge_actions = _merge_fragments(spoken_lines)
+    actions.extend(merge_actions)
+    return merged_lines, actions
+
+
+def _line_key_text(text: str) -> str:
+    return _dedupe_key(text)
+
+
+def _is_fragment(text: str) -> bool:
+    key = _line_key_text(text)
+    if key in FRAGMENT_EXACT:
+        return True
+    if len(key) < MIN_LINE_CHARS:
+        return True
+    return any(key.startswith(prefix) and len(key) <= 6 for prefix in FRAGMENT_PREFIXES)
+
+
+def _merge_fragments(lines: list[str]) -> tuple[list[str], list[str]]:
+    if not lines:
+        return lines, []
+
+    actions = []
+    merged: list[str] = []
+    index = 0
+    while index < len(lines):
+        current = lines[index]
+        if _is_fragment(current) and index + 1 < len(lines):
+            combined = _ensure_sentence(TRAILING_PUNCTUATION_RE.sub("", current) + TRAILING_PUNCTUATION_RE.sub("", lines[index + 1]))
+            merged.append(combined)
+            actions.append("merged_semantic_fragment")
+            index += 2
+            continue
+        if _is_fragment(current) and merged:
+            previous = TRAILING_PUNCTUATION_RE.sub("", merged[-1])
+            merged[-1] = _ensure_sentence(previous + TRAILING_PUNCTUATION_RE.sub("", current))
+            actions.append("merged_semantic_fragment")
+            index += 1
+            continue
+        merged.append(current)
+        index += 1
+
+    if len(merged) > MAX_SPOKEN_LINES:
+        merged = merged[:MAX_SPOKEN_LINES]
+        actions.append("trimmed_to_max_spoken_lines")
+    return merged, actions
 
 
 def _rebuild_rhythm(spoken_lines: list[str]) -> dict:

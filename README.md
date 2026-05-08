@@ -169,6 +169,24 @@ generated/runs/<run_id>/run_events.jsonl
 
 报告中如果字幕被守门器修正，会出现 `subtitle_guard_changed` warning。
 
+字幕还会做语义防碎句处理：
+
+```text
+避免 “只是每次。” / “就已经。” 这类半句话独立出现
+自动合并过短连接句
+保持字幕是语义完整短句
+```
+
+字幕视觉使用偏大的电影感样式：
+
+```text
+字号约 62，长句自动略微缩小
+最多 2 行
+位置在画面约 69% 高度
+柔白文字 + 轻阴影
+淡入 0.28s / 淡出 0.38s
+```
+
 ## 替换文本大模型 API
 
 当前文本模型调用使用 OpenAI-compatible Chat Completions 格式。日常使用直接改：

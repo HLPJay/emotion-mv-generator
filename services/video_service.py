@@ -26,6 +26,18 @@ MUSIC_DIR.mkdir(parents=True, exist_ok=True)
 
 SIZE = (1080, 1920)
 FPS = 24
+SUBTITLE_STYLE = {
+    "font_size": 62,
+    "min_font_size": 52,
+    "fill": (244, 244, 238, 242),
+    "shadow": (0, 0, 0, 135),
+    "position_y_ratio": 0.69,
+    "max_chars_per_line": 13,
+    "max_lines": 2,
+    "line_height_ratio": 1.34,
+    "fade_in": 0.28,
+    "fade_out": 0.38,
+}
 
 
 def _font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
@@ -46,30 +58,48 @@ def _subtitle_png(text: str, index: int, output_dir: Path) -> Path | None:
 
     image = Image.new("RGBA", SIZE, (0, 0, 0, 0))
     draw = ImageDraw.Draw(image)
-    font = _font(54)
-    lines = []
-    current = ""
-    for char in text:
-        current += char
-        if len(current) >= 12:
-            lines.append(current)
-            current = ""
-    if current:
-        lines.append(current)
+    lines, font_size = _layout_subtitle_lines(text)
+    font = _font(font_size)
 
-    line_height = 76
+    line_height = int(font_size * SUBTITLE_STYLE["line_height_ratio"])
     block_height = line_height * len(lines)
-    y = 1330 - block_height // 2
+    y = int(SIZE[1] * SUBTITLE_STYLE["position_y_ratio"]) - block_height // 2
     for line in lines:
         bbox = draw.textbbox((0, 0), line, font=font)
         x = (SIZE[0] - (bbox[2] - bbox[0])) // 2
-        draw.text((x + 2, y + 2), line, fill=(0, 0, 0, 128), font=font)
-        draw.text((x, y), line, fill=(238, 241, 238, 245), font=font)
+        shadow = SUBTITLE_STYLE["shadow"]
+        fill = SUBTITLE_STYLE["fill"]
+        draw.text((x + 2, y + 2), line, fill=shadow, font=font)
+        draw.text((x, y), line, fill=fill, font=font)
         y += line_height
 
     path = output_dir / f"subtitle_{index:02d}.png"
     image.save(path)
     return path
+
+
+def _layout_subtitle_lines(text: str) -> tuple[list[str], int]:
+    clean = text.strip()
+    max_chars = SUBTITLE_STYLE["max_chars_per_line"]
+    max_lines = SUBTITLE_STYLE["max_lines"]
+    font_size = SUBTITLE_STYLE["font_size"]
+
+    if len(clean) <= max_chars:
+        return [clean], font_size
+
+    if len(clean) <= max_chars * max_lines:
+        split_at = len(clean) // 2
+        punctuation_points = [pos + 1 for pos, char in enumerate(clean) if char in "，,。！？!?；;"]
+        if punctuation_points:
+            split_at = min(punctuation_points, key=lambda pos: abs(pos - len(clean) / 2))
+        return [clean[:split_at].strip(), clean[split_at:].strip()], font_size
+
+    font_size = max(SUBTITLE_STYLE["min_font_size"], int(font_size * max_chars * max_lines / len(clean)))
+    first = clean[:max_chars].strip()
+    second = clean[max_chars : max_chars * 2 - 1].strip()
+    if len(clean) > max_chars * 2 - 1:
+        second = second.rstrip("。！？!?，,；;") + "…"
+    return [first, second], font_size
 
 
 def _make_ambient_bgm(duration: float, emotion: dict, output_dir: Path | None = None) -> Path:
@@ -140,7 +170,11 @@ def compose_video(
         )
         subtitle_path = _subtitle_png(shot["subtitle"], index, subtitle_dir)
         if subtitle_path:
-            subtitle_clip = ImageClip(str(subtitle_path)).with_duration(duration)
+            fade_in = min(SUBTITLE_STYLE["fade_in"], duration / 4)
+            fade_out = min(SUBTITLE_STYLE["fade_out"], duration / 4)
+            subtitle_clip = ImageClip(str(subtitle_path)).with_duration(duration).with_effects(
+                [vfx.FadeIn(fade_in), vfx.FadeOut(fade_out)]
+            )
             base_clip = CompositeVideoClip([base_clip, subtitle_clip], size=SIZE)
         clips.append(base_clip)
 
