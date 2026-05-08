@@ -1,0 +1,44 @@
+[
+  {
+    "scene": "深夜，台灯已熄。镜头透过半掩的窗帘缝隙，捕捉窗边一个静止的侧影，人物面向黑暗的窗外，呼吸缓慢。",
+    "subtitle": "相比于生活的困境。",
+    "camera": "slow push",
+    "lighting": "cold ambient window light, barely visible silhouette",
+    "duration": 2.4
+  },
+  {
+    "scene": "空荡的走廊尽头，一盏感应灯刚刚熄灭，只剩微弱的绿色指示灯闪烁。脚步声已经远去，画面归于寂静。",
+    "subtitle": "...",
+    "camera": "static shot",
+    "lighting": "near darkness, faint green standby glow",
+    "duration": 1.2
+  },
+  {
+    "scene": "浴室的镜子前，水汽已散。镜头缓慢推进，映出一张疲惫的脸——不是愤怒，不是悲伤，只是平静地注视着自己。",
+    "subtitle": "我一直更害怕的。",
+    "camera": "slow push",
+    "lighting": "single overhead fluorescent, slight flicker, cold blue tint",
+    "duration": 2.4
+  },
+  {
+    "scene": "熄灭的台灯旁，一杯水已经凉透。窗外路灯的光透过纱帘，在桌面投下模糊的影子，没有人在。",
+    "subtitle": "...",
+    "camera": "gentle handheld",
+    "lighting": "distant street lamp through sheer fabric, very dim",
+    "duration": 1.2
+  },
+  {
+    "scene": "人物站在穿衣镜前，没有开灯。镜中的倒影比现实中显得更小、更远。镜头缓缓拉近那面镜子，直到几乎贴上镜面。",
+    "subtitle": "是怯弱的自己。",
+    "camera": "slow zoom",
+    "lighting": "room light from hallway, reflected twice through mirror",
+    "duration": 2.4
+  },
+  {
+    "scene": "夜色已深。窗帘完全拉上，房间里只剩呼吸的声音。镜头缓缓摇向黑暗的角落，然后停在空荡荡的椅子上。",
+    "subtitle": "...",
+    "camera": "slow pan",
+    "lighting": "absolute darkness with the faintest ambient undertone",
+    "duration": 1.2
+  }
+]

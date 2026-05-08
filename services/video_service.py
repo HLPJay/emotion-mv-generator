@@ -7,9 +7,12 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
 try:
-    from moviepy.editor import AudioFileClip, CompositeVideoClip, ImageClip, concatenate_videoclips, vfx
+    from moviepy.editor import AudioFileClip, CompositeAudioClip, CompositeVideoClip, ImageClip, concatenate_videoclips, vfx
 except ImportError:
-    from moviepy import AudioFileClip, CompositeVideoClip, ImageClip, concatenate_videoclips, vfx
+    from moviepy import AudioFileClip, CompositeAudioClip, CompositeVideoClip, ImageClip, concatenate_videoclips, vfx
+
+from services.audio_service import generate_narration_audio
+from services.music_service import generate_music_audio
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -37,7 +40,7 @@ def _font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
     return ImageFont.load_default()
 
 
-def _subtitle_png(text: str, index: int) -> Path | None:
+def _subtitle_png(text: str, index: int, output_dir: Path) -> Path | None:
     if text == "...":
         return None
 
@@ -64,13 +67,15 @@ def _subtitle_png(text: str, index: int) -> Path | None:
         draw.text((x, y), line, fill=(238, 241, 238, 245), font=font)
         y += line_height
 
-    path = SUBTITLE_DIR / f"subtitle_{index:02d}.png"
+    path = output_dir / f"subtitle_{index:02d}.png"
     image.save(path)
     return path
 
 
-def _make_ambient_bgm(duration: float, emotion: dict) -> Path:
-    bgm_path = MUSIC_DIR / "generated_ambient.wav"
+def _make_ambient_bgm(duration: float, emotion: dict, output_dir: Path | None = None) -> Path:
+    output_dir = output_dir or MUSIC_DIR
+    output_dir.mkdir(parents=True, exist_ok=True)
+    bgm_path = output_dir / "generated_ambient.wav"
     sample_rate = 44100
     mood = emotion.get("mood", "")
     base_freq = 146 if "压抑" in mood or "深夜" in mood else 174
@@ -86,7 +91,7 @@ def _make_ambient_bgm(duration: float, emotion: dict) -> Path:
             envelope = min(1.0, t / 2.0, max(0.0, (duration - t) / 2.0))
             wave_a = math.sin(2 * math.pi * base_freq * t)
             wave_b = math.sin(2 * math.pi * (base_freq * 1.5) * t) * 0.35
-            sample = int((wave_a + wave_b) * envelope * 900)
+            sample = int((wave_a + wave_b) * envelope * 4200)
             frames.extend(sample.to_bytes(2, byteorder="little", signed=True))
         wav.writeframes(bytes(frames))
 
@@ -113,25 +118,75 @@ def _clip_with_motion(image_path: Path, duration: float, index: int):
     )
 
 
-def compose_video(storyboard: list[dict], image_paths: list[Path], emotion: dict) -> Path:
+def compose_video(
+    storyboard: list[dict],
+    image_paths: list[Path],
+    emotion: dict,
+    audio_plan: dict | None = None,
+    output_dir: Path | None = None,
+) -> Path:
+    output_dir = output_dir or VIDEO_DIR
+    output_dir.mkdir(parents=True, exist_ok=True)
+    subtitle_dir = output_dir / "subtitles"
+    audio_dir = output_dir / "audio"
+    subtitle_dir.mkdir(parents=True, exist_ok=True)
+    audio_dir.mkdir(parents=True, exist_ok=True)
+
     clips = []
     for index, (shot, image_path) in enumerate(zip(storyboard, image_paths), start=1):
         duration = float(shot.get("duration", 2.0))
         base_clip = _clip_with_motion(image_path, duration, index).with_effects(
             [vfx.FadeIn(0.35), vfx.FadeOut(0.35)]
         )
-        subtitle_path = _subtitle_png(shot["subtitle"], index)
+        subtitle_path = _subtitle_png(shot["subtitle"], index, subtitle_dir)
         if subtitle_path:
             subtitle_clip = ImageClip(str(subtitle_path)).with_duration(duration)
             base_clip = CompositeVideoClip([base_clip, subtitle_clip], size=SIZE)
         clips.append(base_clip)
 
     video = concatenate_videoclips(clips, method="compose")
-    bgm_path = _make_ambient_bgm(video.duration, emotion)
-    audio = AudioFileClip(str(bgm_path)).with_volume_scaled(0.55)
+    audio_clips = []
+    mix_plan = (audio_plan or {}).get("mix", {})
+    ambient = None
+    music = None
+
+    try:
+        music_path = generate_music_audio(audio_plan or {}, audio_dir)
+    except Exception:
+        music_path = None
+
+    if music_path:
+        music_volume = float(mix_plan.get("music_volume", (audio_plan or {}).get("music", {}).get("volume", 0.22)))
+        music = AudioFileClip(str(music_path))
+        if music.duration < video.duration:
+            music = music.with_duration(video.duration)
+        else:
+            music = music.subclipped(0, video.duration)
+        audio_clips.append(music.with_volume_scaled(music_volume))
+    else:
+        bgm_path = _make_ambient_bgm(video.duration, emotion, audio_dir)
+        ambient_volume = float(mix_plan.get("ambient_fallback_volume", 0.18))
+        ambient = AudioFileClip(str(bgm_path)).with_volume_scaled(ambient_volume)
+        audio_clips.append(ambient)
+
+    narration_path = generate_narration_audio(audio_plan or storyboard, audio_dir)
+    narration = None
+    if narration_path:
+        narration_volume = float(mix_plan.get("narration_volume", 1.0))
+        narration = AudioFileClip(str(narration_path)).with_volume_scaled(narration_volume)
+        if narration.duration + 0.4 > video.duration:
+            extension = narration.duration + 0.8 - video.duration
+            if extension > 0 and clips:
+                last = clips[-1].with_duration(clips[-1].duration + extension)
+                clips[-1] = last
+                video.close()
+                video = concatenate_videoclips(clips, method="compose")
+        audio_clips.append(narration)
+
+    audio = CompositeAudioClip(audio_clips).with_duration(video.duration)
     video = video.with_audio(audio)
 
-    output = VIDEO_DIR / "final.mp4"
+    output = output_dir / "final.mp4"
     video.write_videofile(
         str(output),
         fps=FPS,
@@ -142,6 +197,12 @@ def compose_video(storyboard: list[dict], image_paths: list[Path], emotion: dict
         logger=None,
     )
     audio.close()
+    if ambient:
+        ambient.close()
+    if music:
+        music.close()
+    if narration:
+        narration.close()
     video.close()
     for clip in clips:
         clip.close()

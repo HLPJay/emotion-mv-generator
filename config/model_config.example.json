@@ -13,6 +13,30 @@
     "aspect_ratio": "9:16",
     "response_format": "base64",
     "prompt_optimizer": true,
+    "max_workers": 3,
+    "fallback_on_error": true
+  },
+  "audio": {
+    "enabled": true,
+    "provider": "minimax",
+    "api_base": "https://api.minimaxi.com",
+    "model": "speech-2.8-hd",
+    "api_key": "",
+    "voice_id": "male-qn-qingse",
+    "speed": 0.88,
+    "vol": 1.0,
+    "pitch": -1,
+    "emotion": "sad",
+    "output_format": "hex",
+    "fallback_on_error": true
+  },
+  "music": {
+    "enabled": true,
+    "provider": "minimax",
+    "api_base": "https://api.minimaxi.com",
+    "model": "music-2.6",
+    "api_key": "",
+    "output_format": "hex",
     "fallback_on_error": true
   }
 }

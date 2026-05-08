@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import hashlib
 import json
 import textwrap
@@ -42,6 +43,7 @@ def _image_config() -> dict:
         "response_format": image_config.get("response_format", "base64"),
         "prompt_optimizer": bool(image_config.get("prompt_optimizer", True)),
         "fallback_on_error": bool(image_config.get("fallback_on_error", True)),
+        "max_workers": int(image_config.get("max_workers", 3)),
     }
 
 
@@ -111,7 +113,7 @@ def _resize_and_save(image: Image.Image, path: Path) -> Path:
     return path
 
 
-def _generate_minimax_image(shot: dict, emotion: dict, index: int) -> Path:
+def _generate_minimax_image(shot: dict, emotion: dict, index: int, output_dir: Path) -> Path:
     config = _image_config()
     api_key = config["api_key"].strip()
     if not api_key:
@@ -140,7 +142,7 @@ def _generate_minimax_image(shot: dict, emotion: dict, index: int) -> Path:
     if data.get("base_resp", {}).get("status_code") not in (None, 0):
         raise ImageGenerationError(f"MiniMax image generation failed: {data}")
 
-    output = IMAGE_DIR / f"scene_{index:02d}.png"
+    output = output_dir / f"scene_{index:02d}.png"
     image_data = data.get("data", {})
     if config["response_format"] == "base64":
         images = image_data.get("image_base64") or image_data.get("images") or []
@@ -163,7 +165,7 @@ def _generate_minimax_image(shot: dict, emotion: dict, index: int) -> Path:
     return _resize_and_save(image, output)
 
 
-def _generate_placeholder_image(shot: dict, emotion: dict, index: int) -> Path:
+def _generate_placeholder_image(shot: dict, emotion: dict, index: int, output_dir: Path) -> Path:
     base_mood = emotion.get("mood", "night")
     scene = shot["scene"]
     base = _seed_color(scene + base_mood)
@@ -190,25 +192,35 @@ def _generate_placeholder_image(shot: dict, emotion: dict, index: int) -> Path:
     _draw_scene_card(draw, scene)
     draw.text((92, 1560), shot["lighting"], fill=(126, 142, 153), font=_font(30))
 
-    path = IMAGE_DIR / f"scene_{index:02d}.png"
+    path = output_dir / f"scene_{index:02d}.png"
     image.save(path)
     return path
 
 
-def generate_scene_images(storyboard: list[dict], emotion: dict) -> list[Path]:
-    paths: list[Path] = []
+def generate_scene_images(storyboard: list[dict], emotion: dict, output_dir: Path | None = None) -> list[Path]:
     config = _image_config()
+    output_dir = output_dir or IMAGE_DIR
+    output_dir.mkdir(parents=True, exist_ok=True)
+    for old_image in output_dir.glob("scene_*.png"):
+        old_image.unlink()
 
-    for index, shot in enumerate(storyboard, start=1):
+    def generate_one(index: int, shot: dict) -> Path:
         if config["enabled"]:
             try:
-                path = _generate_minimax_image(shot, emotion, index)
+                return _generate_minimax_image(shot, emotion, index, output_dir)
             except Exception:
                 if not config["fallback_on_error"]:
                     raise
-                path = _generate_placeholder_image(shot, emotion, index)
-        else:
-            path = _generate_placeholder_image(shot, emotion, index)
-        paths.append(path)
+                return _generate_placeholder_image(shot, emotion, index, output_dir)
+        return _generate_placeholder_image(shot, emotion, index, output_dir)
 
-    return paths
+    indexed_shots = list(enumerate(storyboard, start=1))
+    max_workers = max(1, min(config["max_workers"], len(indexed_shots) or 1))
+    results: dict[int, Path] = {}
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = {executor.submit(generate_one, index, shot): index for index, shot in indexed_shots}
+        for future in as_completed(futures):
+            index = futures[future]
+            results[index] = future.result()
+
+    return [results[index] for index, _ in indexed_shots]

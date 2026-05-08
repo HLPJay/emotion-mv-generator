@@ -3,8 +3,11 @@ from typing import Any
 
 import gradio as gr
 
+from services.audio_plan_service import build_audio_plan
 from services.emotion_service import analyze_emotion
 from services.image_service import generate_scene_images
+from services.report_service import write_run_report
+from services.run_service import create_run_dir, write_json, write_text
 from services.storyboard_service import build_storyboard
 from services.subtitle_service import build_subtitle_plan
 from services.video_service import compose_video
@@ -23,17 +26,26 @@ def generate_reflection_video(reflection: str) -> tuple[str, dict[str, Any], lis
     if not reflection:
         raise gr.Error("请先输入一句真实感悟。")
 
+    run_dir = create_run_dir(reflection)
+    write_text(run_dir / "input.txt", reflection)
+
     emotion = analyze_emotion(reflection)
+    write_json(run_dir / "emotion.json", emotion)
     subtitle_plan = build_subtitle_plan(reflection)
+    write_json(run_dir / "subtitle_plan.json", subtitle_plan)
     subtitles = subtitle_plan["subtitles"]
     storyboard = build_storyboard(reflection, emotion, subtitles)
-    for shot, rhythm_item in zip(storyboard, subtitle_plan["rhythm"]):
-        shot["duration"] = rhythm_item["duration"]
-        shot["pause_type"] = rhythm_item["pause_type"]
-    image_paths = generate_scene_images(storyboard, emotion)
-    video_path = compose_video(storyboard, image_paths, emotion)
+    write_json(run_dir / "storyboard.json", storyboard)
+    audio_plan = build_audio_plan(subtitle_plan, emotion, storyboard)
+    write_json(run_dir / "audio_plan.json", audio_plan)
+    adjusted_storyboard = audio_plan["adjusted_storyboard"]
+    write_json(run_dir / "adjusted_storyboard.json", adjusted_storyboard)
+    image_paths = generate_scene_images(adjusted_storyboard, emotion, run_dir / "images")
+    video_path = compose_video(adjusted_storyboard, image_paths, emotion, audio_plan, run_dir)
+    write_text(run_dir / "output_path.txt", str(video_path))
+    write_run_report(run_dir)
 
-    return str(video_path), emotion, storyboard
+    return str(video_path), emotion, adjusted_storyboard
 
 
 with gr.Blocks(title="AI Reflection Video Generator") as demo:
