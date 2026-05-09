@@ -234,7 +234,7 @@ V2 待优化：
 
 执行步骤：
 - [x] 阶段 1：新增 `semantic_structure.json`，只观察完整句语义、语义单元、关系图、叙事弧线、视觉指导和质量检查，不替换现有 expression/subtitle。
-- [ ] 阶段 2：将 `semantic_structure` 注入 `narrative_plan` 和 `image_prompt`，让镜头绑定 `sentence_id / semantic_unit_id`。
+- [x] 阶段 2：将 `semantic_structure` 注入 `narrative_plan` 和 `image_prompt`，让镜头绑定 `sentence_id / semantic_unit_id`。
 - [ ] 阶段 3：让 `expression_plan` 优先基于 `semantic_units` 生成字幕和旁白。
 - [ ] 阶段 4：让 `subtitle_plan` 收敛为节奏模块，只处理停顿、显示和安全修正。
 - [ ] 阶段 5：报告展示 semantic quality，检查完整语义是否被保留、拆分是否覆盖全文、镜头是否绑定语义单元。

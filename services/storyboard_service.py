@@ -77,6 +77,11 @@ def _apply_narrative_fields(shot: dict, narrative: dict | None) -> dict:
     shot["parenthetical_relationship"] = narrative.get("parenthetical_relationship", shot.get("parenthetical_relationship", ""))
     shot["parenthetical_theme"] = narrative.get("parenthetical_theme", shot.get("parenthetical_theme", ""))
     shot["question_strategy"] = narrative.get("question_strategy", shot.get("question_strategy", ""))
+    shot["semantic_unit_id"] = narrative.get("semantic_unit_id", shot.get("semantic_unit_id", ""))
+    shot["sentence_id"] = narrative.get("sentence_id", shot.get("sentence_id", ""))
+    shot["sentence_macro_meaning"] = narrative.get("sentence_macro_meaning", shot.get("sentence_macro_meaning", ""))
+    shot["unit_meaning"] = narrative.get("unit_meaning", shot.get("unit_meaning", ""))
+    shot["visual_role"] = narrative.get("visual_role", shot.get("visual_role", ""))
     if narrative.get("camera_intent"):
         shot["camera_intent"] = narrative["camera_intent"]
     return shot
@@ -172,6 +177,7 @@ def build_storyboard(
     visual_poetic_plan: dict | None = None,
     narrative_plan: dict | None = None,
     input_structure: dict | None = None,
+    semantic_structure: dict | None = None,
 ) -> list[dict]:
     if llm_enabled():
         system_prompt = """
@@ -215,6 +221,9 @@ def build_storyboard(
 输入结构分析：
 {input_structure or {}}
 
+语境拆分结构：
+{semantic_structure or {}}
+
 视觉风格设定：
 {visual_style_prompt(visual_style) if visual_style else "ordinary reflective realism, not depressive, visible light"}
 
@@ -229,6 +238,7 @@ def build_storyboard(
 - visual_intent: 这一镜应该服务的视觉意图
 - parenthetical_relationship: 如果来自括号层，填写括号关系，否则为空
 - question_strategy: 如果来自反问/提问，填写悬置策略，否则为空
+- semantic_unit_id / sentence_id / sentence_macro_meaning / unit_meaning / visual_role: 优先来自镜头叙事计划
 - camera: slow push / static shot / slow pan / gentle handheld / slow zoom 之一
 - lighting: 英文简短光线描述
 - duration: 数字，只有字幕完全等于 "..." 时才填 1.2，其他字幕填 2.4

@@ -415,7 +415,7 @@ def generate_reflection_video(
         start_step("narrative_plan")
         yield emit()
         with track_step(run_dir, "narrative_plan"):
-            narrative_plan = build_narrative_plan(reflection, expression_plan, visual_poetic_plan, emotion, input_structure)
+            narrative_plan = build_narrative_plan(reflection, expression_plan, visual_poetic_plan, emotion, input_structure, semantic_structure)
         write_json(run_dir / "narrative_plan.json", narrative_plan)
         _refresh_step_state_from_events(step_state, run_dir)
 
@@ -440,6 +440,7 @@ def generate_reflection_video(
                 visual_poetic_plan,
                 narrative_plan,
                 input_structure,
+                semantic_structure,
             )
         write_json(run_dir / "storyboard.json", storyboard)
         _refresh_step_state_from_events(step_state, run_dir)

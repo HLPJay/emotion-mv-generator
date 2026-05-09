@@ -118,6 +118,9 @@ def _build_image_prompt(
     parenthetical_relationship = shot.get("parenthetical_relationship", "")
     parenthetical_theme = shot.get("parenthetical_theme", "")
     question_strategy = shot.get("question_strategy", "")
+    sentence_macro_meaning = shot.get("sentence_macro_meaning", "")
+    unit_meaning = shot.get("unit_meaning", "")
+    visual_role = shot.get("visual_role", "")
 
     prompt = "\n".join(
         [
@@ -129,6 +132,9 @@ def _build_image_prompt(
             f"Visual intent: {visual_intent}.",
             f"Parenthetical layer relationship: {parenthetical_relationship}. Parenthetical theme: {parenthetical_theme}.",
             f"Question or rhetorical strategy: {question_strategy}.",
+            f"Sentence macro meaning: {sentence_macro_meaning}.",
+            f"Semantic unit meaning: {unit_meaning}. Visual role: {visual_role}.",
+            "The semantic unit is an execution detail; it must stay aligned with the full sentence macro meaning.",
             "If this frame belongs to the parenthetical layer, keep the same visual world but show the second-layer meaning; do not merely repeat the main pressure image.",
             f"One-video visual world: {poetic_world.get('label', shot.get('visual_world', 'ordinary reflective world'))}; {poetic_world.get('texture', '')}.",
             f"Visual archetype: {poetic_archetype.get('label', '')}; relation: {poetic_archetype.get('core_relation', '')}; motion: {poetic_archetype.get('emotional_motion', '')}.",

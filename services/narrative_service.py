@@ -107,6 +107,41 @@ def _spoken_units(expression_plan: dict | None) -> list[dict]:
     return [unit for unit in expression_plan.get("units", []) if unit.get("subtitle_text")]
 
 
+def _semantic_units(semantic_structure: dict | None) -> list[dict]:
+    return (semantic_structure or {}).get("semantic_units", []) or []
+
+
+def _sentence_by_id(semantic_structure: dict | None) -> dict[str, dict]:
+    return {
+        sentence.get("id"): sentence
+        for sentence in (semantic_structure or {}).get("sentences", [])
+        if sentence.get("id")
+    }
+
+
+def _semantic_for_index(semantic_units: list[dict], index: int) -> dict:
+    if not semantic_units:
+        return {}
+    return semantic_units[min(index, len(semantic_units) - 1)]
+
+
+def _function_from_semantic(semantic_unit: dict, fallback: dict) -> dict:
+    unit_function = semantic_unit.get("function")
+    if unit_function == "burden":
+        return DEFAULT_FUNCTIONS[1]
+    if unit_function == "direction":
+        return DEFAULT_FUNCTIONS[4]
+    if unit_function == "reveal":
+        return DEFAULT_FUNCTIONS[2]
+    if unit_function == "challenge":
+        return DEFAULT_FUNCTIONS[3]
+    if unit_function == "echo":
+        return DEFAULT_FUNCTIONS[5]
+    if unit_function == "core_claim":
+        return DEFAULT_FUNCTIONS[2]
+    return fallback
+
+
 def _world_id(visual_poetic_plan: dict | None) -> str:
     return str(((visual_poetic_plan or {}).get("world") or {}).get("id") or "ordinary_life")
 
@@ -134,8 +169,11 @@ def _fallback_narrative_plan(
     visual_poetic_plan: dict | None,
     emotion: dict | None,
     input_structure: dict | None = None,
+    semantic_structure: dict | None = None,
 ) -> dict:
     units = _spoken_units(expression_plan)
+    semantic_units = _semantic_units(semantic_structure)
+    sentences = _sentence_by_id(semantic_structure)
     world_id = _world_id(visual_poetic_plan)
     world = WORLD_INTENTS.get(world_id, WORLD_INTENTS["ordinary_life"])
     shots = []
@@ -146,8 +184,17 @@ def _fallback_narrative_plan(
     question_analysis = (input_structure or {}).get("question_analysis", {})
     for index, unit in enumerate(units):
         role = unit.get("role", "primary")
+        semantic_unit = _semantic_for_index(semantic_units, index)
+        sentence = sentences.get(semantic_unit.get("sentence_id"), {})
         function = _function_for_index(index, total, role)
+        function = _function_from_semantic(semantic_unit, function)
         visual = world["visuals"][min(index, len(world["visuals"]) - 1)]
+        if semantic_unit:
+            visual = (
+                f"{visual}。语义单元：{semantic_unit.get('meaning', semantic_unit.get('text', ''))}。"
+                f"完整句语义：{sentence.get('macro_meaning', '')}。"
+                f"视觉职责：{semantic_unit.get('visual_role', '')}。"
+            )
         if role == "secondary":
             target = transition.get("to") or parenthetical_theme or visual
             visual = f"括号层进入，关系是 {relationship}。不要重复前半段压力画面，转向：{target}。同一视觉世界中保留连续人物和光线。"
@@ -172,6 +219,11 @@ def _fallback_narrative_plan(
                 "parenthetical_relationship": relationship if role == "secondary" else "",
                 "parenthetical_theme": parenthetical_theme if role == "secondary" else "",
                 "question_strategy": question_analysis.get("strategy_hint", "") if role == "question" else "",
+                "semantic_unit_id": semantic_unit.get("id", ""),
+                "sentence_id": semantic_unit.get("sentence_id", ""),
+                "sentence_macro_meaning": sentence.get("macro_meaning", ""),
+                "unit_meaning": semantic_unit.get("meaning", ""),
+                "visual_role": semantic_unit.get("visual_role", ""),
             }
         )
     return {
@@ -181,6 +233,12 @@ def _fallback_narrative_plan(
         "principle": "每个镜头必须承担叙事任务，而不是只做关键词配图。",
         "source_text": reflection,
         "input_structure": input_structure or {},
+        "semantic_structure_summary": {
+            "sentence_count": len((semantic_structure or {}).get("sentences", [])),
+            "unit_count": len(semantic_units),
+            "narrative_arc": (semantic_structure or {}).get("narrative_arc", {}),
+            "visual_guidance": (semantic_structure or {}).get("visual_guidance", {}),
+        },
         "shots": shots,
     }
 
@@ -211,8 +269,9 @@ def build_narrative_plan(
     visual_poetic_plan: dict | None,
     emotion: dict | None = None,
     input_structure: dict | None = None,
+    semantic_structure: dict | None = None,
 ) -> dict:
-    fallback = _fallback_narrative_plan(reflection, expression_plan, visual_poetic_plan, emotion, input_structure)
+    fallback = _fallback_narrative_plan(reflection, expression_plan, visual_poetic_plan, emotion, input_structure, semantic_structure)
     if not llm_enabled():
         return fallback
 
@@ -238,6 +297,9 @@ def build_narrative_plan(
 输入结构分析：
 {input_structure or {}}
 
+语境拆分结构：
+{semantic_structure or {}}
+
 请输出：
 {{
   "arc": "整条视频的情绪弧线",
@@ -256,7 +318,12 @@ def build_narrative_plan(
       "generation_mode": "text_to_image",
       "parenthetical_relationship": "如果本镜来自括号层，填写括号和主句关系，否则为空",
       "parenthetical_theme": "如果本镜来自括号层，填写括号主题，否则为空",
-      "question_strategy": "如果本镜来自反问/提问，填写悬置策略，否则为空"
+      "question_strategy": "如果本镜来自反问/提问，填写悬置策略，否则为空",
+      "semantic_unit_id": "绑定的 semantic unit id",
+      "sentence_id": "绑定的完整句 id",
+      "sentence_macro_meaning": "完整句宏观语义",
+      "unit_meaning": "当前语义单元含义",
+      "visual_role": "当前语义单元的视觉职责"
     }}
   ]
 }}

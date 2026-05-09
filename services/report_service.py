@@ -215,6 +215,9 @@ def build_run_report(run_dir: Path) -> dict:
                     "function": shot.get("function"),
                     "purpose": shot.get("purpose"),
                     "visual_intent": shot.get("visual_intent"),
+                    "semantic_unit_id": shot.get("semantic_unit_id"),
+                    "sentence_id": shot.get("sentence_id"),
+                    "visual_role": shot.get("visual_role"),
                 }
                 for shot in narrative_plan.get("shots", [])
             ],
