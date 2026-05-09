@@ -53,6 +53,138 @@ def _select_scored(items: dict, text: str, *, best_fit_random: bool = True) -> t
     return picked_id, picked, 0
 
 
+def _contains_any(text: str, keywords: list[str]) -> bool:
+    return any(keyword and keyword in text for keyword in keywords)
+
+
+def _count_matches(text: str, keywords: list[str]) -> int:
+    return sum(1 for keyword in keywords if keyword and keyword in text)
+
+
+def _score_world_item(text: str, world_id: str, world: dict) -> tuple[int, list[str]]:
+    score = _score_item(text, world)
+    reasons: list[str] = []
+
+    productivity_tokens = [
+        "习惯",
+        "沉淀",
+        "行动",
+        "执行",
+        "待办",
+        "遗留",
+        "闭环",
+        "笔记",
+        "电脑",
+        "草稿",
+        "发布",
+        "完成",
+    ]
+    cognition_to_action_tokens = ["认知", "蜕变", "优秀", "力竭", "对齐"]
+    explicit_train_tokens = ["火车", "列车", "车窗", "站台", "车票", "铁轨", "行李", "旅途", "远行"]
+    explicit_ocean_tokens = ["海", "海边", "大海", "海岸", "潮水", "潮线", "浪", "沙滩"]
+    explicit_cosmos_tokens = ["宇宙", "星空", "星辰", "旷野", "第一性原理", "大千世界"]
+    explicit_mountain_tokens = ["山", "山路", "晨雾", "登山", "山顶", "脚步", "远方"]
+    explicit_rural_tokens = ["农村", "乡村", "院子", "土路", "父母", "家人", "亲情", "老家"]
+    explicit_city_tokens = ["城市", "地铁", "路口", "通勤", "公司", "岗位", "面试", "职业"]
+    ordinary_inner_tokens = ["自己", "生活", "普通", "害怕", "回避", "孤独", "房间", "门口"]
+
+    explicit_scene_hits = {
+        "train_journey": _count_matches(text, explicit_train_tokens),
+        "ocean_shore": _count_matches(text, explicit_ocean_tokens),
+        "star_cosmos": _count_matches(text, explicit_cosmos_tokens),
+        "mountain_path": _count_matches(text, explicit_mountain_tokens),
+        "rural_family": _count_matches(text, explicit_rural_tokens),
+        "city_daylight": _count_matches(text, explicit_city_tokens),
+        "ordinary_life": _count_matches(text, ordinary_inner_tokens),
+    }
+    max_explicit_hits = max(explicit_scene_hits.values() or [0])
+
+    if world_id in explicit_scene_hits and explicit_scene_hits[world_id] > 0:
+        boost = 7 + explicit_scene_hits[world_id] * 2
+        score += boost
+        reasons.append(f"explicit_scene_cue:+{boost}")
+
+    if world_id == "workspace_reality":
+        if _contains_any(text, productivity_tokens):
+            score += 6
+            reasons.append("productivity_or_habit_theme")
+        if _contains_any(text, cognition_to_action_tokens) and _contains_any(text, productivity_tokens):
+            score += 4
+            reasons.append("cognition_to_action_theme")
+    elif world_id == "ordinary_life":
+        if _contains_any(text, ["习惯", "沉淀", "生活", "自己", "回避"]):
+            score += 2
+            reasons.append("daily_life_or_habit_theme")
+        if max_explicit_hits >= 2 and explicit_scene_hits["ordinary_life"] == 0:
+            score = max(0, score - 3)
+            reasons.append("explicit_scene_elsewhere_penalty")
+    elif world_id == "mountain_path":
+        if _contains_any(text, ["挑战", "坚持", "目标", "突破", "向外", "跨出", "第一步"]):
+            score += 4
+            reasons.append("challenge_or_threshold_theme")
+        if _contains_any(text, productivity_tokens) and not _contains_any(text, explicit_mountain_tokens):
+            score = max(0, score - 4)
+            reasons.append("productivity_theme_without_mountain_cue_penalty")
+    elif world_id == "ocean_shore":
+        if _contains_any(text, ["开阔", "世界", "答案", "孤独"]) and _contains_any(text, explicit_ocean_tokens):
+            score += 4
+            reasons.append("ocean_openness_theme")
+        elif score > 0 and not _contains_any(text, explicit_ocean_tokens):
+            score = max(0, score - 3)
+            reasons.append("ocean_requires_clear_ocean_cue")
+    elif world_id == "star_cosmos":
+        if _contains_any(text, ["认知", "时代", "第一性原理", "世界"]) and _contains_any(text, explicit_cosmos_tokens):
+            score += 4
+            reasons.append("cosmos_cognition_theme")
+        elif score > 0 and not _contains_any(text, explicit_cosmos_tokens):
+            score = max(0, score - 3)
+            reasons.append("cosmos_requires_clear_cosmos_cue")
+    elif world_id == "rural_family":
+        if _contains_any(text, explicit_rural_tokens):
+            score += 4
+            reasons.append("family_origin_theme")
+        elif score > 0:
+            score = max(0, score - 2)
+            reasons.append("rural_requires_family_or_origin_cue")
+    elif world_id == "city_daylight":
+        if _contains_any(text, explicit_city_tokens):
+            score += 4
+            reasons.append("urban_career_theme")
+    elif world_id == "train_journey":
+        if _contains_any(text, explicit_train_tokens):
+            score += 6
+            reasons.append("explicit_train_or_travel_cue")
+        elif score > 0:
+            score = max(0, score - 4)
+            reasons.append("generic_journey_cue_penalized_without_train_cue")
+
+    return score, reasons
+
+
+def _select_world_scored(worlds: dict, text: str) -> tuple[str, dict, int, list[dict]]:
+    scored: list[tuple[str, dict, int, list[str]]] = []
+    for world_id, world in worlds.items():
+        score, reasons = _score_world_item(text, world_id, world)
+        scored.append((world_id, world, score, reasons))
+    scored.sort(key=lambda row: (-row[2], row[0]))
+
+    selection_debug = [
+        {"id": world_id, "label": world.get("label"), "score": score, "reasons": reasons}
+        for world_id, world, score, reasons in scored
+    ]
+    if scored and scored[0][2] > 0:
+        top_score = scored[0][2]
+        best_candidates = [row for row in scored if row[2] == top_score]
+        picked_id, picked, picked_score = _stable_pick_scored(
+            [(world_id, world, score) for world_id, world, score, _ in best_candidates],
+            text,
+        )
+        return picked_id, picked, picked_score, selection_debug
+
+    picked_id, picked = _stable_pick(worlds, text)
+    return picked_id, picked, 0, selection_debug
+
+
 def _expression_text(expression_plan: dict | None) -> str:
     if not expression_plan:
         return ""
@@ -96,11 +228,12 @@ def build_visual_poetic_plan(
     archetype_id, archetype, archetype_score = _select_scored(config.get("archetypes", {}), text)
 
     worlds = config.get("worlds", {})
+    world_selection_debug = []
     if preferred_world_id != "random" and preferred_world_id in worlds:
         world_id, world, world_score = preferred_world_id, worlds[preferred_world_id], 99
         selection_mode = "manual_world_theme_archetype"
     else:
-        world_id, world, world_score = _select_scored(worlds, text, best_fit_random=True)
+        world_id, world, world_score, world_selection_debug = _select_world_scored(worlds, text)
         selection_mode = "auto_theme_best_fit"
 
     motif = _motif(archetype, world)
@@ -118,6 +251,7 @@ def build_visual_poetic_plan(
             "texture": world.get("texture"),
             "match_score": world_score,
             "selection_mode": selection_mode,
+            "selection_debug": world_selection_debug[:6],
         },
         "motif": motif,
         "input_structure": {
