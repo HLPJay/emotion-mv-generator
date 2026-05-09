@@ -16,9 +16,6 @@ class MusicGenerationError(RuntimeError):
     pass
 
 
-FREE_MUSIC_MODEL = "music-2.6-free"
-
-
 def _config() -> dict:
     if not CONFIG_PATH.exists():
         return {}
@@ -29,6 +26,9 @@ def _config() -> dict:
 def _music_config() -> dict:
     config = _config()
     music_config = config.get("music", {})
+    fallback_models = music_config.get("fallback_models", [])
+    if isinstance(fallback_models, str):
+        fallback_models = [fallback_models]
     return {
         "enabled": bool(music_config.get("enabled", False)),
         "provider": music_config.get("provider", "minimax"),
@@ -37,6 +37,8 @@ def _music_config() -> dict:
         "api_key": music_config.get("api_key") or config.get("api_key", ""),
         "output_format": music_config.get("output_format", "hex"),
         "fallback_on_error": bool(music_config.get("fallback_on_error", True)),
+        "fallback_models": [model for model in fallback_models if model],
+        "request_timeout_seconds": int(music_config.get("request_timeout_seconds", 600)),
     }
 
 
@@ -64,7 +66,7 @@ def _request_music(config: dict, music_plan: dict, model: str, output_dir: Path)
         "Authorization": f"Bearer {config['api_key'].strip()}",
         "Content-Type": "application/json",
     }
-    response = requests.post(url, headers=headers, json=payload, timeout=240)
+    response = requests.post(url, headers=headers, json=payload, timeout=config["request_timeout_seconds"])
     if response.status_code >= 400:
         raise MusicGenerationError(f"MiniMax music request failed: {response.status_code} {response.text}")
 
@@ -92,10 +94,8 @@ def _request_music(config: dict, music_plan: dict, model: str, output_dir: Path)
     return output
 
 
-def _candidate_models(config_model: str, requested_model: str) -> list[str]:
+def _candidate_models(requested_model: str) -> list[str]:
     candidates = [requested_model]
-    if requested_model == "music-2.6" and config_model != FREE_MUSIC_MODEL:
-        candidates.append(FREE_MUSIC_MODEL)
     unique = []
     for model in candidates:
         if model and model not in unique:
@@ -124,7 +124,11 @@ def generate_music_audio(audio_plan: dict, output_dir: Path | None = None) -> Pa
 
     requested_model = music_plan.get("model", config["model"])
     errors = []
-    for model in _candidate_models(config["model"], requested_model):
+    candidate_models = _candidate_models(requested_model)
+    if config["fallback_on_error"]:
+        candidate_models.extend(model for model in config["fallback_models"] if model not in candidate_models)
+
+    for model in candidate_models:
         try:
             return _request_music(config, request_plan, model, output_dir)
         except Exception as exc:

@@ -434,6 +434,27 @@ python scripts\test_step.py all
 generated/runs/<run_id>/audio/bgm.mp3
 ```
 
+MiniMax `music-2.6` 可能生成耗时较长。Token Plan 用户建议使用：
+
+```json
+{
+  "music": {
+    "enabled": true,
+    "model": "music-2.6",
+    "output_format": "hex",
+    "request_timeout_seconds": 600,
+    "fallback_models": [],
+    "fallback_on_error": true
+  }
+}
+```
+
+说明：
+
+- `request_timeout_seconds` 控制音乐接口等待时间，默认 600 秒。
+- `fallback_models` 默认不再自动加入 `music-2.6-free`；Token Plan 用户通常不支持 free 模型，强行 fallback 会产生 `2061 your current token plan not support model`。
+- 如果确实有可用的备用模型，可以手动写入 `fallback_models`。
+
 如果 `bgm.mp3` 不存在，说明音乐生成失败，视频会退回本地兜底音：
 
 ```text

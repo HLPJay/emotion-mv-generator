@@ -6,6 +6,7 @@ import hashlib
 import json
 import textwrap
 from pathlib import Path
+from typing import Callable
 
 import requests
 from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps
@@ -242,6 +243,7 @@ def generate_scene_images(
     visual_style: dict | None = None,
     visual_continuity: dict | None = None,
     visual_poetic_plan: dict | None = None,
+    progress_callback: Callable[[dict], None] | None = None,
 ) -> list[Path]:
     config = _image_config()
     output_dir = Path(output_dir) if output_dir is not None else IMAGE_DIR
@@ -267,9 +269,22 @@ def generate_scene_images(
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = {executor.submit(generate_one, index, shot): index for index, shot in indexed_shots}
+        completed = 0
         for future in as_completed(futures):
             index = futures[future]
             results[index] = future.result()
+            completed += 1
+            if progress_callback:
+                progress_callback(
+                    {
+                        "step": "image_generation",
+                        "completed": completed,
+                        "total": len(indexed_shots),
+                        "index": index,
+                        "path": str(results[index]),
+                        "fallback": index in errors or not config["enabled"],
+                    }
+                )
 
     paths = [results[index] for index, _ in indexed_shots]
     metadata = {

@@ -37,6 +37,8 @@
     "model": "music-2.6",
     "api_key": "",
     "output_format": "hex",
+    "request_timeout_seconds": 600,
+    "fallback_models": [],
     "fallback_on_error": true
   },
   "video": {
