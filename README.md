@@ -635,7 +635,43 @@ python scripts\test_music_generation.py --model music-2.6 --prompt "cinematic em
 python scripts\test_music_generation.py --use-latest-plan --model music-2.6
 ```
 
-如果图片已经生成成功，只想重新生成 BGM 并重拼最终视频，不重新生成图片：
+如果图片已经生成成功，只想重拼最终视频，不重新生成图片、分镜和 LLM 结果，可以使用 UI 的“重拼视频”页或命令行脚本。
+
+UI 使用逻辑：
+
+```text
+1. 打开“重拼视频”Tab
+2. 点击“刷新最近 Run”
+3. 在“最近 Run”下拉框中选择历史 run
+4. 默认保持“严格复用已有音频（缺失则报错，不补生成）”勾选
+5. 点击“重新拼接视频”
+```
+
+严格复用已有音频时，系统只复用当前 run 中已有的：
+
+```text
+audio/bgm.mp3
+audio/narration_*.mp3
+```
+
+如果缺少 BGM 或旁白文件，重拼会直接失败并提示缺失文件，不会偷偷调用音乐或 TTS 接口。
+
+如果你希望 BGM 或旁白缺失时允许系统补生成，可以取消勾选：
+
+```text
+严格复用已有音频（缺失则报错，不补生成）
+```
+
+常见使用场景：
+
+```text
+换 BGM：把新的 mp3 放到 audio/bgm.mp3，然后重拼。
+改错别字：修改 adjusted_storyboard.json 里的 subtitle 字段，然后重拼。
+调视频参数：修改 config/model_config.json 的 video 配置，然后重拼。
+BGM 失败后补生成：取消严格音频复用，再重拼。
+```
+
+命令行重拼最近一个可重拼 run：
 
 ```powershell
 python scripts\recompose_run_video.py
@@ -645,6 +681,12 @@ python scripts\recompose_run_video.py
 
 ```powershell
 python scripts\recompose_run_video.py --run-dir "generated\runs\<run_id>"
+```
+
+严格复用已有音频，不允许补生成：
+
+```powershell
+python scripts\recompose_run_video.py --run-dir "generated\runs\<run_id>" --strict-audio
 ```
 
 重拼脚本会复用已有：
@@ -677,7 +719,29 @@ final_before_recompose.mp4
 generated/runs/<run_id>/audio/bgm.mp3
 ```
 
-如果 `bgm.mp3` 已存在，不会重复调用 MiniMax 音乐接口；如果不存在，才会尝试生成 BGM。
+如果 `bgm.mp3` 已存在，不会重复调用 MiniMax 音乐接口；如果不存在：
+
+```text
+strict audio 开启：直接报错
+strict audio 关闭：尝试生成 BGM，失败后使用本地 ambient fallback
+```
+
+验证重拼是否没有重新生成图片：
+
+```powershell
+Get-ChildItem generated\runs\<run_id>\images\scene_*.png | Select Name, LastWriteTime
+Get-Item generated\runs\<run_id>\final.mp4
+Get-Content generated\runs\<run_id>\video_compose_timings.json | Select-String "build_video_clips"
+```
+
+预期：
+
+```text
+images/scene_*.png 时间不变
+final.mp4 时间更新
+video_compose_timings.json 包含 build_video_clips
+run_report.json / run_report.md 更新
+```
 
 ## 停顿镜头节奏
 

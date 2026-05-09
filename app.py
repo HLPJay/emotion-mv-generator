@@ -26,6 +26,7 @@ from services.video_service import compose_video
 from services.visual_style_service import RANDOM_STYLE_ID, select_visual_style, visual_style_choices
 from services.visual_continuity_service import build_visual_continuity
 from services.visual_poetic_service import RANDOM_WORLD_ID, build_visual_poetic_plan, visual_world_choices
+from services.recompose_service import get_recomposable_runs, recompose_run_video
 
 
 ROOT = Path(__file__).parent
@@ -562,6 +563,54 @@ with gr.Blocks(title="AI Reflection Video Generator") as demo:
             report_summary_output = gr.Markdown(label="报告摘要")
             report_output = gr.JSON(label="运行报告")
             run_dir_output = gr.Textbox(label="归档目录")
+        with gr.Tab("重拼视频"):
+            recompose_run_dir_input = gr.Textbox(label="Run 目录", placeholder="generated/runs/20260509_231347_...")
+            recompose_refresh_btn = gr.Button("刷新最近 Run", variant="secondary")
+            recompose_run_dropdown = gr.Dropdown(
+                label="最近 Run（点击选择）",
+                choices=[],
+                interactive=True,
+            )
+            recompose_strict_audio = gr.Checkbox(label="严格复用已有音频（缺失则报错，不补生成）", value=True)
+            recompose_generate_btn = gr.Button("重新拼接视频", variant="primary")
+            recompose_video_output = gr.Video(label="重拼结果")
+            recompose_report_output = gr.JSON(label="重拼报告")
+            recompose_status_output = gr.Markdown(label="状态")
+
+            def on_refresh_runs():
+                runs = get_recomposable_runs()
+                choices = [
+                    (f"{r['run_id']} | {r['label'][:30]} | {r['scene_count']}镜", r["path"])
+                    for r in runs
+                ]
+                return {
+                    recompose_run_dropdown: gr.update(choices=choices),
+                    recompose_status_output: f"找到 {len(runs)} 个可重拼的 Run",
+                }
+
+            def on_run_selected(path_and_label: tuple[str, str] | None):
+                if not path_and_label:
+                    return {recompose_run_dir_input: "", recompose_status_output: "未选择任何 Run"}
+                path = path_and_label[1] if isinstance(path_and_label, tuple) else path_and_label
+                return {recompose_run_dir_input: path, recompose_status_output: f"已选择: {path}"}
+
+            def on_recompose(run_dir: str, strict_audio: bool):
+                run_dir_path = Path(run_dir)
+                if not run_dir_path.exists():
+                    raise gr.Error(f"目录不存在: {run_dir}")
+                try:
+                    result = recompose_run_video(run_dir_path, strict_audio=strict_audio)
+                    return {
+                        recompose_video_output: str(run_dir_path / "final.mp4"),
+                        recompose_report_output: result,
+                        recompose_status_output: f"重拼完成：{result.get('output_path', '')}",
+                    }
+                except FileNotFoundError as exc:
+                    raise gr.Error(str(exc)) from exc
+
+            recompose_refresh_btn.click(fn=on_refresh_runs, outputs=[recompose_run_dropdown, recompose_status_output])
+            recompose_run_dropdown.change(fn=on_run_selected, inputs=[recompose_run_dropdown], outputs=[recompose_run_dir_input, recompose_status_output])
+            recompose_generate_btn.click(fn=on_recompose, inputs=[recompose_run_dir_input, recompose_strict_audio], outputs=[recompose_video_output, recompose_report_output, recompose_status_output])
 
     generate_button.click(
         fn=generate_reflection_video,
