@@ -208,6 +208,7 @@ def _render_report_summary(report: dict[str, Any] | None) -> str:
     visual_world_selection = content.get("visual_world_selection") or {}
     candidate_text = "\n".join(
         f"- {item.get('label')} (`{item.get('id')}`): {item.get('score')}，{item.get('reasons_cn') or '无额外理由'}"
+        + (f" | `{'; '.join(item.get('reasons') or [])}`" if item.get('reasons') else "")
         for item in visual_world_selection.get("top_candidates", [])
     ) or "- 无"
 

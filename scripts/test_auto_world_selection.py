@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 import sys
@@ -48,6 +48,31 @@ CASES = [
         "emotion": {"emotion": "职业转折", "visual_keywords": ["城市", "地铁", "面试"]},
         "expected": "city_daylight",
     },
+    # 隐喻场景：场景词出现在比喻句中，不加 explicit_scene_cue
+    {
+        "name": "metaphor_train",
+        "text": "人生像一列火车，不知道开往哪里。",
+        "emotion": {"emotion": "迷茫", "visual_keywords": ["人生", "方向"]},
+        "expected": "train_journey",
+        "expect_no_explicit": True,
+        "note": "隐喻场景不加 explicit_scene_cue，但旅途/远行关键词仍匹配 train_journey",
+    },
+    {
+        "name": "metaphor_ocean",
+        "text": "世界像大海一样广阔，我想我该出发了。",
+        "emotion": {"emotion": "开阔", "visual_keywords": ["世界", "出发"]},
+        "expected": "ocean_shore",
+        "expect_no_explicit": True,
+        "note": "隐喻场景不加 explicit_scene_cue，但开阔/世界主题匹配 ocean_shore",
+    },
+    {
+        "name": "metaphor_cosmos",
+        "text": "认知像星空一样深邃，永远值得探索。",
+        "emotion": {"emotion": "求知", "visual_keywords": ["认知", "探索"]},
+        "expected": "star_cosmos",
+        "expect_no_explicit": True,
+        "note": "隐喻场景不加 explicit_scene_cue，但开阔/世界主题匹配 ocean_shore",
+    },
 ]
 
 
@@ -57,6 +82,16 @@ def main() -> None:
         plan = build_visual_poetic_plan(case["text"], None, case["emotion"])
         world = plan["world"]
         ok = world["id"] == case["expected"]
+
+        no_explicit_ok = True
+        if case.get("expect_no_explicit"):
+            for item in world.get("selection_debug", []):
+                for r in item.get("reasons", []):
+                    if "explicit_scene_cue" in r:
+                        no_explicit_ok = False
+                        break
+
+        ok = ok and no_explicit_ok
         results.append(
             {
                 "case": case["name"],
@@ -65,6 +100,7 @@ def main() -> None:
                 "actual": world["id"],
                 "label": world.get("label"),
                 "score": world.get("match_score"),
+                "no_explicit_ok": no_explicit_ok if case.get("expect_no_explicit") else None,
                 "selection_debug": world.get("selection_debug", [])[:3],
             }
         )
@@ -77,3 +113,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

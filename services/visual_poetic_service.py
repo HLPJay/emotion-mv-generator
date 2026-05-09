@@ -1,6 +1,7 @@
 ﻿from __future__ import annotations
 
 import hashlib
+import re
 import json
 from pathlib import Path
 
@@ -64,23 +65,23 @@ def _count_matches(text: str, keywords: list[str]) -> int:
 
 
 def _is_metaphor_only(text, scene_tokens):
-    """检测场景词是否只出现在比喻句中，没有真实场景描写"""
-    mp = ["像", "仿佛", "如同", "犹如", "像是", "就像", "好似", "好比", "宛如"]
+    """\u68c0\u6d4b\u573a\u666f\u8bcd\u662f\u5426\u53ea\u51fa\u73b0\u5728\u6bd4\u55bb\u53e5\u4e2d\uff0c\u6ca1\u6709\u771f\u5b9e\u573a\u666f\u63cf\u5199"""
+    mp = ["\u50cf", "\u4eff\u4f5b", "\u5982\u540c", "\u72b9\u5982", "\u50cf\u662f", "\u5c31\u50cf", "\u597d\u4f3c", "\u597d\u6bd4", "\u5b9b\u5982"]
     if not scene_tokens:
         return False
     for token in scene_tokens:
         if not token or token not in text:
             continue
-        in_met = False
-        for p in mp:
-            c = p + token
-            if c in text:
-                in_met = True
-                r = text.replace(c, "")
-                if token in r:
-                    return False
-                break
-        if not in_met:
+        # \u6784\u5efa\u6b63\u5219\uff1a\u6bd4\u55bb\u8bcd + 0-6\u4e2a\u4efb\u610f\u5b57\u7b26 + token
+        pattern = "(" + "|".join(re.escape(p) for p in mp) + r").{0,6}" + re.escape(token)
+        match = re.search(pattern, text)
+        if match:
+            in_met = True
+            # \u79fb\u9664\u6b64\u5339\u914d\u540e\uff0c\u68c0\u67e5\u662f\u5426\u8fd8\u6709\u72ec\u7acb\u7684token
+            remaining = re.sub(pattern, "", text, count=1)
+            if re.search(re.escape(token), remaining):
+                return False
+        else:
             return False
     return True
 

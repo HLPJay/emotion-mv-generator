@@ -400,10 +400,12 @@ def render_report_markdown(report: dict) -> str:
     content = report["content_summary"]
     assets = report["assets"]
     visual_world_selection = content.get("visual_world_selection") or {}
-    candidate_text = "\n".join(
-        f"- {item.get('label')} (`{item.get('id')}`): {item.get('score')}，{item.get('reasons_cn') or '无额外理由'}"
-        for item in visual_world_selection.get("top_candidates", [])
-    ) or "- 无"
+    def _fmt_candidate(item):
+        base = f"- {item.get('label')} (`{item.get('id')}`): {item.get('score')}，{item.get('reasons_cn') or '无额外理由'}"
+        raw = item.get('reasons')
+        return base + (f" | `{{{'; '.join(raw)}}}`" if raw else "")
+
+    candidate_text = "\n".join(_fmt_candidate(item) for item in visual_world_selection.get("top_candidates", [])) or "- 无"
     return f"""# Run Report
 
 ## Basic
