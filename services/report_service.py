@@ -123,6 +123,7 @@ def build_run_report(run_dir: Path) -> dict:
     subtitle_plan = _read_json(run_dir / "subtitle_plan.json") or {}
     expression_plan = _read_json(run_dir / "expression_plan.json") or {}
     visual_poetic_plan = _read_json(run_dir / "visual_poetic_plan.json") or {}
+    narrative_plan = _read_json(run_dir / "narrative_plan.json") or {}
     storyboard = _read_json(run_dir / "storyboard.json") or []
     audio_plan = _read_json(run_dir / "audio_plan.json") or {}
     visual_style = _read_json(run_dir / "visual_style.json") or {}
@@ -190,6 +191,18 @@ def build_run_report(run_dir: Path) -> dict:
             "visual_archetype": (visual_poetic_plan.get("archetype") or {}).get("label"),
             "visual_world": (visual_poetic_plan.get("world") or {}).get("label"),
             "visual_motif_symbols": ((visual_poetic_plan.get("motif") or {}).get("recurring_symbols") or []),
+            "narrative_arc": narrative_plan.get("arc"),
+            "narrative_turning_point": narrative_plan.get("turning_point"),
+            "narrative_strategy": narrative_plan.get("visual_strategy"),
+            "narrative_functions": [
+                {
+                    "text": shot.get("subtitle_text"),
+                    "function": shot.get("function"),
+                    "purpose": shot.get("purpose"),
+                    "visual_intent": shot.get("visual_intent"),
+                }
+                for shot in narrative_plan.get("shots", [])
+            ],
             "expression_units_count": len(expression_plan.get("units", [])),
             "expression_roles": [
                 {
@@ -289,6 +302,8 @@ def render_report_markdown(report: dict) -> str:
 - Expression Profile: {content.get('expression_profile')}
 - Visual Archetype: {content.get('visual_archetype')}
 - Visual World: {content.get('visual_world')}
+- Narrative Arc: {content.get('narrative_arc')}
+- Turning Point: {content.get('narrative_turning_point')}
 
 ## Structure
 

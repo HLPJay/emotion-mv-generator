@@ -42,6 +42,16 @@ def _expression_by_subtitle(expression_plan: dict | None) -> dict:
     return mapping
 
 
+def _narrative_by_subtitle(narrative_plan: dict | None) -> dict:
+    mapping = {}
+    if narrative_plan:
+        for shot in narrative_plan.get("shots", []):
+            text = shot.get("subtitle_text")
+            if text:
+                mapping[text] = shot
+    return mapping
+
+
 def _blank_shot(subtitle: str, index: int, unit: dict | None = None) -> dict:
     unit = unit or {}
     is_pause = subtitle == "..."
@@ -57,8 +67,26 @@ def _blank_shot(subtitle: str, index: int, unit: dict | None = None) -> dict:
     }
 
 
-def _normalize_storyboard(storyboard: list[dict], subtitles: list[str], expression_plan: dict | None = None) -> list[dict]:
+def _apply_narrative_fields(shot: dict, narrative: dict | None) -> dict:
+    if not narrative:
+        return shot
+    shot["narrative_function"] = narrative.get("function", shot.get("narrative_function", ""))
+    shot["emotional_purpose"] = narrative.get("purpose", shot.get("emotional_purpose", ""))
+    shot["visual_intent"] = narrative.get("visual_intent", shot.get("visual_intent", ""))
+    shot["generation_mode"] = narrative.get("generation_mode", shot.get("generation_mode", "text_to_image"))
+    if narrative.get("camera_intent"):
+        shot["camera_intent"] = narrative["camera_intent"]
+    return shot
+
+
+def _normalize_storyboard(
+    storyboard: list[dict],
+    subtitles: list[str],
+    expression_plan: dict | None = None,
+    narrative_plan: dict | None = None,
+) -> list[dict]:
     expression_map = _expression_by_subtitle(expression_plan)
+    narrative_map = _narrative_by_subtitle(narrative_plan)
     by_subtitle = {}
     for shot in storyboard:
         subtitle = shot.get("subtitle")
@@ -79,6 +107,7 @@ def _normalize_storyboard(storyboard: list[dict], subtitles: list[str], expressi
         shot["subtitle_role"] = unit.get("role", shot.get("subtitle_role", "primary"))
         shot["semantic_role"] = unit.get("semantic_role", shot.get("semantic_role", "pause" if subtitle == "..." else "setup"))
         shot["camera_intent"] = unit.get("camera_intent", shot.get("camera_intent", ""))
+        shot = _apply_narrative_fields(shot, narrative_map.get(subtitle))
         shot["duration"] = 1.2 if subtitle == "..." else float(shot.get("duration", 2.4))
         normalized.append(shot)
     return normalized
@@ -138,6 +167,7 @@ def build_storyboard(
     visual_continuity: dict | None = None,
     expression_plan: dict | None = None,
     visual_poetic_plan: dict | None = None,
+    narrative_plan: dict | None = None,
 ) -> list[dict]:
     if llm_enabled():
         system_prompt = """
@@ -175,6 +205,9 @@ def build_storyboard(
 视觉意境计划：
 {visual_poetic_prompt(visual_poetic_plan)}
 
+镜头叙事计划：
+{narrative_plan or {}}
+
 视觉风格设定：
 {visual_style_prompt(visual_style) if visual_style else "ordinary reflective realism, not depressive, visible light"}
 
@@ -184,12 +217,15 @@ def build_storyboard(
 请输出 storyboard，每项包含：
 - scene: 中文生活化电影镜头
 - subtitle: 对应字幕，必须和输入字幕一致
+- narrative_function: 这一镜的叙事功能，优先来自镜头叙事计划
+- emotional_purpose: 这一镜为什么存在
+- visual_intent: 这一镜应该服务的视觉意图
 - camera: slow push / static shot / slow pan / gentle handheld / slow zoom 之一
 - lighting: 英文简短光线描述
 - duration: 数字，只有字幕完全等于 "..." 时才填 1.2，其他字幕填 2.4
 """
         result = chat_json(system_prompt, user_prompt, temperature=0.45)
-        return _normalize_storyboard(result["storyboard"], subtitles, expression_plan)
+        return _normalize_storyboard(result["storyboard"], subtitles, expression_plan, narrative_plan)
 
     keywords = emotion.get("visual_keywords", [])
     preferred_elements = []
@@ -207,6 +243,7 @@ def build_storyboard(
         scenes = ["深夜房间，一个人安静坐着，像是在和自己对话"]
 
     expression_by_subtitle = _expression_by_subtitle(expression_plan)
+    narrative_by_subtitle = _narrative_by_subtitle(narrative_plan)
 
     storyboard = []
     scene_index = 0
@@ -216,11 +253,17 @@ def build_storyboard(
             scene = "画面留白，只有微弱光线和缓慢呼吸感"
             scene = _pause_scene(index, visual_poetic_plan)
         else:
-            scene = scenes[scene_index % len(scenes)]
+            narrative = narrative_by_subtitle.get(subtitle, {})
+            visual_intent = narrative.get("visual_intent")
+            purpose = narrative.get("purpose")
+            scene = (
+                f"{visual_intent}；叙事目的：{purpose}"
+                if visual_intent
+                else scenes[scene_index % len(scenes)]
+            )
             scene_index += 1
 
-        storyboard.append(
-            {
+        shot = {
                 "scene": scene,
                 "subtitle": subtitle,
                 "subtitle_role": unit.get("role", "primary"),
@@ -233,6 +276,7 @@ def build_storyboard(
                 "lighting": LIGHTING[index % len(LIGHTING)],
                 "duration": 2.4 if subtitle != "..." else 1.2,
             }
-        )
+        shot = _apply_narrative_fields(shot, narrative_by_subtitle.get(subtitle))
+        storyboard.append(shot)
 
     return storyboard

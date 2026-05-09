@@ -139,7 +139,7 @@ generated/runs/<run_id>/run_events.jsonl
 页面现在包含多个调试 Tab：
 
 ```text
-核心：emotion / visual_style
+核心：emotion / visual_style / visual_poetic_plan / narrative_plan
 节奏：expression_plan / subtitle_plan / audio_plan
 分镜：storyboard
 报告：run_report / run_dir
@@ -238,6 +238,55 @@ templates/visual_poetic_worlds.json
 ```
 
 默认是自动主题适配：先根据文案、表达计划和情绪选择最贴近的意境世界；如果多个世界同样适合，会做稳定选择；如果没有明显主题线索，才用稳定兜底。手动选择时，只固定 `visual_world`，`visual_archetype` 仍然会根据文案主题匹配，所以不会变成生硬套场景。
+
+## Narrative Plan
+
+为了让视频不只是“关键词配图”，项目在视觉意境后新增了镜头叙事层：
+
+```text
+expression_plan
+→ visual_poetic_plan
+→ narrative_plan
+→ storyboard
+→ image prompt
+```
+
+`visual_poetic_plan` 负责确定世界、符号和意境；`narrative_plan` 负责确定每个非暂停镜头的叙事任务。
+
+输出文件：
+
+```text
+generated/runs/<run_id>/narrative_plan.json
+```
+
+典型字段：
+
+```json
+{
+  "arc": "从遗留停滞到轻微行动",
+  "turning_point": "括号内容、提问或核心承认进入时",
+  "visual_strategy": "现实工作台里，从待办堆积、手停住，推进到第一次执行动作。",
+  "shots": [
+    {
+      "function": "establish_state",
+      "purpose": "建立当前处境和情绪背景",
+      "visual_intent": "桌面、笔记本、电脑屏幕和未完成待办，人物只以背影或手进入画面",
+      "camera_intent": "establishing"
+    }
+  ]
+}
+```
+
+这些字段会继续注入 `storyboard` 和图片 prompt：
+
+```text
+narrative_function
+emotional_purpose
+visual_intent
+generation_mode
+```
+
+因此每张图会被要求服务一个镜头功能，例如建立状态、加重停滞、揭示问题、转折、行动信号或结尾留白，而不是只画出相关物件。
 
 ## Subtitle Guard
 

@@ -111,11 +111,18 @@ def _build_image_prompt(
     motif = poetic.get("motif", {})
     motif_symbols = ", ".join((motif.get("recurring_symbols") or shot.get("recurring_symbols") or [])[:5])
     motif_progression = " -> ".join((motif.get("progression") or [])[:5])
+    narrative_function = shot.get("narrative_function", "")
+    emotional_purpose = shot.get("emotional_purpose", "")
+    visual_intent = shot.get("visual_intent", "")
 
     prompt = "\n".join(
         [
             "Realistic cinematic vertical photo, 9:16.",
             "Reflective, not depressive. Calm self-reflection, ordinary life realism, visible details, not too dark.",
+            "This frame must serve a narrative function, not just illustrate keywords.",
+            f"Narrative function: {narrative_function}.",
+            f"Emotional purpose: {emotional_purpose}.",
+            f"Visual intent: {visual_intent}.",
             f"One-video visual world: {poetic_world.get('label', shot.get('visual_world', 'ordinary reflective world'))}; {poetic_world.get('texture', '')}.",
             f"Visual archetype: {poetic_archetype.get('label', '')}; relation: {poetic_archetype.get('core_relation', '')}; motion: {poetic_archetype.get('emotional_motion', '')}.",
             f"Shared motif symbols in this shot: {motif_symbols}. Progression: {motif_progression}.",

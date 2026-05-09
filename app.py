@@ -14,6 +14,7 @@ from services.emotion_service import analyze_emotion
 from services.event_service import log_event, track_step
 from services.expression_service import build_expression_plan
 from services.image_service import generate_scene_images
+from services.narrative_service import build_narrative_plan
 from services.report_service import write_run_report
 from services.run_service import create_run_dir, write_json, write_text
 from services.storyboard_service import build_storyboard
@@ -38,6 +39,7 @@ PIPELINE_STEPS = [
     ("visual_continuity", "视觉连续性"),
     ("expression_plan", "表达计划"),
     ("visual_poetic_plan", "意境分析"),
+    ("narrative_plan", "镜头叙事"),
     ("subtitle_plan", "字幕节奏"),
     ("storyboard", "分镜脚本"),
     ("audio_plan", "音频计划"),
@@ -212,6 +214,8 @@ def _render_report_summary(report: dict[str, Any] | None) -> str:
 **内容**
 - 情绪: {content.get('emotion')}
 - 意境世界: {content.get('visual_world')}
+- 叙事弧线: {content.get('narrative_arc')}
+- 转折点: {content.get('narrative_turning_point')}
 - 视觉风格: {content.get('visual_style')}
 - 字幕数: {content.get('subtitles_count')}
 - 分镜数: {content.get('adjusted_storyboard_count')}
@@ -236,6 +240,7 @@ def _outputs(
     visual_style: dict[str, Any] | None = None,
     expression_plan: dict[str, Any] | None = None,
     visual_poetic_plan: dict[str, Any] | None = None,
+    narrative_plan: dict[str, Any] | None = None,
     subtitle_plan: dict[str, Any] | None = None,
     audio_plan: dict[str, Any] | None = None,
     storyboard: list[dict[str, Any]] | None = None,
@@ -250,6 +255,7 @@ def _outputs(
         visual_style or {},
         expression_plan or {},
         visual_poetic_plan or {},
+        narrative_plan or {},
         subtitle_plan or {},
         audio_plan or {},
         storyboard or [],
@@ -279,6 +285,7 @@ def generate_reflection_video(
     visual_continuity: dict[str, Any] = {}
     expression_plan: dict[str, Any] = {}
     visual_poetic_plan: dict[str, Any] = {}
+    narrative_plan: dict[str, Any] = {}
     subtitle_plan: dict[str, Any] = {}
     audio_plan: dict[str, Any] = {}
     adjusted_storyboard: list[dict[str, Any]] = []
@@ -290,6 +297,7 @@ def generate_reflection_video(
             visual_style,
             expression_plan,
             visual_poetic_plan,
+            narrative_plan,
             subtitle_plan,
             audio_plan,
             adjusted_storyboard,
@@ -372,6 +380,13 @@ def generate_reflection_video(
         write_json(run_dir / "visual_poetic_plan.json", visual_poetic_plan)
         _refresh_step_state_from_events(step_state, run_dir)
 
+        start_step("narrative_plan")
+        yield emit()
+        with track_step(run_dir, "narrative_plan"):
+            narrative_plan = build_narrative_plan(reflection, expression_plan, visual_poetic_plan, emotion)
+        write_json(run_dir / "narrative_plan.json", narrative_plan)
+        _refresh_step_state_from_events(step_state, run_dir)
+
         start_step("subtitle_plan")
         yield emit()
         with track_step(run_dir, "subtitle_plan"):
@@ -383,7 +398,16 @@ def generate_reflection_video(
         start_step("storyboard")
         yield emit()
         with track_step(run_dir, "storyboard"):
-            storyboard = build_storyboard(reflection, emotion, subtitles, visual_style, visual_continuity, expression_plan, visual_poetic_plan)
+            storyboard = build_storyboard(
+                reflection,
+                emotion,
+                subtitles,
+                visual_style,
+                visual_continuity,
+                expression_plan,
+                visual_poetic_plan,
+                narrative_plan,
+            )
         write_json(run_dir / "storyboard.json", storyboard)
         _refresh_step_state_from_events(step_state, run_dir)
 
@@ -488,6 +512,7 @@ with gr.Blocks(title="AI Reflection Video Generator") as demo:
                 emotion_output = gr.JSON(label="情绪解析")
                 visual_style_output = gr.JSON(label="视觉风格")
                 visual_poetic_output = gr.JSON(label="视觉意境")
+                narrative_plan_output = gr.JSON(label="镜头叙事")
         with gr.Tab("节奏"):
             expression_plan_output = gr.JSON(label="表达导演")
             subtitle_plan_output = gr.JSON(label="字幕节奏")
@@ -508,6 +533,7 @@ with gr.Blocks(title="AI Reflection Video Generator") as demo:
             visual_style_output,
             expression_plan_output,
             visual_poetic_output,
+            narrative_plan_output,
             subtitle_plan_output,
             audio_plan_output,
             storyboard_output,
