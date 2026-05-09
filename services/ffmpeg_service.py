@@ -102,6 +102,17 @@ def replace_video_audio(
                 "error_type": "FileNotFoundError",
             }
 
+    # Probe video duration from input if not provided
+    video_duration = duration or _probe_duration(input_video)
+    if not video_duration:
+        return {
+            "success": False,
+            "engine": "ffmpeg",
+            "mode": "audio_only",
+            "error": f"Could not determine video duration from {input_video}",
+            "error_type": "ValueError",
+        }
+
     tmp_output = output_video.parent / "final_recompose_tmp.mp4"
     started = time.perf_counter()
     cmd = ["ffmpeg", "-y", "-hide_banner"]
@@ -115,16 +126,18 @@ def replace_video_audio(
 
     # Build filter complex
     if len(audio_tracks) == 1:
-        # Single audio: replace the audio track
+        # Single audio: replace the audio track, trimmed to video duration
         filter_complex = "[1:a]aformat=sample_fmts=fltp:sample_rates=48000:channel_layouts=stereo"
         if audio_tracks[0].get("volume", 1.0) != 1.0:
             vol = audio_tracks[0]["volume"]
             filter_complex += f",volume={vol}"
-        filter_complex += "[aout]"
+        # Trim to video duration so audio doesn't extend past video
+        filter_complex += f",atrim=0:{video_duration},asetpts=PTS-STARTPTS[aout]"
         cmd += ["-filter_complex", filter_complex]
         cmd += ["-map", "0:v:0", "-map", "[aout]"]
     else:
-        # Multiple audio: each track gets aformat, optional adelay, optional volume, then amix
+        # Multiple audio: each track gets aformat, optional adelay, optional volume
+        # All trimmed to video duration, then amix with duration=first
         # Track labels: [1:a], [2:a], ... [N:a]
         # Output labels: [bgm], [tr1], [tr2], ...
         filter_parts = []
@@ -138,16 +151,19 @@ def replace_video_audio(
                 aformat += f",adelay={start_ms}|{start_ms}"
             if vol != 1.0:
                 aformat += f",volume={vol}"
+            # Trim to video duration so no audio extends past video end
+            aformat += f",atrim=0:{video_duration},asetpts=PTS-STARTPTS"
             out_label = "[bgm]" if i == 1 else f"[tr{i-1}]"
             filter_parts.append(aformat + out_label)
 
         filter_complex = ";".join(filter_parts) + ";"
-        # Mix all tracks: amix gets N inputs
+        # Mix all tracks: duration=first uses the first input's duration
         mix_inputs = "".join(
             "[bgm]" if i == 0 else f"[tr{i}]"
             for i in range(len(audio_tracks))
         )
-        filter_complex += f"{mix_inputs}amix=inputs={len(audio_tracks)}:duration=longest:normalize=0[aout]"
+        # After amix, trim once more to exact video duration
+        filter_complex += f"{mix_inputs}amix=inputs={len(audio_tracks)}:duration=first:normalize=0,atrim=0:{video_duration},asetpts=PTS-STARTPTS[aout]"
 
         cmd += ["-filter_complex", filter_complex]
         cmd += ["-map", "0:v:0", "-map", "[aout]"]
@@ -157,6 +173,8 @@ def replace_video_audio(
     # Audio stream: encode as AAC
     cmd += ["-c:a", "aac", "-b:a", "192k"]
     cmd += ["-map_metadata", "-1"]
+    # Stop encoding when the shortest stream (video) ends
+    cmd += ["-shortest"]
     cmd += ["-progress", "pipe:1", str(tmp_output)]
 
     try:
@@ -214,6 +232,7 @@ def replace_video_audio(
             "mode": "audio_only",
             "video_stream_copied": True,
             "output_path": str(output_video),
+            "input_video_duration_seconds": video_duration,
             "elapsed_seconds": elapsed_seconds,
             "output_duration_seconds": output_duration,
             "command": " ".join(str(c) for c in cmd),

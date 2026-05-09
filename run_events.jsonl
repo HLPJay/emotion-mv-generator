@@ -1,0 +1,1 @@
+{"timestamp": "2026-05-10T03:25:22.923", "step": "recompose", "status": "failed", "error": "audio_only mode requires existing final.mp4, not found at final.mp4", "mode": "audio_only", "error_type": "FileNotFoundError"}

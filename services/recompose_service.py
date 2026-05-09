@@ -282,6 +282,8 @@ def _recompose_audio_only(
             mode="audio_only",
             duration_seconds=result.get("elapsed_seconds"),
             video_stream_copied=result.get("video_stream_copied"),
+            input_video_duration_seconds=result.get("input_video_duration_seconds"),
+            output_duration_seconds=result.get("output_duration_seconds"),
             final_video=str(final_video),
         )
 
@@ -293,6 +295,7 @@ def _recompose_audio_only(
             "engine": result.get("engine"),
             "mode": "audio_only",
             "video_stream_copied": result.get("video_stream_copied"),
+            "input_video_duration_seconds": result.get("input_video_duration_seconds"),
             "elapsed_seconds": result.get("elapsed_seconds"),
             "output_duration_seconds": result.get("output_duration_seconds"),
             "warnings": result.get("warnings", []),
