@@ -1,0 +1,73 @@
+{
+  "profile_id": "ordinary_reflection",
+  "profile_label": "普通人反思",
+  "description": "不消沉、不鸡汤、不朗诵；有痛感、有自省、有行动前的迟疑。",
+  "emotion": {
+    "emotion": "怅然若失",
+    "mood": "深夜独酌",
+    "tone": "自嘲调侃"
+  },
+  "units": [
+    {
+      "id": "unit_01",
+      "role": "primary",
+      "semantic_role": "setup",
+      "subtitle_text": "美人只有搂在怀里才是自己的，",
+      "spoken_text": "美人只有搂在怀里才是自己的，",
+      "subtitle_style": "primary",
+      "emphasis_words": [
+        "自己"
+      ],
+      "voice_layer": "main",
+      "speed": 0.82,
+      "pitch": -1,
+      "volume": 1.0,
+      "emotion": "sad",
+      "pause_after": 0.75,
+      "intensity": 0.35,
+      "breath_before": false,
+      "camera_intent": "establishing"
+    },
+    {
+      "id": "unit_02",
+      "role": "primary",
+      "semantic_role": "turn",
+      "subtitle_text": "别人的那都叫外人。",
+      "spoken_text": "别人的那都叫外人。",
+      "subtitle_style": "primary",
+      "emphasis_words": [],
+      "voice_layer": "main",
+      "speed": 0.81,
+      "pitch": -1,
+      "volume": 1.0,
+      "emotion": "sad",
+      "pause_after": 1.0,
+      "intensity": 0.52,
+      "breath_before": false,
+      "camera_intent": "slow_push"
+    },
+    {
+      "id": "unit_03",
+      "role": "secondary",
+      "semantic_role": "context_note",
+      "subtitle_text": "论情商高的重要性。",
+      "spoken_text": "论情商高的重要性。",
+      "subtitle_style": "secondary",
+      "emphasis_words": [],
+      "voice_layer": "inner",
+      "speed": 0.86,
+      "pitch": -2,
+      "volume": 0.84,
+      "emotion": "neutral",
+      "pause_after": 0.75,
+      "intensity": 0.32,
+      "breath_before": false,
+      "camera_intent": "detail_cutaway"
+    }
+  ],
+  "controls": {
+    "meaning_preservation": "strict",
+    "rewrite_level": "low",
+    "principle": "AI changes delivery, not the user's core thought."
+  }
+}

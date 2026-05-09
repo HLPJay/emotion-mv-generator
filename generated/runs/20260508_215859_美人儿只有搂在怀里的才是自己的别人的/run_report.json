@@ -1,0 +1,333 @@
+{
+  "run_id": "20260508_215859_美人儿只有搂在怀里的才是自己的别人的",
+  "generated_at": "2026-05-08T22:07:12",
+  "paths": {
+    "run_dir": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_215859_美人儿只有搂在怀里的才是自己的别人的",
+    "final_video": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_215859_美人儿只有搂在怀里的才是自己的别人的\\final.mp4",
+    "narration": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_215859_美人儿只有搂在怀里的才是自己的别人的\\audio\\narration.mp3",
+    "narration_segments": [
+      "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_215859_美人儿只有搂在怀里的才是自己的别人的\\audio\\narration_01_primary.mp3",
+      "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_215859_美人儿只有搂在怀里的才是自己的别人的\\audio\\narration_02_primary.mp3",
+      "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_215859_美人儿只有搂在怀里的才是自己的别人的\\audio\\narration_03_secondary.mp3"
+    ],
+    "bgm": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_215859_美人儿只有搂在怀里的才是自己的别人的\\audio\\bgm.mp3"
+  },
+  "input": {
+    "text": "美人儿、只有搂在怀里的才是自己的，别人的、那都叫外人。（论情商高的重要性）",
+    "length": 37
+  },
+  "content_summary": {
+    "emotion": "看透调侃",
+    "mood": "深夜小酒馆",
+    "tone": "调侃讲述",
+    "subtitles_count": 6,
+    "subtitle_guard": {
+      "changed": false,
+      "actions": [
+        "built_from_expression_plan"
+      ],
+      "spoken_count": 3,
+      "max_spoken_lines": null,
+      "note": "expression_plan controls line count; legacy Subtitle Guard limit is bypassed here",
+      "roles": {
+        "primary": "main reflection",
+        "secondary": "parenthetical context",
+        "question": "direct question"
+      }
+    },
+    "expression_profile": "普通人反思",
+    "visual_archetype": "跨过边界",
+    "visual_world": "海边远望",
+    "visual_motif_symbols": [
+      "海岸线",
+      "潮水",
+      "脚印",
+      "远方",
+      "风"
+    ],
+    "expression_units_count": 3,
+    "expression_roles": [
+      {
+        "text": "美人儿、只有搂在怀里的才是自己的，",
+        "role": "primary",
+        "semantic_role": "setup",
+        "voice_layer": "main",
+        "emphasis_words": [
+          "自己"
+        ]
+      },
+      {
+        "text": "别人的、那都叫外人。",
+        "role": "primary",
+        "semantic_role": "turn",
+        "voice_layer": "main",
+        "emphasis_words": []
+      },
+      {
+        "text": "论情商高的重要性。",
+        "role": "secondary",
+        "semantic_role": "context_note",
+        "voice_layer": "inner",
+        "emphasis_words": []
+      }
+    ],
+    "storyboard_count": 6,
+    "adjusted_storyboard_count": 6,
+    "target_duration": 15.9,
+    "music_prompt": "minimal cinematic ambient, deep night atmosphere, soft low piano, subtle warm pad, slow tempo, low dynamic range, no vocal, no lyrics, restrained and realistic, not dramatic, mood: 深夜小酒馆, emotion: 看透调侃",
+    "visual_style": "温柔回忆胶片",
+    "visual_style_id": "warm_memory_film",
+    "visual_continuity_subject": "same ordinary adult throughout the video",
+    "visual_continuity_location": "selected visual world from visual_poetic_plan"
+  },
+  "models": {
+    "text": "config:model",
+    "image": "config:image.model",
+    "speech": "speech-2.8-hd",
+    "music": "music-2.6"
+  },
+  "media": {
+    "video": {
+      "info": {
+        "programs": [],
+        "streams": [
+          {
+            "index": 0,
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 1080,
+            "height": 1920
+          },
+          {
+            "index": 1,
+            "codec_name": "aac",
+            "codec_type": "audio",
+            "sample_rate": "44100",
+            "channels": 2
+          }
+        ],
+        "format": {
+          "duration": "15.900000",
+          "size": "12283916"
+        },
+        "exists": true
+      },
+      "duration": 15.9,
+      "resolution": "1080x1920",
+      "has_audio": true,
+      "volume": {
+        "exists": true,
+        "mean_volume": "-28.2 dB",
+        "max_volume": "-6.4 dB"
+      }
+    },
+    "narration": {
+      "info": {
+        "exists": false
+      },
+      "duration": null
+    },
+    "bgm": {
+      "info": {
+        "exists": false
+      },
+      "duration": null
+    }
+  },
+  "assets": {
+    "images": [
+      {
+        "name": "scene_01.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_215859_美人儿只有搂在怀里的才是自己的别人的\\images\\scene_01.png",
+        "size": 1567369
+      },
+      {
+        "name": "scene_02.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_215859_美人儿只有搂在怀里的才是自己的别人的\\images\\scene_02.png",
+        "size": 1988789
+      },
+      {
+        "name": "scene_03.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_215859_美人儿只有搂在怀里的才是自己的别人的\\images\\scene_03.png",
+        "size": 1450307
+      },
+      {
+        "name": "scene_04.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_215859_美人儿只有搂在怀里的才是自己的别人的\\images\\scene_04.png",
+        "size": 1882320
+      },
+      {
+        "name": "scene_05.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_215859_美人儿只有搂在怀里的才是自己的别人的\\images\\scene_05.png",
+        "size": 1487177
+      },
+      {
+        "name": "scene_06.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_215859_美人儿只有搂在怀里的才是自己的别人的\\images\\scene_06.png",
+        "size": 1931292
+      }
+    ],
+    "subtitle_images": [
+      {
+        "name": "subtitle_01.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_215859_美人儿只有搂在怀里的才是自己的别人的\\subtitles\\subtitle_01.png",
+        "size": 34238
+      },
+      {
+        "name": "subtitle_03.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_215859_美人儿只有搂在怀里的才是自己的别人的\\subtitles\\subtitle_03.png",
+        "size": 27518
+      },
+      {
+        "name": "subtitle_05.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_215859_美人儿只有搂在怀里的才是自己的别人的\\subtitles\\subtitle_05.png",
+        "size": 22027
+      }
+    ],
+    "narration_segments": [
+      {
+        "name": "narration_01_primary.mp3",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_215859_美人儿只有搂在怀里的才是自己的别人的\\audio\\narration_01_primary.mp3",
+        "size": 105972
+      },
+      {
+        "name": "narration_02_primary.mp3",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_215859_美人儿只有搂在怀里的才是自己的别人的\\audio\\narration_02_primary.mp3",
+        "size": 79476
+      },
+      {
+        "name": "narration_03_secondary.mp3",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260508_215859_美人儿只有搂在怀里的才是自己的别人的\\audio\\narration_03_secondary.mp3",
+        "size": 88116
+      }
+    ]
+  },
+  "events": [
+    {
+      "timestamp": "2026-05-08T21:58:59.649",
+      "step": "run",
+      "status": "started",
+      "visual_style_id": "warm_memory_film",
+      "visual_world_id": "ocean_shore"
+    },
+    {
+      "timestamp": "2026-05-08T21:58:59.650",
+      "step": "emotion",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-08T21:59:08.250",
+      "step": "emotion",
+      "status": "success",
+      "duration_seconds": 8.6
+    },
+    {
+      "timestamp": "2026-05-08T21:59:08.252",
+      "step": "visual_style",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-08T21:59:08.253",
+      "step": "visual_style",
+      "status": "success",
+      "duration_seconds": 0.001
+    },
+    {
+      "timestamp": "2026-05-08T21:59:08.254",
+      "step": "visual_continuity",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-08T21:59:08.254",
+      "step": "visual_continuity",
+      "status": "success",
+      "duration_seconds": 0.0
+    },
+    {
+      "timestamp": "2026-05-08T21:59:08.254",
+      "step": "expression_plan",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-08T21:59:08.255",
+      "step": "expression_plan",
+      "status": "success",
+      "duration_seconds": 0.001
+    },
+    {
+      "timestamp": "2026-05-08T21:59:08.255",
+      "step": "visual_poetic_plan",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-08T21:59:08.255",
+      "step": "visual_poetic_plan",
+      "status": "success",
+      "duration_seconds": 0.0
+    },
+    {
+      "timestamp": "2026-05-08T21:59:08.256",
+      "step": "subtitle_plan",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-08T21:59:08.256",
+      "step": "subtitle_plan",
+      "status": "success",
+      "duration_seconds": 0.0
+    },
+    {
+      "timestamp": "2026-05-08T21:59:08.256",
+      "step": "storyboard",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-08T21:59:36.322",
+      "step": "storyboard",
+      "status": "success",
+      "duration_seconds": 28.065
+    },
+    {
+      "timestamp": "2026-05-08T21:59:36.323",
+      "step": "audio_plan",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-08T21:59:36.323",
+      "step": "audio_plan",
+      "status": "success",
+      "duration_seconds": 0.0
+    },
+    {
+      "timestamp": "2026-05-08T21:59:36.327",
+      "step": "image_generation",
+      "status": "started",
+      "image_count": 6
+    },
+    {
+      "timestamp": "2026-05-08T22:00:39.922",
+      "step": "image_generation",
+      "status": "success",
+      "duration_seconds": 63.595
+    },
+    {
+      "timestamp": "2026-05-08T22:00:39.922",
+      "step": "video_compose",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-08T22:07:12.468",
+      "step": "video_compose",
+      "status": "success",
+      "duration_seconds": 392.547
+    },
+    {
+      "timestamp": "2026-05-08T22:07:12.469",
+      "step": "report",
+      "status": "started"
+    }
+  ],
+  "warnings": [
+    "BGM 文件 bgm.mp3 不存在，可能使用了 fallback ambient"
+  ]
+}

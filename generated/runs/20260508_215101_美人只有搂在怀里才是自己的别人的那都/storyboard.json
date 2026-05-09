@@ -1,0 +1,62 @@
+[
+  {
+    "scene": "黄昏的海边，远处的地平线在薄雾中若隐若现，海浪轻轻拍打沙滩，一个穿深色外套的身影站在潮线边缘，背对镜头。",
+    "subtitle": "美人只有搂在怀里才是自己的，",
+    "subtitle_role": "primary",
+    "semantic_role": "setup",
+    "camera_intent": "establishing",
+    "camera": "static shot",
+    "lighting": "warm sunset backlight, soft amber glow on the horizon",
+    "duration": 2.4
+  },
+  {
+    "scene": "特写：一双沾着细沙的手，指间夹着一根燃了一半的烟，旁边是一个空了的啤酒罐，背景是模糊的海浪声。",
+    "subtitle": "...",
+    "subtitle_role": "primary",
+    "semantic_role": "setup",
+    "camera_intent": "establishing",
+    "camera": "gentle handheld",
+    "lighting": "warm soft light, slight lens flare, visible skin tones",
+    "duration": 1.2
+  },
+  {
+    "scene": "中景：那个人缓缓转身，镜头从背后转向侧面轮廓，可以看到被海风吹乱的发丝，远处灯塔的剪影若隐若现。",
+    "subtitle": "别人的那都叫外人。",
+    "subtitle_role": "primary",
+    "semantic_role": "turn",
+    "camera_intent": "slow_push",
+    "camera": "slow pan",
+    "lighting": "golden hour side light, warm skin tones, soft shadows",
+    "duration": 2.4
+  },
+  {
+    "scene": "主观镜头：顺着那个人的视线看向海面，夕阳将海水染成琥珀色，远处的渔船灯火开始亮起，天际线被暖光切割。",
+    "subtitle": "...",
+    "subtitle_role": "primary",
+    "semantic_role": "turn",
+    "camera_intent": "slow_push",
+    "camera": "slow push",
+    "lighting": "warm amber light, gentle backlight, visible water details",
+    "duration": 1.2
+  },
+  {
+    "scene": "全景：那个人终于抬起头，望向远方逐渐暗下去的海面，海风吹动外套衣角，天空从橙红渐变为深蓝，第一颗星星出现。",
+    "subtitle": "论情商高的重要性。",
+    "subtitle_role": "secondary",
+    "semantic_role": "context_note",
+    "camera_intent": "detail_cutaway",
+    "camera": "slow zoom",
+    "lighting": "transitional dusk light, warm highlights fading to cool blue",
+    "duration": 2.4
+  },
+  {
+    "scene": "低角度跟拍：潮水涌来，漫过那个人留下的脚印，海水浸湿鞋边又退去，留下一道湿润的痕迹。",
+    "subtitle": "...",
+    "subtitle_role": "secondary",
+    "semantic_role": "context_note",
+    "camera_intent": "detail_cutaway",
+    "camera": "gentle handheld",
+    "lighting": "reflected sunset light on wet sand, warm tones",
+    "duration": 1.2
+  }
+]

@@ -1,3 +1,6 @@
+import asyncio
+import logging
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -140,4 +143,16 @@ with gr.Blocks(title="AI Reflection Video Generator") as demo:
 
 
 if __name__ == "__main__":
+    # 抑制客户端断开连接时的 asyncio 异常堆栈，只打印日志
+    _original_call_connection_lost = asyncio.proactor_events._ProactorBasePipeTransport._call_connection_lost
+
+    def _patched_call_connection_lost(self, exc):
+        if isinstance(exc, ConnectionResetError):
+            logging.warning("客户端连接已断开: %s", exc)
+        else:
+            _original_call_connection_lost(self, exc)
+
+    _ProactorBasePipeTransport = asyncio.proactor_events._ProactorBasePipeTransport
+    _ProactorBasePipeTransport._call_connection_lost = _patched_call_connection_lost
+
     demo.launch(server_name="127.0.0.1", server_port=7860)
