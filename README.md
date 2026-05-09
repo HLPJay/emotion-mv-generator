@@ -184,6 +184,14 @@ docs/backlog.md
 docs/archive_2026-05-09.md
 ```
 
+第一阶段已经新增语境拆分中间产物：
+
+```text
+generated/runs/<run_id>/semantic_structure.json
+```
+
+它暂时不替换现有表达和字幕链路，只用于观察完整句语义、语义单元、关系图、叙事弧线、视觉指导和质量检查。
+
 项目现在有一层统一的表达导演层：
 
 ```text
