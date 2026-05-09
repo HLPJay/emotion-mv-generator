@@ -36,6 +36,8 @@ def _probe_duration(path: Path) -> float | None:
             capture_output=True,
             check=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
         )
         return float(result.stdout.strip())
     except Exception:
@@ -182,6 +184,8 @@ def replace_video_audio(
             cmd,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             check=False,
         )
 

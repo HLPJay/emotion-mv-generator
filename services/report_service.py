@@ -235,8 +235,12 @@ def build_run_report(run_dir: Path) -> dict:
             "duration_seconds": last_recompose.get("duration_seconds"),
         }
         if last_recompose.get("status") == "success":
+            recompose_info["source_video"] = last_recompose.get("source_video")
+            recompose_info["output_path"] = last_recompose.get("output_path")
+            recompose_info["version"] = last_recompose.get("version")
             recompose_info["video_stream_copied"] = last_recompose.get("video_stream_copied")
-            recompose_info["output_path"] = last_recompose.get("final_video")
+            recompose_info["input_video_duration_seconds"] = last_recompose.get("input_video_duration_seconds")
+            recompose_info["output_duration_seconds"] = last_recompose.get("output_duration_seconds")
         else:
             recompose_info["error"] = last_recompose.get("error")
             recompose_info["error_type"] = last_recompose.get("error_type")

@@ -12,6 +12,29 @@ from services.run_service import write_json
 from services.video_service import compose_video
 
 
+def next_recompose_output_path(run_dir: Path, mode: str) -> tuple[Path, int]:
+    """Generate next versioned output path for recomposed video.
+
+    Returns (output_path, version) where version starts at 1.
+    Output goes into run_dir/recomposed/ directory.
+    """
+    recomposed_dir = run_dir / "recomposed"
+    recomposed_dir.mkdir(parents=True, exist_ok=True)
+
+    prefix = f"final_{mode}_recompose_"
+    existing = list(recomposed_dir.glob(f"{prefix}*.mp4"))
+    versions = []
+    for f in existing:
+        try:
+            v = int(f.stem.replace(prefix, ""))
+            versions.append(v)
+        except ValueError:
+            pass
+    next_version = (max(versions) + 1) if versions else 1
+    output_path = recomposed_dir / f"{prefix}{next_version:03d}.mp4"
+    return output_path, next_version
+
+
 def get_recomposable_runs() -> list[dict[str, Any]]:
     """Return all runs that have enough assets to be recomposed."""
     runs_dir = Path(__file__).resolve().parents[1] / "generated" / "runs"
@@ -149,27 +172,42 @@ def recompose_run_video(
     if backup_existing and final_video.exists() and not backup_video.exists():
         shutil.copy2(final_video, backup_video)
 
-    log_event(run_dir, "recompose", "started")
+    # Generate versioned output path (never overwrite final.mp4)
+    output_video, version = next_recompose_output_path(run_dir, mode="moviepy")
+
+    log_event(run_dir, "recompose", "started", mode="moviepy")
 
     try:
         with track_step(run_dir, "video_compose"):
-            output_path = compose_video(
+            compose_video(
                 storyboard,
                 image_paths,
                 emotion,
                 audio_plan,
                 run_dir,
                 progress_callback=progress_callback,
+                output_path=output_video,
             )
 
-        log_event(run_dir, "recompose", "success", final_video=str(output_path))
+        log_event(
+            run_dir,
+            "recompose",
+            "success",
+            engine="moviepy",
+            mode="moviepy",
+            source_video=str(final_video),
+            output_path=str(output_video),
+            version=version,
+        )
         report = write_run_report(run_dir)
 
         bgm_path = run_dir / "audio" / "bgm.mp3"
         return {
             "success": True,
             "run_dir": str(run_dir),
-            "output_path": str(output_path),
+            "source_video": str(final_video),
+            "output_path": str(output_video),
+            "version": version,
             "backup_path": str(backup_video) if backup_video.exists() else None,
             "bgm_exists": bgm_path.exists() and bgm_path.stat().st_size > 0,
             "narration_count": sum(
@@ -181,7 +219,7 @@ def recompose_run_video(
             "scene_count": len(storyboard),
         }
     except Exception as exc:
-        log_event(run_dir, "recompose", "failed", error=str(exc), error_type=exc.__class__.__name__)
+        log_event(run_dir, "recompose", "failed", engine="moviepy", mode="moviepy", error=str(exc), error_type=exc.__class__.__name__)
         raise
 
 
@@ -251,12 +289,15 @@ def _recompose_audio_only(
     if backup_existing and not backup_video.exists():
         shutil.copy2(final_video, backup_video)
 
+    # Generate versioned output path (never overwrite final.mp4)
+    output_video, version = next_recompose_output_path(run_dir, mode="audio_only")
+
     log_event(run_dir, "recompose", "started", mode="audio_only")
 
     try:
         result = replace_video_audio(
             input_video=final_video,
-            output_video=final_video,
+            output_video=output_video,
             audio_tracks=audio_tracks,
         )
 
@@ -284,13 +325,17 @@ def _recompose_audio_only(
             video_stream_copied=result.get("video_stream_copied"),
             input_video_duration_seconds=result.get("input_video_duration_seconds"),
             output_duration_seconds=result.get("output_duration_seconds"),
-            final_video=str(final_video),
+            source_video=str(final_video),
+            output_path=str(output_video),
+            version=version,
         )
 
         return {
             "success": True,
             "run_dir": str(run_dir),
-            "output_path": str(final_video),
+            "source_video": str(final_video),
+            "output_path": str(output_video),
+            "version": version,
             "backup_path": str(backup_video) if backup_video.exists() else None,
             "engine": result.get("engine"),
             "mode": "audio_only",

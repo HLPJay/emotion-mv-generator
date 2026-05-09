@@ -625,7 +625,7 @@ with gr.Blocks(title="AI Reflection Video Generator") as demo:
                 try:
                     result = recompose_run_video(run_dir_path, strict_audio=strict_audio, mode=mode)
                     return {
-                        recompose_video_output: str(run_dir_path / "final.mp4"),
+                        recompose_video_output: result.get("output_path", ""),
                         recompose_report_output: result,
                         recompose_status_output: f"重拼完成：{result.get('output_path', '')}",
                     }
@@ -669,7 +669,10 @@ if __name__ == "__main__":
         if isinstance(exc, ConnectionResetError):
             logging.warning("客户端连接已断开: %s", exc)
         else:
-            _original_call_connection_lost(self, exc)
+            try:
+                _original_call_connection_lost(self, exc)
+            except ConnectionResetError as err:
+                logging.warning("客户端连接已断开: %s", err)
 
     _ProactorBasePipeTransport = asyncio.proactor_events._ProactorBasePipeTransport
     _ProactorBasePipeTransport._call_connection_lost = _patched_call_connection_lost

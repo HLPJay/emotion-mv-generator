@@ -493,6 +493,7 @@ def compose_video(
     audio_plan: dict | None = None,
     output_dir: Path | None = None,
     progress_callback: Callable[[dict], None] | None = None,
+    output_path: Path | None = None,
 ) -> Path:
     timings: dict[str, float] = {}
     video_config = _video_config()
@@ -672,7 +673,7 @@ def compose_video(
     video = video.with_audio(audio)
     mark_timing("audio_mix", started)
 
-    output = output_dir / "final.mp4"
+    output = output_path or output_dir / "final.mp4"
     started = time.perf_counter()
     if progress_callback:
         progress_callback({"step": "video_compose", "stage": "write_videofile", "status": "running"})
