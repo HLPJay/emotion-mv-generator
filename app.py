@@ -27,6 +27,7 @@ from services.visual_style_service import RANDOM_STYLE_ID, select_visual_style, 
 from services.visual_continuity_service import build_visual_continuity
 from services.visual_poetic_service import RANDOM_WORLD_ID, build_visual_poetic_plan, visual_world_choices
 from services.recompose_service import get_recomposable_runs, recompose_run_video
+from services.storyboard_edit_service import load_storyboard_subtitles, update_storyboard_subtitles
 
 
 ROOT = Path(__file__).parent
@@ -637,6 +638,199 @@ with gr.Blocks(title="AI Reflection Video Generator") as demo:
             recompose_refresh_btn.click(fn=on_refresh_runs, outputs=[recompose_run_dropdown, recompose_status_output])
             recompose_run_dropdown.change(fn=on_run_selected, inputs=[recompose_run_dropdown], outputs=[recompose_run_dir_input, recompose_status_output])
             recompose_generate_btn.click(fn=on_recompose, inputs=[recompose_run_dir_input, recompose_strict_audio, recompose_mode], outputs=[recompose_video_output, recompose_report_output, recompose_status_output])
+
+        with gr.Tab("字幕编辑"):
+            edit_run_dir_input = gr.Textbox(label="Run 目录", placeholder="generated/runs/20260509_231347_...")
+            edit_refresh_btn = gr.Button("刷新最近 Run", variant="secondary")
+            edit_run_dropdown = gr.Dropdown(
+                label="最近 Run（点击选择）",
+                choices=[],
+                interactive=True,
+            )
+            edit_load_btn = gr.Button("加载字幕", variant="secondary")
+            edit_table = gr.Dataframe(
+                label="分镜字幕",
+                headers=["index", "scene_id", "role", "subtitle", "duration"],
+                datatype=["number", "str", "str", "str", "number"],
+                type="array",
+                static_columns=[0, 1, 2, 4],
+                visible=False,
+            )
+            edit_save_btn = gr.Button("保存字幕", variant="secondary")
+            edit_recompose_btn = gr.Button("保存并完整重拼", variant="primary")
+            edit_status_output = gr.Markdown(label="状态")
+            edit_recompose_progress_output = gr.Markdown(label="完整重拼进度", visible=False)
+            edit_recompose_video_output = gr.Video(label="完整重拼结果", visible=False)
+            edit_recompose_report_output = gr.JSON(label="完整重拼报告", visible=False)
+
+            def on_edit_run_selected(path_and_label: tuple[str, str] | None):
+                if not path_and_label:
+                    return {edit_run_dir_input: "", edit_status_output: "未选择任何 Run"}
+                path = path_and_label[1] if isinstance(path_and_label, tuple) else path_and_label
+                return {edit_run_dir_input: path, edit_status_output: f"已选择: {path}"}
+
+            def on_edit_refresh():
+                runs = get_recomposable_runs()
+                choices = [
+                    (f"{r['run_id']} | {r['label'][:30]} | {r['scene_count']}镜", r["path"])
+                    for r in runs
+                ]
+                return {
+                    edit_run_dropdown: gr.update(choices=choices),
+                    edit_status_output: f"找到 {len(runs)} 个可编辑的 Run",
+                }
+
+            def on_load_subtitles(run_dir: str):
+                run_dir_path = Path(run_dir)
+                if not run_dir_path.exists():
+                    raise gr.Error(f"目录不存在: {run_dir}")
+                try:
+                    subtitles = load_storyboard_subtitles(run_dir_path)
+                    rows = [[s["index"], s["scene_id"], s["role"], s["subtitle"], s["duration"]] for s in subtitles]
+                    return {
+                        edit_table: gr.update(value=rows, visible=True),
+                        edit_status_output: f"已加载 {len(rows)} 条字幕",
+                    }
+                except FileNotFoundError as exc:
+                    raise gr.Error(str(exc)) from exc
+                except Exception as exc:
+                    raise gr.Error(f"加载字幕失败: {exc}") from exc
+
+            def subtitle_rows_to_updates(rows: Any) -> list[dict[str, Any]]:
+                if rows is None:
+                    raise ValueError("字幕表格为空，请先加载字幕")
+
+                if hasattr(rows, "to_dict"):
+                    rows = rows.to_dict("records")
+
+                updates = []
+                for row in rows:
+                    if isinstance(row, dict):
+                        index_value = row.get("index")
+                        subtitle_value = row.get("subtitle")
+                    else:
+                        if not row or str(row[0]).strip().lower() == "index":
+                            continue
+                        index_value = row[0]
+                        subtitle_value = row[3] if len(row) > 3 else ""
+
+                    try:
+                        index = int(float(index_value))
+                    except (TypeError, ValueError) as exc:
+                        raise ValueError(f"字幕行 index 无效: {index_value}") from exc
+                    updates.append({"index": index, "subtitle": str(subtitle_value or "")})
+
+                if not updates:
+                    raise ValueError("没有可保存的字幕行")
+                return updates
+
+            def on_save_subtitles(run_dir: str, rows: list):
+                run_dir_path = Path(run_dir)
+                if not run_dir_path.exists():
+                    raise gr.Error(f"目录不存在: {run_dir}")
+                try:
+                    updates = subtitle_rows_to_updates(rows)
+                    result = update_storyboard_subtitles(run_dir_path, updates)
+                    log_event(run_dir_path, "subtitle_edit", "success", changed_count=result["changed_count"], backup_path=result["backup_path"])
+                    return {
+                        edit_status_output: f"已保存 {result['changed_count']} 条字幕修改，备份：{result['backup_path']}",
+                    }
+                except Exception as exc:
+                    raise gr.Error(f"保存失败: {exc}") from exc
+
+            def on_save_and_recompose(run_dir: str, rows: list, strict_audio: bool):
+                run_dir_path = Path(run_dir)
+                if not run_dir_path.exists():
+                    raise gr.Error(f"目录不存在: {run_dir}")
+
+                stage_labels = {
+                    "build_video_clips": "构建视频片段",
+                    "concatenate_video": "拼接片段",
+                    "music_prepare": "准备 BGM",
+                    "narration_prepare": "准备旁白",
+                    "background_audio": "混入背景音乐",
+                    "environment_audio": "混入环境音",
+                    "audio_mix": "合成音轨",
+                    "write_videofile": "编码输出 MP4",
+                }
+
+                try:
+                    updates = subtitle_rows_to_updates(rows)
+                    save_result = update_storyboard_subtitles(run_dir_path, updates)
+                    log_event(
+                        run_dir_path,
+                        "subtitle_edit",
+                        "success",
+                        changed_count=save_result["changed_count"],
+                        backup_path=save_result["backup_path"],
+                    )
+                    yield (
+                        f"已保存 {save_result['changed_count']} 条字幕，开始完整重拼...",
+                        gr.update(visible=True, value="完整重拼启动中..."),
+                        gr.update(visible=False),
+                        gr.update(visible=True, value=save_result),
+                    )
+                except Exception as exc:
+                    raise gr.Error(f"保存失败: {exc}") from exc
+
+                progress_state: dict[str, str] = {"message": "准备中..."}
+
+                def update_progress(event: dict[str, Any]) -> None:
+                    stage = event.get("stage", "")
+                    label = stage_labels.get(stage, stage)
+                    duration = event.get("duration_seconds")
+                    elapsed = event.get("elapsed_seconds")
+                    percent = event.get("percent")
+                    eta = event.get("eta_seconds")
+                    if duration is not None:
+                        progress_state["message"] = f"{label}完成，用时 {duration:.2f}s"
+                    elif elapsed is not None:
+                        msg = f"{label}中，已用 {elapsed:.2f}s"
+                        if percent is not None:
+                            msg += f"，进度 {percent:.1f}%"
+                        if eta is not None:
+                            msg += f"，预计剩余 {eta:.2f}s"
+                        progress_state["message"] = msg
+                    else:
+                        progress_state["message"] = label
+
+                recompose_result = yield from _run_with_progress(
+                    lambda callback: recompose_run_video(
+                        run_dir_path,
+                        strict_audio=strict_audio,
+                        mode="moviepy",
+                        progress_callback=callback,
+                    ),
+                    update_progress,
+                    lambda: (
+                        f"已保存 {save_result['changed_count']} 条字幕，正在完整重拼...",
+                        gr.update(visible=True, value=progress_state["message"]),
+                        gr.update(visible=False),
+                        gr.update(visible=True, value=save_result),
+                    ),
+                )
+
+                yield (
+                    f"已保存 {save_result['changed_count']} 条字幕并完成重拼：{recompose_result['output_path']}",
+                    gr.update(visible=True, value="完整重拼完成"),
+                    gr.update(visible=True, value=recompose_result["output_path"]),
+                    gr.update(visible=True, value=recompose_result),
+                )
+
+            edit_refresh_btn.click(fn=on_edit_refresh, outputs=[edit_run_dropdown, edit_status_output])
+            edit_run_dropdown.change(fn=on_edit_run_selected, inputs=[edit_run_dropdown], outputs=[edit_run_dir_input, edit_status_output])
+            edit_load_btn.click(fn=on_load_subtitles, inputs=[edit_run_dir_input], outputs=[edit_table, edit_status_output])
+            edit_save_btn.click(fn=on_save_subtitles, inputs=[edit_run_dir_input, edit_table], outputs=[edit_status_output])
+            edit_recompose_btn.click(
+                fn=on_save_and_recompose,
+                inputs=[edit_run_dir_input, edit_table, recompose_strict_audio],
+                outputs=[
+                    edit_status_output,
+                    edit_recompose_progress_output,
+                    edit_recompose_video_output,
+                    edit_recompose_report_output,
+                ],
+            )
 
     generate_button.click(
         fn=generate_reflection_video,

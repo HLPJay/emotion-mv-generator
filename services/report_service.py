@@ -245,6 +245,21 @@ def build_run_report(run_dir: Path) -> dict:
             recompose_info["error"] = last_recompose.get("error")
             recompose_info["error_type"] = last_recompose.get("error_type")
 
+    # Extract subtitle_edit info from events
+    subtitle_edit_events = [e for e in events if e.get("step") == "subtitle_edit"]
+    subtitle_edit_info: dict = {}
+    if subtitle_edit_events:
+        last_edit = subtitle_edit_events[-1]
+        subtitle_edit_info = {
+            "success": last_edit.get("status") == "success",
+            "timestamp": last_edit.get("timestamp"),
+            "changed_count": last_edit.get("changed_count"),
+            "backup_path": last_edit.get("backup_path"),
+        }
+        if last_edit.get("status") != "success":
+            subtitle_edit_info["error"] = last_edit.get("error")
+            subtitle_edit_info["error_type"] = last_edit.get("error_type")
+
     final_video = run_dir / "final.mp4"
     narration = run_dir / "audio" / "narration.mp3"
     bgm = run_dir / "audio" / "bgm.mp3"
@@ -388,6 +403,7 @@ def build_run_report(run_dir: Path) -> dict:
             "used_music_fallback": not bgm.exists(),
         },
         "recompose": recompose_info if recompose_info else None,
+        "subtitle_edit": subtitle_edit_info if subtitle_edit_info else None,
         "performance": {
             "video_compose": video_compose_timings,
         },
