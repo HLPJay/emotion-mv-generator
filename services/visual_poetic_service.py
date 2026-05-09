@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import hashlib
 import json
@@ -61,6 +61,30 @@ def _count_matches(text: str, keywords: list[str]) -> int:
     return sum(1 for keyword in keywords if keyword and keyword in text)
 
 
+
+
+def _is_metaphor_only(text, scene_tokens):
+    """检测场景词是否只出现在比喻句中，没有真实场景描写"""
+    mp = ["像", "仿佛", "如同", "犹如", "像是", "就像", "好似", "好比", "宛如"]
+    if not scene_tokens:
+        return False
+    for token in scene_tokens:
+        if not token or token not in text:
+            continue
+        in_met = False
+        for p in mp:
+            c = p + token
+            if c in text:
+                in_met = True
+                r = text.replace(c, "")
+                if token in r:
+                    return False
+                break
+        if not in_met:
+            return False
+    return True
+
+
 def _score_world_item(text: str, world_id: str, world: dict) -> tuple[int, list[str]]:
     score = _score_item(text, world)
     reasons: list[str] = []
@@ -100,9 +124,26 @@ def _score_world_item(text: str, world_id: str, world: dict) -> tuple[int, list[
     max_explicit_hits = max(explicit_scene_hits.values() or [0])
 
     if world_id in explicit_scene_hits and explicit_scene_hits[world_id] > 0:
-        boost = 7 + explicit_scene_hits[world_id] * 2
-        score += boost
-        reasons.append(f"explicit_scene_cue:+{boost}")
+        # 检查场景词是否只出现在比喻句（像/仿佛/如同）中
+        scene_tokens_map = {
+            "train_journey": explicit_train_tokens,
+            "ocean_shore": explicit_ocean_tokens,
+            "star_cosmos": explicit_cosmos_tokens,
+            "mountain_path": explicit_mountain_tokens,
+            "rural_family": explicit_rural_tokens,
+            "city_daylight": explicit_city_tokens,
+            "ordinary_life": ordinary_inner_tokens,
+        }
+        matched_tokens = [t for t in scene_tokens_map.get(world_id, []) if t and t in text]
+        if _is_metaphor_only(text, matched_tokens):
+            # 只加一半分数，标记为隐喻场景
+            boost = max(3, (7 + explicit_scene_hits[world_id] * 2) // 2)
+            score += boost
+            reasons.append(f"metaphor_scene_cue:+{boost}")
+        else:
+            boost = 7 + explicit_scene_hits[world_id] * 2
+            score += boost
+            reasons.append(f"explicit_scene_cue:+{boost}")
 
     if world_id == "workspace_reality":
         if _contains_any(text, productivity_tokens):
@@ -174,6 +215,32 @@ def _select_world_scored(worlds: dict, text: str) -> tuple[str, dict, int, list[
     ]
     if scored and scored[0][2] > 0:
         top_score = scored[0][2]
+        
+        # 负面约束：抽象世界没有 explicit_scene_cue 时，强制选择现实世界
+        _ABSTRACT_WORLDS = {"star_cosmos", "ocean_shore", "train_journey", "mountain_path"}
+        _REALITY_WORLDS = {"workspace_reality", "ordinary_life", "city_daylight", "rural_family"}
+        
+        top_id = scored[0][0]
+        if top_id in _ABSTRACT_WORLDS:
+            # 检查 Top 1 是否有 explicit scene cue
+            top_reasons = scored[0][3]
+            has_explicit = any("explicit_scene_cue" in r for r in top_reasons)
+            if not has_explicit:
+                # 找最高分的现实世界
+                reality_candidates = [row for row in scored if row[0] in _REALITY_WORLDS and row[2] > 0]
+                if reality_candidates:
+                    # 如果现实世界与抽象世界分差不超过 5，强制选现实世界
+                    reality_top = reality_candidates[0]
+                    if top_score - reality_top[2] <= 5:
+                        picked_id, picked, picked_score = reality_top[0], reality_top[1], reality_top[2]
+                        # 在 selection_debug 中标记强制调整
+                        for item in selection_debug:
+                            if item["id"] == picked_id:
+                                item.setdefault("reasons", []).append("reality_override:abstract_world_lacks_explicit_scene")
+                            if item["id"] == top_id:
+                                item.setdefault("reasons", []).append(f"overridden_by_reality:gap_{top_score - reality_top[2]}")
+                        return picked_id, picked, picked_score, selection_debug
+
         best_candidates = [row for row in scored if row[2] == top_score]
         picked_id, picked, picked_score = _stable_pick_scored(
             [(world_id, world, score) for world_id, world, score, _ in best_candidates],

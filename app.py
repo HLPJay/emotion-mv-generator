@@ -1,4 +1,4 @@
-import asyncio
+﻿import asyncio
 import json
 import logging
 import queue
@@ -205,6 +205,11 @@ def _render_report_summary(report: dict[str, Any] | None) -> str:
     timings = performance.get("timings") or {}
     timing_text = "\n".join(f"- {key}: {_format_duration(value)}" for key, value in timings.items()) or "- 无"
     paths = report.get("paths", {})
+    visual_world_selection = content.get("visual_world_selection") or {}
+    candidate_text = "\n".join(
+        f"- {item.get('label')} (`{item.get('id')}`): {item.get('score')}，{item.get('reasons_cn') or '无额外理由'}"
+        for item in visual_world_selection.get("top_candidates", [])
+    ) or "- 无"
 
     return f"""### 报告摘要
 
@@ -222,12 +227,17 @@ def _render_report_summary(report: dict[str, Any] | None) -> str:
 - 完整句数: {content.get('semantic_sentence_count')}
 - 语义单元数: {content.get('semantic_unit_count')}
 - 情绪: {content.get('emotion')}
-- 意境世界: {content.get('visual_world')}
+- 意境世界: {content.get('visual_world')} (`{content.get('visual_world_id')}`)
+- 意境选择模式: {visual_world_selection.get('mode')}
+- 意境选择理由: {visual_world_selection.get('reason') or '无'}
 - 叙事弧线: {content.get('narrative_arc')}
 - 转折点: {content.get('narrative_turning_point')}
 - 视觉风格: {content.get('visual_style')}
 - 字幕数: {content.get('subtitles_count')}
 - 分镜数: {content.get('adjusted_storyboard_count')}
+
+**意境候选**
+{candidate_text}
 
 **音频**
 - BGM 存在: {audio_status.get('bgm_exists')}

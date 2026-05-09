@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 import subprocess
@@ -117,6 +117,94 @@ def _has_audio(media_info: dict) -> bool:
     return any(stream.get("codec_type") == "audio" for stream in media_info.get("streams", []))
 
 
+def _translate_reason_tag(tag: str) -> str:
+    """将机读 reason tag 翻译为中文可读描述"""
+    mapping = {
+        "explicit_scene_cue": "明确场景线索",
+        "metaphor_scene_cue": "隐喻场景线索",
+        "productivity_or_habit_theme": "习惯沉淀、现实执行",
+        "cognition_to_action_theme": "认知到行动主题",
+        "daily_life_or_habit_theme": "日常生活或习惯主题",
+        "challenge_or_threshold_theme": "挑战或跨边界主题",
+        "ocean_openness_theme": "海边开阔主题",
+        "cosmos_cognition_theme": "星空认知主题",
+        "family_origin_theme": "家庭或根源主题",
+        "urban_career_theme": "城市职业主题",
+        "explicit_train_or_travel_cue": "明确火车/旅途用词",
+        "generic_journey_cue_penalized_without_train_cue": "无明确火车词，泛旅程词降权",
+        "productivity_theme_without_mountain_cue_penalty": "现实执行主题但无山路线索，降权",
+        "ocean_requires_clear_ocean_cue": "无明确海边词，降权",
+        "cosmos_requires_clear_cosmos_cue": "无明确星空词，降权",
+        "rural_requires_family_or_origin_cue": "无明确农村/亲情词，降权",
+        "explicit_scene_elsewhere_penalty": "其他场景有更强匹配，降权",
+        "reality_override:abstract_world_lacks_explicit_scene": "抽象世界无明确场景线索，强制选现实世界",
+    }
+    # 处理带数值的 tag: explicit_scene_cue:+15
+    for prefix, chinese in mapping.items():
+        if tag.startswith(prefix):
+            suffix = tag[len(prefix):]
+            if suffix:
+                return f"{chinese}{suffix}"
+            return chinese
+    # 处理 override 格式
+    if tag.startswith("overridden_by_reality:"):
+        return f"因抽象世界无场景线索，被现实世界取代（{tag.split(':')[1]}）"
+    return tag
+
+
+def _translate_reasons(reasons: list[str]) -> str:
+    """将 reason tag 列表转为中文可读摘要"""
+    if not reasons:
+        return ""
+    parts = [_translate_reason_tag(r) for r in reasons]
+    # 去重（同义 tag 可能重复）
+    seen = set()
+    unique = []
+    for p in parts:
+        if p not in seen:
+            seen.add(p)
+            unique.append(p)
+    return "；".join(unique)
+
+
+def _visual_world_selection_summary(visual_poetic_plan: dict) -> dict:
+    world = visual_poetic_plan.get("world") or {}
+    debug_items = world.get("selection_debug") or []
+    top_candidates = []
+    for item in debug_items[:3]:
+        reasons = item.get("reasons") or []
+        top_candidates.append(
+            {
+                "id": item.get("id"),
+                "label": item.get("label"),
+                "score": item.get("score"),
+                "reasons": reasons,
+                "reasons_cn": _translate_reasons(reasons),
+            }
+        )
+
+    selected = top_candidates[0] if top_candidates else {}
+    reasons = selected.get("reasons") or []
+    if world.get("selection_mode") == "manual_world_theme_archetype":
+        readable = "手动选择意境世界"
+    elif reasons:
+        readable = _translate_reasons(reasons)
+    elif world.get("selection_mode"):
+        readable = f"自动匹配，分数 {world.get('match_score')}"
+    else:
+        readable = ""
+
+    return {
+        "id": world.get("id"),
+        "label": world.get("label"),
+        "score": world.get("match_score"),
+        "mode": world.get("selection_mode"),
+        "reason": readable,
+        "reason_raw": "; ".join(reasons),
+        "top_candidates": top_candidates,
+    }
+
+
 def build_run_report(run_dir: Path) -> dict:
     input_text = _read_text(run_dir / "input.txt")
     input_structure = _read_json(run_dir / "input_structure.json") or {}
@@ -168,6 +256,8 @@ def build_run_report(run_dir: Path) -> dict:
     if len(subtitle_plan.get("subtitles", [])) > 8:
         warnings.append("字幕节奏项超过 8 条")
 
+    visual_world_selection = _visual_world_selection_summary(visual_poetic_plan)
+
     report = {
         "run_id": run_dir.name,
         "generated_at": datetime.now().isoformat(timespec="seconds"),
@@ -205,6 +295,8 @@ def build_run_report(run_dir: Path) -> dict:
             "expression_profile": expression_plan.get("profile_label"),
             "visual_archetype": (visual_poetic_plan.get("archetype") or {}).get("label"),
             "visual_world": (visual_poetic_plan.get("world") or {}).get("label"),
+            "visual_world_id": (visual_poetic_plan.get("world") or {}).get("id"),
+            "visual_world_selection": visual_world_selection,
             "visual_motif_symbols": ((visual_poetic_plan.get("motif") or {}).get("recurring_symbols") or []),
             "narrative_arc": narrative_plan.get("arc"),
             "narrative_turning_point": narrative_plan.get("turning_point"),
@@ -307,6 +399,11 @@ def render_report_markdown(report: dict) -> str:
     media = report["media"]
     content = report["content_summary"]
     assets = report["assets"]
+    visual_world_selection = content.get("visual_world_selection") or {}
+    candidate_text = "\n".join(
+        f"- {item.get('label')} (`{item.get('id')}`): {item.get('score')}，{item.get('reasons_cn') or '无额外理由'}"
+        for item in visual_world_selection.get("top_candidates", [])
+    ) or "- 无"
     return f"""# Run Report
 
 ## Basic
@@ -324,9 +421,15 @@ def render_report_markdown(report: dict) -> str:
 - Visual Style: {content.get('visual_style')} (`{content.get('visual_style_id')}`)
 - Expression Profile: {content.get('expression_profile')}
 - Visual Archetype: {content.get('visual_archetype')}
-- Visual World: {content.get('visual_world')}
+- Visual World: {content.get('visual_world')} (`{content.get('visual_world_id')}`)
+- Visual World Mode: {visual_world_selection.get('mode')}
+- Visual World Reason: {visual_world_selection.get('reason')}
 - Narrative Arc: {content.get('narrative_arc')}
 - Turning Point: {content.get('narrative_turning_point')}
+
+## Visual World Selection
+
+{candidate_text}
 
 ## Structure
 

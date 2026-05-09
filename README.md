@@ -291,6 +291,25 @@ templates/visual_poetic_worlds.json
 - “星空宇宙”和“海边远望”也需要较明确的宇宙/星空或海边/潮水线索，避免普通“认知”“世界”主题被过度抽象化。
 - 每次自动选择会在 `visual_poetic_plan.json` 的 `world.selection_debug` 中记录候选世界得分和原因，方便排查为什么画面会落到某个场景。
 
+报告摘要也会展示：
+
+```text
+意境世界
+意境选择模式
+意境选择理由
+意境候选 Top 3
+```
+
+因此日常观察自动模式时，不需要先翻 JSON，可以直接看 UI 的“报告”页。
+
+单独验证自动意境选择：
+
+```powershell
+python scripts\test_auto_world_selection.py
+```
+
+这个脚本不会生成图片、音频或视频，只验证典型文案是否选到预期意境世界，并打印候选得分和选择理由。
+
 ## Narrative Plan
 
 为了让视频不只是“关键词配图”，项目在视觉意境后新增了镜头叙事层：
