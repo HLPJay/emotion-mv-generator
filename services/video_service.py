@@ -35,17 +35,20 @@ VIDEO_PRESET = "veryfast"
 VIDEO_THREADS = 6
 SUBTITLE_STYLE = {
     "font_size": 74,
-    "min_font_size": 60,
+    "min_font_size": 42,
     "secondary_font_size": 50,
-    "secondary_min_font_size": 42,
+    "secondary_min_font_size": 34,
     "fill": (244, 244, 238, 242),
     "secondary_fill": (232, 232, 226, 220),
     "shadow": (0, 0, 0, 135),
     "position_y_ratio": 0.69,
     "secondary_position_y_ratio": 0.75,
-    "max_chars_per_line": 13,
-    "secondary_max_chars_per_line": 16,
+    "max_chars_per_line": 11,
+    "secondary_max_chars_per_line": 13,
     "max_lines": 2,
+    "overflow_max_lines": 3,
+    "max_width_ratio": 0.86,
+    "vertical_margin": 64,
     "line_height_ratio": 1.34,
     "fade_in": 0.28,
     "fade_out": 0.38,
@@ -83,6 +86,7 @@ def _subtitle_png(text: str, index: int, output_dir: Path, role: str = "primary"
     if text == "...":
         return None
 
+    output_dir.mkdir(parents=True, exist_ok=True)
     image = Image.new("RGBA", SIZE, (0, 0, 0, 0))
     draw = ImageDraw.Draw(image)
     lines, font_size = _layout_subtitle_lines(text, role)
@@ -92,9 +96,12 @@ def _subtitle_png(text: str, index: int, output_dir: Path, role: str = "primary"
     block_height = line_height * len(lines)
     y_ratio = SUBTITLE_STYLE["secondary_position_y_ratio"] if role == "secondary" else SUBTITLE_STYLE["position_y_ratio"]
     y = int(SIZE[1] * y_ratio) - block_height // 2
+    margin = SUBTITLE_STYLE["vertical_margin"]
+    y = max(margin, min(y, SIZE[1] - block_height - margin))
     for line in lines:
         bbox = draw.textbbox((0, 0), line, font=font)
         x = (SIZE[0] - (bbox[2] - bbox[0])) // 2
+        x = max(0, x)
         shadow = SUBTITLE_STYLE["shadow"]
         fill = SUBTITLE_STYLE["secondary_fill"] if role == "secondary" else SUBTITLE_STYLE["fill"]
         draw.text((x + 2, y + 2), line, fill=shadow, font=font)
@@ -106,29 +113,165 @@ def _subtitle_png(text: str, index: int, output_dir: Path, role: str = "primary"
     return path
 
 
+def _text_width(text: str, font: ImageFont.FreeTypeFont | ImageFont.ImageFont) -> int:
+    image = Image.new("RGBA", (1, 1), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(image)
+    bbox = draw.textbbox((0, 0), text, font=font)
+    return bbox[2] - bbox[0]
+
+
+def _cjk_count(text: str) -> int:
+    return sum(1 for char in text if "\u4e00" <= char <= "\u9fff")
+
+
+def _semantic_break_index(text: str) -> int:
+    if len(text) < 6:
+        return -1
+
+    strong_marks = "，,。！？!?；;、 "
+    soft_markers = [
+        "重要的是",
+        "而是",
+        "但是",
+        "只是",
+        "所以",
+        "因为",
+        "如果",
+        "然后",
+        "以及",
+        "或者",
+        "并且",
+        "需要",
+        "还要",
+        "不是",
+        "就是",
+        "和",
+        "与",
+        "但",
+        "而",
+        "却",
+        "也",
+        "还",
+        "再",
+        "并",
+        "或",
+    ]
+    min_head = max(3, len(text) // 3)
+    min_tail = 2
+    ideal = len(text) * 0.58
+    candidates: list[tuple[float, int]] = []
+
+    for index, char in enumerate(text):
+        if char in strong_marks:
+            split_at = index + 1
+            if split_at >= min_head and len(text) - split_at >= min_tail:
+                candidates.append((abs(split_at - ideal) - 3.0, split_at))
+
+    for marker in soft_markers:
+        start = 0
+        while True:
+            index = text.find(marker, start)
+            if index < 0:
+                break
+            split_at = index if marker not in {"重要的是"} else index + len(marker)
+            if split_at >= min_head and len(text) - split_at >= min_tail:
+                candidates.append((abs(split_at - ideal), split_at))
+            start = index + len(marker)
+
+    if not candidates:
+        return -1
+    return min(candidates, key=lambda item: item[0])[1]
+
+
+def _wrap_text_by_width(
+    text: str,
+    font: ImageFont.FreeTypeFont | ImageFont.ImageFont,
+    max_width: int,
+    preferred_cjk_chars: int,
+) -> list[str]:
+    lines: list[str] = []
+    current = ""
+    break_chars = "，,。！？!?；;、 "
+    for char in text:
+        candidate = current + char
+        should_wrap_by_chars = _cjk_count(candidate) > preferred_cjk_chars and char not in break_chars
+        if not current or (_text_width(candidate, font) <= max_width and not should_wrap_by_chars):
+            current = candidate
+            continue
+
+        break_at = _semantic_break_index(current)
+        if break_at > 0:
+            lines.append(current[:break_at].strip())
+            current = (current[break_at:] + char).strip()
+        else:
+            lines.append(current.strip())
+            current = char.strip()
+
+    if current:
+        lines.append(current.strip())
+    lines = [line for line in lines if line]
+
+    leading_punctuation = "，,。！？!?；;、"
+    fixed: list[str] = []
+    punctuation_width_limit = int(SIZE[0] * 0.94)
+    for line in lines:
+        if fixed and line and line[0] in leading_punctuation:
+            candidate = fixed[-1] + line[0]
+            if _text_width(candidate, font) <= punctuation_width_limit:
+                fixed[-1] = candidate
+                line = line[1:].strip()
+        if line:
+            fixed.append(line)
+    return fixed
+
+
+def _wrap_subtitle_text(
+    text: str,
+    font: ImageFont.FreeTypeFont | ImageFont.ImageFont,
+    max_width: int,
+    preferred_cjk_chars: int,
+) -> list[str]:
+    paragraphs = [line.strip() for line in text.replace("\r\n", "\n").split("\n") if line.strip()]
+    if not paragraphs:
+        return []
+
+    lines: list[str] = []
+    for paragraph in paragraphs:
+        lines.extend(_wrap_text_by_width(paragraph, font, max_width, preferred_cjk_chars))
+    return lines
+
+
 def _layout_subtitle_lines(text: str, role: str = "primary") -> tuple[list[str], int]:
     clean = text.strip()
-    max_chars = SUBTITLE_STYLE["secondary_max_chars_per_line"] if role == "secondary" else SUBTITLE_STYLE["max_chars_per_line"]
     max_lines = SUBTITLE_STYLE["max_lines"]
+    preferred_chars = SUBTITLE_STYLE["secondary_max_chars_per_line"] if role == "secondary" else SUBTITLE_STYLE["max_chars_per_line"]
     font_size = SUBTITLE_STYLE["secondary_font_size"] if role == "secondary" else SUBTITLE_STYLE["font_size"]
     min_font_size = SUBTITLE_STYLE["secondary_min_font_size"] if role == "secondary" else SUBTITLE_STYLE["min_font_size"]
+    max_width = int(SIZE[0] * SUBTITLE_STYLE["max_width_ratio"])
+    overflow_max_lines = SUBTITLE_STYLE["overflow_max_lines"]
 
-    if len(clean) <= max_chars:
-        return [clean], font_size
+    for size in range(font_size, min_font_size - 1, -2):
+        font = _font(size)
+        lines = _wrap_subtitle_text(clean, font, max_width, preferred_chars)
+        if len(lines) <= max_lines:
+            return lines, size
 
-    if len(clean) <= max_chars * max_lines:
-        split_at = len(clean) // 2
-        punctuation_points = [pos + 1 for pos, char in enumerate(clean) if char in "，,。！？!?；;"]
-        if punctuation_points:
-            split_at = min(punctuation_points, key=lambda pos: abs(pos - len(clean) / 2))
-        return [clean[:split_at].strip(), clean[split_at:].strip()], font_size
+    for size in range(min_font_size, 23, -2):
+        font = _font(size)
+        lines = _wrap_subtitle_text(clean, font, max_width, preferred_chars)
+        if len(lines) <= overflow_max_lines:
+            return lines, size
 
-    font_size = max(min_font_size, int(font_size * max_chars * max_lines / len(clean)))
-    first = clean[:max_chars].strip()
-    second = clean[max_chars : max_chars * 2 - 1].strip()
-    if len(clean) > max_chars * 2 - 1:
-        second = second.rstrip("。！？!?，,；;") + "..."
-    return [first, second], font_size
+    font = _font(24)
+    lines = _wrap_subtitle_text(clean, font, max_width, preferred_chars)
+    if len(lines) <= overflow_max_lines:
+        return lines, 24
+
+    kept = lines[:overflow_max_lines]
+    kept[-1] = kept[-1].rstrip("。！？!?，,；;") + "..."
+    while _text_width(kept[-1], font) > max_width and len(kept[-1]) > 4:
+        kept[-1] = kept[-1][:-4].rstrip("。！？!?，,；;") + "..."
+    return kept, 24
 
 
 def _make_ambient_bgm(duration: float, emotion: dict, output_dir: Path | None = None) -> Path:
