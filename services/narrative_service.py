@@ -270,9 +270,12 @@ def build_narrative_plan(
     emotion: dict | None = None,
     input_structure: dict | None = None,
     semantic_structure: dict | None = None,
+    *,
+    use_llm: bool | None = None,
 ) -> dict:
     fallback = _fallback_narrative_plan(reflection, expression_plan, visual_poetic_plan, emotion, input_structure, semantic_structure)
-    if not llm_enabled():
+    effective_llm = llm_enabled() if use_llm is None else use_llm
+    if not effective_llm:
         return fallback
 
     system_prompt = """

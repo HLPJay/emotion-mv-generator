@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -m py_compile \"d:/claude_code/20260508_个人感悟生成情绪mv/services/llm_service.py\")",
+      "Bash(python -m py_compile \"d:/claude_code/20260508_个人感悟生成情绪mv/services/image_service.py\")",
+      "Bash(python -m py_compile \"d:/claude_code/20260508_个人感悟生成情绪mv/services/audio_service.py\")"
+    ]
+  }
+}

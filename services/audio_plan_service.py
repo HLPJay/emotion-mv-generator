@@ -1,17 +1,14 @@
 from __future__ import annotations
 
+from services.text_utils import ensure_punctuation
+
 
 def _clamp(value: float, minimum: float, maximum: float) -> float:
     return max(minimum, min(maximum, value))
 
 
 def _clean_line(text: str) -> str:
-    cleaned = text.strip()
-    if not cleaned:
-        return ""
-    if cleaned[-1] in "。！？!?，,；;":
-        return cleaned
-    return cleaned + "。"
+    return ensure_punctuation(text, "。")
 
 
 def _pause_duration(pause_type: str, source_duration: float) -> float:

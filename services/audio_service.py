@@ -1,16 +1,15 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
 import time
 
 import requests
 
 from services.audio_plan_service import narration_text_from_audio_plan
+from services.shared_config import get_llm_config
 
 
 ROOT = Path(__file__).resolve().parents[1]
-CONFIG_PATH = ROOT / "config" / "model_config.json"
 AUDIO_DIR = ROOT / "generated" / "audio"
 AUDIO_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -20,10 +19,7 @@ class AudioGenerationError(RuntimeError):
 
 
 def _config() -> dict:
-    if not CONFIG_PATH.exists():
-        return {}
-    with CONFIG_PATH.open("r", encoding="utf-8-sig") as file:
-        return json.load(file)
+    return get_llm_config()
 
 
 def _audio_config() -> dict:

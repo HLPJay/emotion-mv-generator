@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 
 from services.llm_service import chat_json, llm_enabled
+from services.text_utils import ensure_punctuation, ensure_sentence
 
 
 PUNCTUATION_RE = re.compile(r"[。！？!?；;，,\n]+")
@@ -29,15 +30,6 @@ def _split_reflection_context(reflection: str) -> tuple[str, list[str]]:
     return main, contexts
 
 
-def _ensure_punctuation(text: str, punctuation: str = "。") -> str:
-    cleaned = text.strip()
-    if not cleaned:
-        return ""
-    if cleaned[-1] in "。！？!?；;，,":
-        return cleaned
-    return cleaned + punctuation
-
-
 def _source_lines_with_roles(source_text: str) -> list[dict]:
     main, contexts = _split_reflection_context(source_text)
     lines: list[dict] = []
@@ -53,7 +45,7 @@ def _source_lines_with_roles(source_text: str) -> list[dict]:
             if "\n" in punctuation:
                 punctuation = "。"
             punctuation = punctuation[:1] if punctuation else "。"
-            lines.append({"text": _ensure_punctuation(body, punctuation), "role": role})
+            lines.append({"text": ensure_punctuation(body, punctuation), "role": role})
             added += 1
             if added >= limit:
                 break
@@ -64,8 +56,9 @@ def _source_lines_with_roles(source_text: str) -> list[dict]:
     return lines
 
 
-def build_subtitle_plan(reflection: str) -> dict:
-    if llm_enabled():
+def build_subtitle_plan(reflection: str, *, use_llm: bool | None = None) -> dict:
+    effective_llm = llm_enabled() if use_llm is None else use_llm
+    if effective_llm:
         system_prompt = """
 你是情绪短视频的字幕节奏师，不是文案创作者。
 你只负责把用户原句拆成适合短视频观看的“字幕 + 停顿”节奏。
@@ -227,20 +220,13 @@ def _split_text_and_pauses(text: str) -> list[str]:
     for match in PAUSE_RE.finditer(normalized):
         before = normalized[cursor : match.start()].strip()
         if before:
-            parts.append(_ensure_sentence(before))
+            parts.append(ensure_sentence(before))
         parts.append("...")
         cursor = match.end()
     rest = normalized[cursor:].strip()
     if rest:
-        parts.append(_ensure_sentence(rest))
+        parts.append(ensure_sentence(rest))
     return parts
-
-
-def _ensure_sentence(text: str) -> str:
-    cleaned = TRAILING_PUNCTUATION_RE.sub("", text.strip())
-    if not cleaned:
-        return ""
-    return cleaned + "。"
 
 
 def _dedupe_key(text: str) -> str:
@@ -305,14 +291,14 @@ def _merge_fragments(lines: list[str]) -> tuple[list[str], list[str]]:
     while index < len(lines):
         current = lines[index]
         if _is_fragment(current) and index + 1 < len(lines):
-            combined = _ensure_sentence(TRAILING_PUNCTUATION_RE.sub("", current) + TRAILING_PUNCTUATION_RE.sub("", lines[index + 1]))
+            combined = ensure_sentence(TRAILING_PUNCTUATION_RE.sub("", current) + TRAILING_PUNCTUATION_RE.sub("", lines[index + 1]))
             merged.append(combined)
             actions.append("merged_semantic_fragment")
             index += 2
             continue
         if _is_fragment(current) and merged:
             previous = TRAILING_PUNCTUATION_RE.sub("", merged[-1])
-            merged[-1] = _ensure_sentence(previous + TRAILING_PUNCTUATION_RE.sub("", current))
+            merged[-1] = ensure_sentence(previous + TRAILING_PUNCTUATION_RE.sub("", current))
             actions.append("merged_semantic_fragment")
             index += 1
             continue

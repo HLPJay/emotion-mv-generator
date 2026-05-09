@@ -13,6 +13,8 @@ from typing import Callable
 import requests
 from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps
 
+from services.shared_config import get_llm_config
+
 ROOT = Path(__file__).resolve().parents[1]
 IMAGE_DIR = ROOT / "generated" / "images"
 CONFIG_PATH = ROOT / "config" / "model_config.json"
@@ -27,10 +29,7 @@ class ImageGenerationError(RuntimeError):
 
 
 def _config() -> dict:
-    if not CONFIG_PATH.exists():
-        return {}
-    with CONFIG_PATH.open("r", encoding="utf-8-sig") as file:
-        return json.load(file)
+    return get_llm_config()
 
 
 def _image_config() -> dict:

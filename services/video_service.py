@@ -17,6 +17,7 @@ except ImportError:
 
 from services.audio_service import generate_narration_audio, generate_narration_audio_segments
 from services.music_service import generate_music_audio
+from services.shared_config import get_llm_config
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -32,7 +33,6 @@ SIZE = (1080, 1920)
 FPS = 24
 VIDEO_PRESET = "veryfast"
 VIDEO_THREADS = 6
-CONFIG_PATH = ROOT / "config" / "model_config.json"
 SUBTITLE_STYLE = {
     "font_size": 74,
     "min_font_size": 60,
@@ -53,10 +53,7 @@ SUBTITLE_STYLE = {
 
 
 def _config() -> dict:
-    if not CONFIG_PATH.exists():
-        return {}
-    with CONFIG_PATH.open("r", encoding="utf-8-sig") as file:
-        return json.load(file)
+    return get_llm_config()
 
 
 def _video_config() -> dict:
@@ -348,12 +345,6 @@ def compose_video(
             base_clip = CompositeVideoClip([base_clip, subtitle_clip], size=SIZE)
         clips.append(base_clip)
     mark_timing("build_video_clips", started)
-
-    started = time.perf_counter()
-    if progress_callback:
-        progress_callback({"step": "video_compose", "stage": "concatenate_video", "status": "running"})
-    video = concatenate_videoclips(clips, method="compose")
-    mark_timing("concatenate_video", started)
     audio_clips = []
     mix_plan = (audio_plan or {}).get("mix", {})
     ambient = None
@@ -388,6 +379,10 @@ def compose_video(
         except Exception:
             narration_segments = []
 
+    # Defer concatenate until all clip-duration extensions are known.
+    # Compute required base duration (sum of shot durations) first.
+    base_duration = sum(float(shot.get("duration", 2.0)) for shot in storyboard)
+
     if narration_segments:
         narration_volume = float(mix_plan.get("narration_volume", 1.0))
         narration_clips = []
@@ -401,12 +396,12 @@ def compose_video(
             narration_end = max(narration_end, clip.start + clip.duration)
             narration_windows.append((float(clip.start), float(clip.start + clip.duration)))
             narration_clips.append(clip)
-        if narration_end + 0.4 > video.duration:
-            extension = narration_end + 0.8 - video.duration
-            if extension > 0 and clips:
-                clips[-1] = clips[-1].with_duration(clips[-1].duration + extension)
-                video.close()
-                video = concatenate_videoclips(clips, method="compose")
+        # tail_silence also extends the last clip
+        tail_silence = float((audio_plan or {}).get("tail_silence", 0.0))
+        required = max(narration_end + 0.8, base_duration + tail_silence)
+        extension = max(0.0, required - base_duration)
+        if extension > 0:
+            clips[-1] = clips[-1].with_duration(clips[-1].duration + extension)
         audio_clips.extend(narration_clips)
         narration = CompositeAudioClip(narration_clips)
     else:
@@ -420,25 +415,24 @@ def compose_video(
             lead_in = float((audio_plan or {}).get("lead_in", 0.0))
             narration = AudioFileClip(str(narration_path)).with_volume_scaled(narration_volume).with_start(lead_in)
             narration_windows.append((lead_in, lead_in + narration.duration))
-            if lead_in + narration.duration + 0.4 > video.duration:
-                extension = lead_in + narration.duration + 0.8 - video.duration
-                if extension > 0 and clips:
-                    last = clips[-1].with_duration(clips[-1].duration + extension)
-                    clips[-1] = last
-                    video.close()
-                    video = concatenate_videoclips(clips, method="compose")
+            tail_silence = float((audio_plan or {}).get("tail_silence", 0.0))
+            required = max(lead_in + narration.duration + 0.8, base_duration + tail_silence)
+            extension = max(0.0, required - base_duration)
+            if extension > 0:
+                clips[-1] = clips[-1].with_duration(clips[-1].duration + extension)
             audio_clips.append(narration)
+        else:
+            # No narration at all — still need to handle tail_silence extension
+            tail_silence = float((audio_plan or {}).get("tail_silence", 0.0))
+            if tail_silence > 0 and storyboard and storyboard[-1].get("subtitle") == "...":
+                clips[-1] = clips[-1].with_duration(clips[-1].duration + tail_silence)
     mark_timing("narration_prepare", started)
 
     started = time.perf_counter()
     if progress_callback:
-        progress_callback({"step": "video_compose", "stage": "tail_silence", "status": "running"})
-    tail_silence = float((audio_plan or {}).get("tail_silence", 0.0))
-    if tail_silence > 0 and clips and storyboard and storyboard[-1].get("subtitle") == "...":
-        clips[-1] = clips[-1].with_duration(clips[-1].duration + tail_silence)
-        video.close()
-        video = concatenate_videoclips(clips, method="compose")
-    mark_timing("tail_silence", started)
+        progress_callback({"step": "video_compose", "stage": "concatenate_video", "status": "running"})
+    video = concatenate_videoclips(clips, method="compose")
+    mark_timing("concatenate_video", started)
 
     started = time.perf_counter()
     if progress_callback:

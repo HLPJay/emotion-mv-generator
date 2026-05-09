@@ -178,8 +178,11 @@ def build_storyboard(
     narrative_plan: dict | None = None,
     input_structure: dict | None = None,
     semantic_structure: dict | None = None,
+    *,
+    use_llm: bool | None = None,
 ) -> list[dict]:
-    if llm_enabled():
+    effective_llm = llm_enabled() if use_llm is None else use_llm
+    if effective_llm:
         system_prompt = """
 你是一个生活化电影镜头导演。
 

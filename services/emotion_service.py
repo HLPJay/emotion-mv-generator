@@ -34,8 +34,9 @@ emotional_shift: {input_structure.get('emotional_shift')}
 """
 
 
-def analyze_emotion(reflection: str, input_structure: dict | None = None) -> dict:
-    if llm_enabled():
+def analyze_emotion(reflection: str, input_structure: dict | None = None, *, use_llm: bool | None = None) -> dict:
+    effective_llm = llm_enabled() if use_llm is None else use_llm
+    if effective_llm:
         system_prompt = """
 你是一个情绪解析器，不是文案生成器。
 根据用户的一句真实感悟，分析核心情绪、视频氛围、叙事语气和生活化视觉关键词。

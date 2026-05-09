@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 
 from services.llm_service import chat_json, llm_enabled
+from services.text_utils import normalize
 
 
 PAREN_RE = re.compile(r"[（(]([^（）()]*)[）)]")
@@ -10,13 +11,9 @@ QUESTION_MARKERS = ("？", "?", "难道", "岂不是", "真的", "到底", "何�
 RELATIONSHIP_VALUES = {"none", "explain", "deepen", "contrast", "reveal", "challenge", "resolve", "echo"}
 
 
-def _clean(text: str) -> str:
-    return " ".join((text or "").split()).strip()
-
-
 def _split_parenthetical(text: str) -> tuple[str, str, bool]:
-    parts = [_clean(match.group(1)) for match in PAREN_RE.finditer(text) if _clean(match.group(1))]
-    main = _clean(PAREN_RE.sub("", text))
+    parts = [normalize(match.group(1)) for match in PAREN_RE.finditer(text) if normalize(match.group(1))]
+    main = normalize(PAREN_RE.sub("", text))
     return main, " ".join(parts), bool(parts)
 
 
@@ -124,9 +121,10 @@ def _normalize_analysis(result: dict, fallback: dict) -> dict:
     return normalized
 
 
-def analyze_input_structure(reflection: str) -> dict:
+def analyze_input_structure(reflection: str, *, use_llm: bool | None = None) -> dict:
     fallback = _fallback_analysis(reflection)
-    if not llm_enabled() or (not fallback["has_parenthetical"] and not fallback["question_analysis"]["has_question"]):
+    effective_llm = llm_enabled() if use_llm is None else use_llm
+    if not effective_llm or (not fallback["has_parenthetical"] and not fallback["question_analysis"]["has_question"]):
         return fallback
 
     system_prompt = """

@@ -3,29 +3,26 @@ from __future__ import annotations
 import re
 
 from services.llm_service import chat_json, llm_enabled
+from services.text_utils import normalize
 
 
 PUNCT_RE = re.compile(r"(?<=[。！？!?；;])")
 CLAUSE_RE = re.compile(r"([^。！？!?；;，,\n]+)([。！？!?；;，,\n]*)")
 
 
-def _clean(text: str) -> str:
-    return " ".join((text or "").split()).strip()
-
-
 def _split_sentences(text: str) -> list[str]:
-    parts = [_clean(part) for part in PUNCT_RE.split(text or "") if _clean(part)]
-    return parts or ([_clean(text)] if _clean(text) else [])
+    parts = [normalize(part) for part in PUNCT_RE.split(text or "") if normalize(part)]
+    return parts or ([normalize(text)] if normalize(text) else [])
 
 
 def _split_clauses(text: str) -> list[str]:
     clauses = []
     for match in CLAUSE_RE.finditer(text or ""):
-        body = _clean(match.group(1))
+        body = normalize(match.group(1))
         punctuation = match.group(2).strip()[:1]
         if body:
             clauses.append(body + (punctuation if punctuation and punctuation not in ",，" else ""))
-    return clauses or ([_clean(text)] if _clean(text) else [])
+    return clauses or ([normalize(text)] if normalize(text) else [])
 
 
 def _unit_function(text: str, scope: str, index: int, total: int) -> str:
@@ -231,9 +228,10 @@ def _normalize_llm_structure(result: dict, fallback: dict) -> dict:
     return normalized
 
 
-def build_semantic_structure(reflection: str, input_structure: dict | None = None) -> dict:
+def build_semantic_structure(reflection: str, input_structure: dict | None = None, *, use_llm: bool | None = None) -> dict:
     fallback = _build_rule_structure(reflection, input_structure)
-    if not llm_enabled():
+    effective_llm = llm_enabled() if use_llm is None else use_llm
+    if not effective_llm:
         return fallback
 
     system_prompt = """

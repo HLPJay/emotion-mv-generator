@@ -11,7 +11,8 @@ import gradio as gr
 
 from services.audio_plan_service import build_audio_plan
 from services.emotion_service import analyze_emotion
-from services.event_service import log_event, track_step
+from services.llm_service import llm_enabled
+from services.event_service import log_event, track_step, register_events_cache, unregister_events_cache
 from services.expression_service import build_expression_plan
 from services.image_service import generate_scene_images
 from services.input_structure_service import analyze_input_structure
@@ -161,23 +162,8 @@ def _read_run_events(run_dir: Path) -> list[dict[str, Any]]:
     return events
 
 
-def _refresh_step_state_from_events(step_state: dict[str, dict[str, Any]], run_dir: Path) -> None:
-    for event in _read_run_events(run_dir):
-        step = event.get("step")
-        if step not in step_state:
-            continue
-        status = event.get("status")
-        if status == "started":
-            step_state[step]["status"] = "running"
-        if status in {"success", "failed"}:
-            step_state[step]["status"] = status
-            step_state[step]["duration_seconds"] = event.get("duration_seconds")
-            if status == "failed":
-                step_state[step]["message"] = event.get("error", "")
-
-
-def _apply_report_to_step_state(step_state: dict[str, dict[str, Any]], report: dict[str, Any]) -> None:
-    for event in report.get("events", []):
+def _apply_events_to_step_state(step_state: dict[str, dict[str, Any]], events: list[dict[str, Any]]) -> None:
+    for event in events:
         step = event.get("step")
         if step not in step_state:
             continue
@@ -315,6 +301,8 @@ def generate_reflection_video(
     subtitle_plan: dict[str, Any] = {}
     audio_plan: dict[str, Any] = {}
     adjusted_storyboard: list[dict[str, Any]] = []
+    run_events_cache: list[dict[str, Any]] = []
+    use_llm = llm_enabled()
 
     def emit() -> tuple[Any, ...]:
         return _outputs(
@@ -371,71 +359,72 @@ def generate_reflection_video(
 
     write_text(run_dir / "input.txt", reflection)
     log_event(run_dir, "run", "started", visual_style_id=visual_style_id, visual_world_id=visual_world_id)
+    register_events_cache(run_dir, run_events_cache)
     yield emit()
 
     try:
         start_step("input_structure")
         yield emit()
         with track_step(run_dir, "input_structure"):
-            input_structure = analyze_input_structure(reflection)
+            input_structure = analyze_input_structure(reflection, use_llm=use_llm)
         write_json(run_dir / "input_structure.json", input_structure)
-        _refresh_step_state_from_events(step_state, run_dir)
+        _apply_events_to_step_state(step_state, run_events_cache)
 
         start_step("semantic_structure")
         yield emit()
         with track_step(run_dir, "semantic_structure"):
-            semantic_structure = build_semantic_structure(reflection, input_structure)
+            semantic_structure = build_semantic_structure(reflection, input_structure, use_llm=use_llm)
         write_json(run_dir / "semantic_structure.json", semantic_structure)
-        _refresh_step_state_from_events(step_state, run_dir)
+        _apply_events_to_step_state(step_state, run_events_cache)
 
         start_step("emotion")
         yield emit()
         with track_step(run_dir, "emotion"):
-            emotion = analyze_emotion(reflection, input_structure)
+            emotion = analyze_emotion(reflection, input_structure, use_llm=use_llm)
         write_json(run_dir / "emotion.json", emotion)
-        _refresh_step_state_from_events(step_state, run_dir)
+        _apply_events_to_step_state(step_state, run_events_cache)
 
         start_step("visual_style")
         yield emit()
         with track_step(run_dir, "visual_style"):
             visual_style = select_visual_style(visual_style_id, reflection, emotion)
         write_json(run_dir / "visual_style.json", visual_style)
-        _refresh_step_state_from_events(step_state, run_dir)
+        _apply_events_to_step_state(step_state, run_events_cache)
 
         start_step("visual_continuity")
         yield emit()
         with track_step(run_dir, "visual_continuity"):
             visual_continuity = build_visual_continuity(visual_style)
         write_json(run_dir / "visual_continuity.json", visual_continuity)
-        _refresh_step_state_from_events(step_state, run_dir)
+        _apply_events_to_step_state(step_state, run_events_cache)
 
         start_step("expression_plan")
         yield emit()
         with track_step(run_dir, "expression_plan"):
             expression_plan = build_expression_plan(reflection, emotion, input_structure=input_structure)
         write_json(run_dir / "expression_plan.json", expression_plan)
-        _refresh_step_state_from_events(step_state, run_dir)
+        _apply_events_to_step_state(step_state, run_events_cache)
 
         start_step("visual_poetic_plan")
         yield emit()
         with track_step(run_dir, "visual_poetic_plan"):
             visual_poetic_plan = build_visual_poetic_plan(reflection, expression_plan, emotion, visual_world_id, input_structure)
         write_json(run_dir / "visual_poetic_plan.json", visual_poetic_plan)
-        _refresh_step_state_from_events(step_state, run_dir)
+        _apply_events_to_step_state(step_state, run_events_cache)
 
         start_step("narrative_plan")
         yield emit()
         with track_step(run_dir, "narrative_plan"):
-            narrative_plan = build_narrative_plan(reflection, expression_plan, visual_poetic_plan, emotion, input_structure, semantic_structure)
+            narrative_plan = build_narrative_plan(reflection, expression_plan, visual_poetic_plan, emotion, input_structure, semantic_structure, use_llm=use_llm)
         write_json(run_dir / "narrative_plan.json", narrative_plan)
-        _refresh_step_state_from_events(step_state, run_dir)
+        _apply_events_to_step_state(step_state, run_events_cache)
 
         start_step("subtitle_plan")
         yield emit()
         with track_step(run_dir, "subtitle_plan"):
             subtitle_plan = build_subtitle_plan_from_expression(expression_plan)
         write_json(run_dir / "subtitle_plan.json", subtitle_plan)
-        _refresh_step_state_from_events(step_state, run_dir)
+        _apply_events_to_step_state(step_state, run_events_cache)
 
         subtitles = subtitle_plan["subtitles"]
         start_step("storyboard")
@@ -452,9 +441,10 @@ def generate_reflection_video(
                 narrative_plan,
                 input_structure,
                 semantic_structure,
+                use_llm=use_llm,
             )
         write_json(run_dir / "storyboard.json", storyboard)
-        _refresh_step_state_from_events(step_state, run_dir)
+        _apply_events_to_step_state(step_state, run_events_cache)
 
         start_step("audio_plan")
         yield emit()
@@ -463,7 +453,7 @@ def generate_reflection_video(
         write_json(run_dir / "audio_plan.json", audio_plan)
         adjusted_storyboard = audio_plan["adjusted_storyboard"]
         write_json(run_dir / "adjusted_storyboard.json", adjusted_storyboard)
-        _refresh_step_state_from_events(step_state, run_dir)
+        _apply_events_to_step_state(step_state, run_events_cache)
 
         start_step("image_generation", f"{len(adjusted_storyboard)} 张")
         yield emit()
@@ -481,7 +471,7 @@ def generate_reflection_video(
                 update_image_progress,
                 emit,
             )
-        _refresh_step_state_from_events(step_state, run_dir)
+        _apply_events_to_step_state(step_state, run_events_cache)
 
         start_step("video_compose")
         yield emit()
@@ -499,7 +489,7 @@ def generate_reflection_video(
                 emit,
             )
         write_text(run_dir / "output_path.txt", str(video_path))
-        _refresh_step_state_from_events(step_state, run_dir)
+        _apply_events_to_step_state(step_state, run_events_cache)
 
         start_step("report")
         yield emit()
@@ -507,7 +497,7 @@ def generate_reflection_video(
             report = write_run_report(run_dir)
         log_event(run_dir, "run", "success", final_video=str(video_path))
         report = write_run_report(run_dir)
-        _apply_report_to_step_state(step_state, report)
+        _apply_events_to_step_state(step_state, report.get("events", []))
         yield emit()
     except Exception as exc:
         if current_step in step_state:
@@ -516,11 +506,13 @@ def generate_reflection_video(
         log_event(run_dir, "run", "failed", error_type=exc.__class__.__name__, error=str(exc))
         try:
             report = write_run_report(run_dir)
-            _apply_report_to_step_state(step_state, report)
+            _apply_events_to_step_state(step_state, report.get("events", []))
         except Exception:
             logging.exception("写入失败报告时出错")
         yield emit()
         raise gr.Error(f"生成失败：{exc}") from exc
+    finally:
+        unregister_events_cache(run_dir)
 
 
 with gr.Blocks(title="AI Reflection Video Generator") as demo:
