@@ -705,3 +705,9 @@ AI 不替用户写鸡汤，不讲大道理，不强行升华，只做情绪理�
 ```text
 docs/backlog.md
 ```
+
+阶段归档见：
+
+```text
+docs/archive_2026-05-09.md
+```

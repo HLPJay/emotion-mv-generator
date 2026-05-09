@@ -136,7 +136,7 @@ subject / location / recurring objects / lighting / palette
 
 ### P0：先让生成过程可控、可恢复
 
-#### 1. 生成过程可视化
+#### 1. 生成过程可视化（已完成基础版）
 
 目标：
 - UI 中展示完整生成链路：情绪分析、表达计划、意境分析、分镜、图片、旁白、BGM、视频合成、报告。
@@ -148,7 +148,12 @@ subject / location / recurring objects / lighting / palette
 - 失败时 UI 能展示具体错误，而不是只看到没有视频。
 - `run_events.jsonl` 中的信息可以被 UI 直接消费。
 
-#### 2. 报告 UI 化
+当前状态：
+- UI 已展示生成步骤、状态、耗时和失败信息。
+- 图片生成和视频合成支持进度回传。
+- 后续可继续增加“重试当前失败步骤”的操作按钮。
+
+#### 2. 报告 UI 化（已完成基础版）
 
 目标：
 - 把 `run_report.json` 从纯 JSON 变成用户能读懂的报告面板。
@@ -157,6 +162,11 @@ subject / location / recurring objects / lighting / palette
 完成标准：
 - 用户只看报告页，就能判断这次生成是否成功、哪里质量可能有问题。
 - 报告中可以看到 `music_generation_failed`、`used_music_fallback`、`fallback_images` 等关键信息。
+
+当前状态：
+- UI 已展示报告摘要、最终视频、运行目录、BGM/fallback 状态、关键 warning 和性能耗时。
+- `run_report.json` 与 `run_report.md` 继续作为完整报告。
+- 后续可继续增加报告中的“单步重试入口”。
 
 #### 3. 断点续跑与失败恢复
 
@@ -169,9 +179,14 @@ subject / location / recurring objects / lighting / palette
 - BGM 失败后，可以只补 BGM 并重新合成。
 - 最终合成失败后，可以只重跑视频合成。
 
+当前状态：
+- 已有 `scripts/recompose_run_video.py`，可以复用图片、旁白、分镜和音频计划重拼视频。
+- BGM 生成会优先复用已有 `bgm.mp3`，不存在时才重新请求。
+- 后续需要 UI 化单步恢复。
+
 ### P1：提升成片质感
 
-#### 4. 音色一致性
+#### 4. 音色一致性（待做）
 
 目标：
 - 减少分段 TTS 导致的音色漂移。
@@ -204,6 +219,11 @@ subject / location / recurring objects / lighting / palette
 - 中间产物包含 `main_theme`、`parenthetical_theme`、`relationship`、`visual_transition`。
 - 分镜能体现主句和括号之间的转向。
 
+当前状态：
+- 已有 `expression_plan` 区分 `primary / secondary`。
+- 已有 `narrative_plan` 参与镜头叙事。
+- 仍缺少专门的主句/括号关系分析模块。
+
 #### 7. 提问环节
 
 目标：
@@ -216,7 +236,7 @@ subject / location / recurring objects / lighting / palette
 
 ### P2：提升速度、成本和复用能力
 
-#### 8. FFmpeg 性能优化
+#### 8. FFmpeg 性能优化（待做）
 
 目标：
 - 减少 MoviePy 逐帧处理压力。
