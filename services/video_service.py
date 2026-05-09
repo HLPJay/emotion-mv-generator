@@ -328,9 +328,16 @@ def compose_video(
     clips = []
     for index, (shot, image_path) in enumerate(zip(storyboard, image_paths), start=1):
         duration = float(shot.get("duration", 2.0))
-        base_clip = _clip_with_motion(image_path, duration, index).with_effects(
-            [vfx.FadeIn(0.35), vfx.FadeOut(0.35)]
-        )
+        hold_previous = bool(shot.get("visual_hold_previous"))
+        next_holds_previous = index < len(storyboard) and bool(storyboard[index].get("visual_hold_previous"))
+        effects = []
+        if not hold_previous:
+            effects.append(vfx.FadeIn(0.35))
+        if not next_holds_previous:
+            effects.append(vfx.FadeOut(0.35))
+        base_clip = _clip_with_motion(image_path, duration, index)
+        if effects:
+            base_clip = base_clip.with_effects(effects)
         subtitle_path = _subtitle_png(shot["subtitle"], index, subtitle_dir, shot.get("subtitle_role", "primary"))
         if subtitle_path:
             fade_in = min(SUBTITLE_STYLE["fade_in"], duration / 4)

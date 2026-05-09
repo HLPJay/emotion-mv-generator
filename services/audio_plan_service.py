@@ -129,9 +129,14 @@ def build_audio_plan(subtitle_plan: dict, emotion: dict, storyboard: list[dict])
         if rhythm_index < len(visual_durations):
             shot_copy["duration"] = visual_durations[rhythm_index]
         if rhythm_index < len(rhythm):
-            shot_copy["subtitle_role"] = rhythm[rhythm_index].get("role", "primary")
-            shot_copy["semantic_role"] = rhythm[rhythm_index].get("semantic_role", "setup")
-            shot_copy["unit_id"] = rhythm[rhythm_index].get("unit_id")
+            rhythm_item = rhythm[rhythm_index]
+            shot_copy["subtitle_role"] = rhythm_item.get("role", "primary")
+            shot_copy["semantic_role"] = rhythm_item.get("semantic_role", "setup")
+            shot_copy["unit_id"] = rhythm_item.get("unit_id")
+            if rhythm_item.get("text", "").strip() == "...":
+                shot_copy["visual_hold_previous"] = True
+                shot_copy["visual_hold_reason"] = rhythm_item.get("reason", "pause")
+                shot_copy["generation_mode"] = "hold_previous_visual"
         adjusted_storyboard.append(shot_copy)
         rhythm_index += 1
 

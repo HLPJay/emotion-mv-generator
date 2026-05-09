@@ -3,6 +3,9 @@
   "provider": "deepseek",
   "api_base": "https://api.minimaxi.com/v1",
   "model": "MiniMax-M2.7-highspeed",
+  "max_completion_tokens": 8192,
+  "json_retries": 2,
+  "json_response_format": false,
   "api_key": "replace_with_your_api_key",
   "image": {
     "enabled": true,
@@ -38,6 +41,8 @@
     "api_key": "",
     "output_format": "hex",
     "request_timeout_seconds": 600,
+    "retry_attempts": 3,
+    "retry_backoff_seconds": [5, 15],
     "fallback_models": [],
     "fallback_on_error": true
   },

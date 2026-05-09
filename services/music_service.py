@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import time
 
 import requests
 
@@ -39,6 +40,8 @@ def _music_config() -> dict:
         "fallback_on_error": bool(music_config.get("fallback_on_error", True)),
         "fallback_models": [model for model in fallback_models if model],
         "request_timeout_seconds": int(music_config.get("request_timeout_seconds", 600)),
+        "retry_attempts": max(1, int(music_config.get("retry_attempts", 3))),
+        "retry_backoff_seconds": music_config.get("retry_backoff_seconds", [5, 15]),
     }
 
 
@@ -94,6 +97,33 @@ def _request_music(config: dict, music_plan: dict, model: str, output_dir: Path)
     return output
 
 
+def _retry_delay(config: dict, attempt_index: int) -> float:
+    backoff = config.get("retry_backoff_seconds", [5, 15])
+    if isinstance(backoff, (int, float)):
+        return float(backoff)
+    if isinstance(backoff, list) and backoff:
+        return float(backoff[min(attempt_index, len(backoff) - 1)])
+    return float(5 * (attempt_index + 1))
+
+
+def _is_retryable_music_error(exc: Exception) -> bool:
+    if isinstance(exc, (requests.exceptions.Timeout, requests.exceptions.ConnectionError, requests.exceptions.ProxyError)):
+        return True
+    message = str(exc).lower()
+    retryable_markers = [
+        "remote end closed connection",
+        "connection aborted",
+        "connection reset",
+        "temporarily unavailable",
+        "timeout",
+        "too many requests",
+        "502",
+        "503",
+        "504",
+    ]
+    return any(marker in message for marker in retryable_markers)
+
+
 def _candidate_models(requested_model: str) -> list[str]:
     candidates = [requested_model]
     unique = []
@@ -129,11 +159,16 @@ def generate_music_audio(audio_plan: dict, output_dir: Path | None = None) -> Pa
         candidate_models.extend(model for model in config["fallback_models"] if model not in candidate_models)
 
     for model in candidate_models:
-        try:
-            return _request_music(config, request_plan, model, output_dir)
-        except Exception as exc:
-            errors.append(f"{model}: {exc}")
-            if not config["fallback_on_error"]:
-                break
+        for attempt in range(config["retry_attempts"]):
+            try:
+                return _request_music(config, request_plan, model, output_dir)
+            except Exception as exc:
+                attempt_label = f"attempt {attempt + 1}/{config['retry_attempts']}"
+                errors.append(f"{model} {attempt_label}: {exc}")
+                if attempt + 1 >= config["retry_attempts"] or not _is_retryable_music_error(exc):
+                    break
+                time.sleep(_retry_delay(config, attempt))
+        if not config["fallback_on_error"]:
+            break
 
     raise MusicGenerationError("MiniMax music generation failed for all candidate models: " + " | ".join(errors))

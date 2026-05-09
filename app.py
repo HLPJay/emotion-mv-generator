@@ -318,7 +318,8 @@ def generate_reflection_video(
         total = event.get("total", 0)
         index = event.get("index", "-")
         fallback = "，fallback" if event.get("fallback") else ""
-        step_state["image_generation"]["message"] = f"{completed}/{total}，scene_{int(index):02d} 完成{fallback}"
+        reused = "，复用上一镜头" if event.get("reused_previous") else ""
+        step_state["image_generation"]["message"] = f"{completed}/{total}，scene_{int(index):02d} 完成{fallback}{reused}"
 
     def update_video_progress(event: dict[str, Any]) -> None:
         stage_labels = {

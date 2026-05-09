@@ -4,6 +4,7 @@ import base64
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import hashlib
 import json
+import shutil
 import textwrap
 from pathlib import Path
 import time
@@ -301,12 +302,14 @@ def generate_scene_images(
         return _generate_placeholder_image(shot, emotion, index, output_dir)
 
     indexed_shots = list(enumerate(storyboard, start=1))
-    max_workers = max(1, min(config["max_workers"], len(indexed_shots) or 1))
+    generative_shots = [(index, shot) for index, shot in indexed_shots if not shot.get("visual_hold_previous")]
+    max_workers = max(1, min(config["max_workers"], len(generative_shots) or 1))
     results: dict[int, Path] = {}
     errors: dict[int, str] = {}
+    reused_indices: list[int] = []
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        futures = {executor.submit(generate_one, index, shot): index for index, shot in indexed_shots}
+        futures = {executor.submit(generate_one, index, shot): index for index, shot in generative_shots}
         completed = 0
         for future in as_completed(futures):
             index = futures[future]
@@ -324,12 +327,42 @@ def generate_scene_images(
                     }
                 )
 
+    completed = len(generative_shots)
+    for index, shot in indexed_shots:
+        if not shot.get("visual_hold_previous"):
+            continue
+
+        previous_path = results.get(index - 1)
+        if previous_path and previous_path.exists():
+            reused_path = output_dir / f"scene_{index:02d}.png"
+            shutil.copyfile(previous_path, reused_path)
+            results[index] = reused_path
+            reused_indices.append(index)
+        else:
+            results[index] = generate_one(index, shot)
+
+        completed += 1
+        if progress_callback:
+            progress_callback(
+                {
+                    "step": "image_generation",
+                    "completed": completed,
+                    "total": len(indexed_shots),
+                    "index": index,
+                    "path": str(results[index]),
+                    "fallback": index in errors or not config["enabled"],
+                    "reused_previous": index in reused_indices,
+                }
+            )
+
     paths = [results[index] for index, _ in indexed_shots]
     metadata = {
         "enabled": config["enabled"],
         "model": config["model"],
         "max_prompt_chars": MAX_IMAGE_PROMPT_CHARS,
         "max_workers": max_workers,
+        "generated_count": len(generative_shots),
+        "visual_hold_reused_indices": reused_indices,
         "paths": [str(path) for path in paths],
         "fallback_detected": bool(errors) or not config["enabled"],
         "fallback_indices": sorted(errors),

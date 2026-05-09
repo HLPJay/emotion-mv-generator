@@ -406,9 +406,19 @@ MiniMax 示例，前提是你的账号接口支持 OpenAI-compatible chat comple
   "provider": "minimax",
   "api_base": "https://api.minimaxi.com/v1",
   "model": "MiniMax-M2.7-highspeed",
+  "max_completion_tokens": 8192,
+  "json_retries": 2,
+  "json_response_format": false,
   "api_key": "你的 API Key"
 }
 ```
+
+长分镜容易超过默认输出长度，建议保留 `max_completion_tokens: 8192`。
+
+- `json_retries` 控制大模型返回非 JSON 或被截断时的重试次数。
+- `json_response_format` 控制是否向 OpenAI-compatible 接口传 `response_format={"type":"json_object"}`。如果当前供应商不支持该字段，保持 `false`。
+- 当 LLM 开启时，分镜必须来自大模型。若多次重试仍无法得到合法 JSON，本次生成会明确失败并写入报告，不会静默退回本地分镜。
+- 只有关闭 LLM 时，才会使用本地兜底分镜。
 
 图片生成使用 MiniMax image-01，配置在同一个文件的 `image` 字段：
 
@@ -492,6 +502,8 @@ MiniMax `music-2.6` 可能生成耗时较长。Token Plan 用户建议使用：
     "model": "music-2.6",
     "output_format": "hex",
     "request_timeout_seconds": 600,
+    "retry_attempts": 3,
+    "retry_backoff_seconds": [5, 15],
     "fallback_models": [],
     "fallback_on_error": true
   }
@@ -501,6 +513,8 @@ MiniMax `music-2.6` 可能生成耗时较长。Token Plan 用户建议使用：
 说明：
 
 - `request_timeout_seconds` 控制音乐接口等待时间，默认 600 秒。
+- `retry_attempts` 控制同一个音乐模型的重试次数，默认 3 次。
+- `retry_backoff_seconds` 控制重试间隔，默认先等 5 秒，再等 15 秒。
 - `fallback_models` 默认不再自动加入 `music-2.6-free`；Token Plan 用户通常不支持 free 模型，强行 fallback 会产生 `2061 your current token plan not support model`。
 - 如果确实有可用的备用模型，可以手动写入 `fallback_models`。
 
@@ -593,6 +607,17 @@ generated/runs/<run_id>/audio/bgm.mp3
 ```
 
 如果 `bgm.mp3` 已存在，不会重复调用 MiniMax 音乐接口；如果不存在，才会尝试生成 BGM。
+
+## 停顿镜头节奏
+
+字幕节奏里仍然可以保留 `...`，用于旁白停顿、呼吸和结尾留白。
+
+为了避免视频中间频繁切图，`...` 对应的停顿镜头默认会复用上一张画面：
+
+- 不再为每个中间停顿额外调用图片生成接口。
+- 停顿期间不显示字幕，画面保持上一镜头的视觉内容。
+- 视频合成会弱化“上一镜头 -> 停顿镜头”的淡入淡出，减少闪切感。
+- `image_generation_metadata.json` 会记录 `visual_hold_reused_indices`，方便确认哪些镜头复用了上一画面。
 
 ## 视频合成性能
 
