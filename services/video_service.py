@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+import random
 import wave
 from pathlib import Path
 
@@ -135,6 +136,78 @@ def _make_ambient_bgm(duration: float, emotion: dict, output_dir: Path | None = 
     return bgm_path
 
 
+def _storyboard_world_id(storyboard: list[dict]) -> str:
+    for shot in storyboard:
+        world_id = shot.get("visual_world_id")
+        if world_id:
+            return str(world_id)
+
+    scene_text = " ".join(str(shot.get("scene", "")).lower() for shot in storyboard)
+    if any(word in scene_text for word in ("ocean", "sea", "shore", "wave", "tide")):
+        return "ocean_shore"
+    if any(word in scene_text for word in ("mountain", "mist", "path")):
+        return "mountain_path"
+    if any(word in scene_text for word in ("city", "subway", "crosswalk", "street")):
+        return "city_daylight"
+    if any(word in scene_text for word in ("screen", "keyboard", "cursor", "draft", "publish")):
+        return "workspace_reality"
+    if any(word in scene_text for word in ("train", "platform", "ticket")):
+        return "train_journey"
+    if any(word in scene_text for word in ("star", "cosmos", "night sky")):
+        return "star_cosmos"
+    return "ordinary_life"
+
+
+def _make_environment_sound(duration: float, storyboard: list[dict], output_dir: Path) -> Path:
+    output_dir.mkdir(parents=True, exist_ok=True)
+    world_id = _storyboard_world_id(storyboard)
+    path = output_dir / f"environment_{world_id}.wav"
+    sample_rate = 44100
+    total_frames = int(duration * sample_rate)
+    rng = random.Random(f"{world_id}:{round(duration, 2)}")
+    low_noise = 0.0
+
+    def clamp_sample(value: float) -> int:
+        return max(-32760, min(32760, int(value)))
+
+    with wave.open(str(path), "w") as wav:
+        wav.setnchannels(1)
+        wav.setsampwidth(2)
+        wav.setframerate(sample_rate)
+        frames = bytearray()
+        for i in range(total_frames):
+            t = i / sample_rate
+            fade = min(1.0, t / 1.5, max(0.0, (duration - t) / 1.5))
+            noise = rng.uniform(-1.0, 1.0)
+            low_noise = low_noise * 0.985 + noise * 0.015
+
+            if world_id == "ocean_shore":
+                swell = 0.45 + 0.55 * (0.5 + 0.5 * math.sin(2 * math.pi * 0.18 * t))
+                sample = low_noise * 11500 * swell + noise * 1700 * swell
+            elif world_id in {"mountain_path", "rural_family"}:
+                gust = 0.35 + 0.65 * (0.5 + 0.5 * math.sin(2 * math.pi * 0.11 * t + 0.7))
+                sample = low_noise * 7600 * gust + noise * 850 * gust
+            elif world_id == "city_daylight":
+                traffic_hum = math.sin(2 * math.pi * 92 * t) * 850 + math.sin(2 * math.pi * 147 * t) * 420
+                sample = low_noise * 5200 + traffic_hum + noise * 450
+            elif world_id == "train_journey":
+                rhythm = 1.0 if int(t * 3.2) % 2 == 0 else 0.55
+                sample = low_noise * 5200 + math.sin(2 * math.pi * 72 * t) * 900 * rhythm + noise * 650
+            elif world_id == "star_cosmos":
+                sample = low_noise * 2500 + math.sin(2 * math.pi * 110 * t) * 420 + math.sin(2 * math.pi * 220 * t) * 180
+            elif world_id == "workspace_reality":
+                room_tone = math.sin(2 * math.pi * 60 * t) * 520 + math.sin(2 * math.pi * 120 * t) * 180
+                sample = low_noise * 3200 + room_tone + noise * 260
+            else:
+                room_tone = math.sin(2 * math.pi * 68 * t) * 380
+                sample = low_noise * 3600 + room_tone + noise * 300
+
+            frames.extend(clamp_sample(sample * fade).to_bytes(2, byteorder="little", signed=True))
+        wav.writeframes(bytes(frames))
+
+    return path
+
+
 def _clip_with_motion(image_path: Path, duration: float, index: int):
     clip = ImageClip(str(image_path)).with_duration(duration).resized(height=SIZE[1])
     if clip.w < SIZE[0]:
@@ -189,6 +262,7 @@ def compose_video(
     audio_clips = []
     mix_plan = (audio_plan or {}).get("mix", {})
     ambient = None
+    environment = None
     music = None
 
     try:
@@ -209,6 +283,12 @@ def compose_video(
         ambient_volume = float(mix_plan.get("ambient_fallback_volume", 0.18))
         ambient = AudioFileClip(str(bgm_path)).with_volume_scaled(ambient_volume)
         audio_clips.append(ambient)
+
+    if mix_plan.get("environment_sound", True):
+        environment_path = _make_environment_sound(video.duration, storyboard, audio_dir)
+        environment_volume = float(mix_plan.get("environment_volume", 0.14))
+        environment = AudioFileClip(str(environment_path)).with_volume_scaled(environment_volume)
+        audio_clips.append(environment)
 
     narration = None
     narration_segments = []
@@ -268,6 +348,8 @@ def compose_video(
     audio.close()
     if ambient:
         ambient.close()
+    if environment:
+        environment.close()
     if music:
         music.close()
     if narration:

@@ -36,6 +36,7 @@
 - Images: 6
 - Subtitle PNGs: 3
 - Narration Segments: 3
+- Environment Sounds: 0
 
 ## Models
 
@@ -58,6 +59,8 @@
 - audio_plan: success (0.0s)
 - image_generation: success (63.595s)
 - video_compose: success (392.547s)
+- report: success (0.107s)
+- run: success (-s)
 
 ## Music Prompt
 

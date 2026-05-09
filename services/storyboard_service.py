@@ -84,6 +84,52 @@ def _normalize_storyboard(storyboard: list[dict], subtitles: list[str], expressi
     return normalized
 
 
+def _pause_scene(index: int, visual_poetic_plan: dict | None) -> str:
+    world = (visual_poetic_plan or {}).get("world", {})
+    motif = (visual_poetic_plan or {}).get("motif", {})
+    world_id = world.get("id", "")
+    symbols = motif.get("recurring_symbols", [])
+    symbol_text = ", ".join(symbols[:3]) if symbols else "recurring symbols"
+    pause_shots = {
+        "ocean_shore": [
+            "quiet pause shot: gentle tide slowly washes over a footprint near the shoreline, pale blue sea, small wind movement, no subtitle",
+            "quiet pause shot: distant sea horizon and soft waves, the same lonely figure remains still in the lower frame, no subtitle",
+        ],
+        "mountain_path": [
+            "quiet pause shot: morning mist drifts across a mountain path, one small footprint continues forward, no subtitle",
+            "quiet pause shot: distant light opens behind the curve of the mountain road, same lone back view, no subtitle",
+        ],
+        "city_daylight": [
+            "quiet pause shot: empty crosswalk after people pass, soft daylight reflected on the road, no subtitle",
+            "quiet pause shot: subway door light and a still figure near the platform edge, no subtitle",
+        ],
+        "workspace_reality": [
+            "quiet pause shot: cursor blinking on an unfinished draft, keyboard and screen glow breathing softly, no subtitle",
+            "quiet pause shot: hand pauses near the publish button, room tone and screen light, no subtitle",
+        ],
+        "ordinary_life": [
+            "quiet pause shot: window light moves slowly across a quiet room, everyday objects stay still, no subtitle",
+            "quiet pause shot: a half-open door and soft daylight, the same protagonist pauses before moving, no subtitle",
+        ],
+        "rural_family": [
+            "quiet pause shot: morning light falls on the courtyard gate, a bag rests near the threshold, no subtitle",
+            "quiet pause shot: quiet dirt road leading away from home, warm but restrained light, no subtitle",
+        ],
+        "star_cosmos": [
+            "quiet pause shot: tiny human silhouette under a vast star field, faint path light, no subtitle",
+            "quiet pause shot: distant points of light slowly become clearer in the night sky, no subtitle",
+        ],
+        "train_journey": [
+            "quiet pause shot: train window reflection with landscape sliding by softly, no subtitle",
+            "quiet pause shot: empty platform edge and a ticket held still in hand, no subtitle",
+        ],
+    }
+    choices = pause_shots.get(world_id)
+    if choices:
+        return choices[(index // 2) % len(choices)]
+    return f"quiet pause shot: the same visual world holds still, {symbol_text} remain in frame, soft breathing rhythm, no subtitle"
+
+
 def build_storyboard(
     reflection: str,
     emotion: dict,
@@ -150,6 +196,7 @@ def build_storyboard(
     poetic_progression = ((visual_poetic_plan or {}).get("motif") or {}).get("progression", [])
     poetic_symbols = ((visual_poetic_plan or {}).get("motif") or {}).get("recurring_symbols", [])
     poetic_world = ((visual_poetic_plan or {}).get("world") or {}).get("label", "")
+    poetic_world_id = ((visual_poetic_plan or {}).get("world") or {}).get("id", "")
     scenes = [
         f"{poetic_world}意境中，{step}，反复出现{', '.join(poetic_symbols[:3])}，真实电影感"
         for step in poetic_progression
@@ -167,6 +214,7 @@ def build_storyboard(
         unit = expression_by_subtitle.get(subtitle, {})
         if subtitle == "...":
             scene = "画面留白，只有微弱光线和缓慢呼吸感"
+            scene = _pause_scene(index, visual_poetic_plan)
         else:
             scene = scenes[scene_index % len(scenes)]
             scene_index += 1
@@ -179,6 +227,7 @@ def build_storyboard(
                 "semantic_role": unit.get("semantic_role", "pause" if subtitle == "..." else "setup"),
                 "camera_intent": unit.get("camera_intent", ""),
                 "visual_world": poetic_world,
+                "visual_world_id": poetic_world_id,
                 "recurring_symbols": poetic_symbols,
                 "camera": CAMERAS[index % len(CAMERAS)],
                 "lighting": LIGHTING[index % len(LIGHTING)],

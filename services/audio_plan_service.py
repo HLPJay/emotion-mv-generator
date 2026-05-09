@@ -175,6 +175,8 @@ def build_audio_plan(subtitle_plan: dict, emotion: dict, storyboard: list[dict])
             "music_volume": 0.34,
             "duck_music_under_voice": True,
             "ambient_fallback_volume": 0.28,
+            "environment_volume": 0.16,
+            "environment_sound": True,
         },
         "adjusted_storyboard": adjusted_storyboard,
     }

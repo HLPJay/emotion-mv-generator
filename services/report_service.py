@@ -134,6 +134,7 @@ def build_run_report(run_dir: Path) -> dict:
     narration = run_dir / "audio" / "narration.mp3"
     bgm = run_dir / "audio" / "bgm.mp3"
     narration_segments = _asset_list(run_dir / "audio", "narration_*.mp3")
+    environment_sounds = _asset_list(run_dir / "audio", "environment_*.wav")
 
     video_info = _probe_media(final_video)
     narration_info = _probe_media(narration)
@@ -169,6 +170,7 @@ def build_run_report(run_dir: Path) -> dict:
             "narration": str(narration),
             "narration_segments": [item["path"] for item in narration_segments],
             "bgm": str(bgm),
+            "environment_sounds": [item["path"] for item in environment_sounds],
         },
         "input": {
             "text": input_text,
@@ -231,6 +233,7 @@ def build_run_report(run_dir: Path) -> dict:
             "images": images,
             "subtitle_images": subtitle_images,
             "narration_segments": narration_segments,
+            "environment_sounds": environment_sounds,
         },
         "events": events,
         "warnings": warnings,
@@ -296,6 +299,7 @@ def render_report_markdown(report: dict) -> str:
 - Images: {len(assets.get('images', []))}
 - Subtitle PNGs: {len(assets.get('subtitle_images', []))}
 - Narration Segments: {len(assets.get('narration_segments', []))}
+- Environment Sounds: {len(assets.get('environment_sounds', []))}
 
 ## Models
 
