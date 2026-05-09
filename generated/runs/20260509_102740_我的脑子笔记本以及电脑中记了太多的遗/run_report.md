@@ -47,6 +47,11 @@
 
 - 字幕节奏项超过 8 条
 
+## Performance
+
+- Video Compose Preset: veryfast
+- Video Compose Timings: {'build_video_clips': 4.457, 'concatenate_video': 0.085, 'music_prepare': 0.0, 'narration_prepare': 0.456, 'tail_silence': 0.087, 'background_audio': 0.071, 'environment_audio': 1.262, 'audio_mix': 0.0, 'write_videofile': 220.213}
+
 ## Events
 
 - emotion: success (11.94s)

@@ -38,5 +38,12 @@
     "api_key": "",
     "output_format": "hex",
     "fallback_on_error": true
+  },
+  "video": {
+    "fps": 24,
+    "codec": "libx264",
+    "audio_codec": "aac",
+    "preset": "veryfast",
+    "threads": 6
   }
 }

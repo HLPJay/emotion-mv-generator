@@ -1,6 +1,6 @@
 {
   "run_id": "20260509_102740_我的脑子笔记本以及电脑中记了太多的遗",
-  "generated_at": "2026-05-09T11:07:51",
+  "generated_at": "2026-05-09T11:19:00",
   "paths": {
     "run_dir": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗",
     "final_video": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\final.mp4",
@@ -136,7 +136,7 @@
         ],
         "format": {
           "duration": "27.220000",
-          "size": "17006126"
+          "size": "15008046"
         },
         "exists": true
       },
@@ -182,6 +182,25 @@
     "environment_sound_count": 1,
     "music_error": "",
     "used_music_fallback": false
+  },
+  "performance": {
+    "video_compose": {
+      "duration": 27.220000000000002,
+      "fps": 24,
+      "preset": "veryfast",
+      "threads": 6,
+      "timings": {
+        "build_video_clips": 4.457,
+        "concatenate_video": 0.085,
+        "music_prepare": 0.0,
+        "narration_prepare": 0.456,
+        "tail_silence": 0.087,
+        "background_audio": 0.071,
+        "environment_audio": 1.262,
+        "audio_mix": 0.0,
+        "write_videofile": 220.213
+      }
+    }
   },
   "assets": {
     "images": [

@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import math
 import random
+import time
 import wave
+import json
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
@@ -27,6 +29,9 @@ MUSIC_DIR.mkdir(parents=True, exist_ok=True)
 
 SIZE = (1080, 1920)
 FPS = 24
+VIDEO_PRESET = "veryfast"
+VIDEO_THREADS = 6
+CONFIG_PATH = ROOT / "config" / "model_config.json"
 SUBTITLE_STYLE = {
     "font_size": 74,
     "min_font_size": 60,
@@ -44,6 +49,24 @@ SUBTITLE_STYLE = {
     "fade_in": 0.28,
     "fade_out": 0.38,
 }
+
+
+def _config() -> dict:
+    if not CONFIG_PATH.exists():
+        return {}
+    with CONFIG_PATH.open("r", encoding="utf-8-sig") as file:
+        return json.load(file)
+
+
+def _video_config() -> dict:
+    video_config = _config().get("video", {})
+    return {
+        "fps": int(video_config.get("fps", FPS)),
+        "codec": video_config.get("codec", "libx264"),
+        "audio_codec": video_config.get("audio_codec", "aac"),
+        "preset": video_config.get("preset", VIDEO_PRESET),
+        "threads": int(video_config.get("threads", VIDEO_THREADS)),
+    }
 
 
 def _font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
@@ -282,6 +305,12 @@ def compose_video(
     audio_plan: dict | None = None,
     output_dir: Path | None = None,
 ) -> Path:
+    timings: dict[str, float] = {}
+    video_config = _video_config()
+
+    def mark_timing(step: str, started: float) -> None:
+        timings[step] = round(time.perf_counter() - started, 3)
+
     output_dir = output_dir or VIDEO_DIR
     output_dir.mkdir(parents=True, exist_ok=True)
     subtitle_dir = output_dir / "subtitles"
@@ -289,6 +318,7 @@ def compose_video(
     subtitle_dir.mkdir(parents=True, exist_ok=True)
     audio_dir.mkdir(parents=True, exist_ok=True)
 
+    started = time.perf_counter()
     clips = []
     for index, (shot, image_path) in enumerate(zip(storyboard, image_paths), start=1):
         duration = float(shot.get("duration", 2.0))
@@ -304,8 +334,11 @@ def compose_video(
             )
             base_clip = CompositeVideoClip([base_clip, subtitle_clip], size=SIZE)
         clips.append(base_clip)
+    mark_timing("build_video_clips", started)
 
+    started = time.perf_counter()
     video = concatenate_videoclips(clips, method="compose")
+    mark_timing("concatenate_video", started)
     audio_clips = []
     mix_plan = (audio_plan or {}).get("mix", {})
     ambient = None
@@ -314,15 +347,19 @@ def compose_video(
     background = None
     background_source = None
 
+    started = time.perf_counter()
+    existing_music = audio_dir / "bgm.mp3"
     try:
-        music_path = generate_music_audio(audio_plan or {}, audio_dir)
+        music_path = existing_music if existing_music.exists() and existing_music.stat().st_size > 0 else generate_music_audio(audio_plan or {}, audio_dir)
     except Exception as exc:
         (audio_dir / "music_generation_error.txt").write_text(str(exc), encoding="utf-8")
         music_path = None
+    mark_timing("music_prepare", started)
 
     narration = None
     narration_segments = []
     narration_windows: list[tuple[float, float]] = []
+    started = time.perf_counter()
     if audio_plan and audio_plan.get("narration"):
         try:
             narration_segments = generate_narration_audio_segments(audio_plan, audio_dir)
@@ -369,13 +406,17 @@ def compose_video(
                     video.close()
                     video = concatenate_videoclips(clips, method="compose")
             audio_clips.append(narration)
+    mark_timing("narration_prepare", started)
 
+    started = time.perf_counter()
     tail_silence = float((audio_plan or {}).get("tail_silence", 0.0))
     if tail_silence > 0 and clips and storyboard and storyboard[-1].get("subtitle") == "...":
         clips[-1] = clips[-1].with_duration(clips[-1].duration + tail_silence)
         video.close()
         video = concatenate_videoclips(clips, method="compose")
+    mark_timing("tail_silence", started)
 
+    started = time.perf_counter()
     duck_ratio = float(mix_plan.get("music_duck_ratio", 0.68))
     if music_path:
         music_volume = float(mix_plan.get("music_volume", (audio_plan or {}).get("music", {}).get("volume", 0.22)))
@@ -402,25 +443,44 @@ def compose_video(
         )
         ambient = background
         audio_clips.append(background)
+    mark_timing("background_audio", started)
 
+    started = time.perf_counter()
     if mix_plan.get("environment_sound", True):
         environment_path = _make_environment_sound(video.duration, storyboard, audio_dir)
         environment_volume = float(mix_plan.get("environment_volume", 0.14))
         environment = AudioFileClip(str(environment_path)).with_volume_scaled(environment_volume)
         audio_clips.append(environment)
+    mark_timing("environment_audio", started)
 
+    started = time.perf_counter()
     audio = CompositeAudioClip(audio_clips).with_duration(video.duration)
     video = video.with_audio(audio)
+    mark_timing("audio_mix", started)
 
     output = output_dir / "final.mp4"
+    started = time.perf_counter()
     video.write_videofile(
         str(output),
-        fps=FPS,
-        codec="libx264",
-        audio_codec="aac",
-        preset="medium",
-        threads=4,
+        fps=video_config["fps"],
+        codec=video_config["codec"],
+        audio_codec=video_config["audio_codec"],
+        preset=video_config["preset"],
+        threads=video_config["threads"],
         logger=None,
+    )
+    mark_timing("write_videofile", started)
+    (output_dir / "video_compose_timings.json").write_text(
+        json.dumps(
+            {
+                "duration": video.duration,
+                **video_config,
+                "timings": timings,
+            },
+            ensure_ascii=False,
+            indent=2,
+        ),
+        encoding="utf-8",
     )
     audio.close()
     if ambient:

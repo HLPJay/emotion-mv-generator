@@ -516,6 +516,65 @@ run_report.md
 final_before_recompose.mp4
 ```
 
+重拼时会优先复用已有：
+
+```text
+generated/runs/<run_id>/audio/bgm.mp3
+```
+
+如果 `bgm.mp3` 已存在，不会重复调用 MiniMax 音乐接口；如果不存在，才会尝试生成 BGM。
+
+## 视频合成性能
+
+视频编码参数可以在 `config/model_config.json` 的 `video` 字段里调整：
+
+```json
+{
+  "video": {
+    "fps": 24,
+    "codec": "libx264",
+    "audio_codec": "aac",
+    "preset": "veryfast",
+    "threads": 6
+  }
+}
+```
+
+常用建议：
+
+```text
+日常迭代：preset=veryfast, fps=24
+最快预览：preset=ultrafast, fps=20
+最终质量：preset=medium, fps=24
+```
+
+每次合成会写入性能明细：
+
+```text
+generated/runs/<run_id>/video_compose_timings.json
+```
+
+其中会记录：
+
+```json
+{
+  "duration": 27.22,
+  "fps": 24,
+  "preset": "veryfast",
+  "threads": 6,
+  "timings": {
+    "build_video_clips": 4.457,
+    "music_prepare": 0.0,
+    "narration_prepare": 0.456,
+    "background_audio": 0.071,
+    "environment_audio": 1.262,
+    "write_videofile": 220.213
+  }
+}
+```
+
+如果合成慢，优先看 `write_videofile`。这个阶段是 MoviePy 逐帧渲染与 H.264 编码，通常是最慢的部分。
+
 
 ## 目录
 

@@ -129,6 +129,7 @@ def build_run_report(run_dir: Path) -> dict:
     visual_continuity = _read_json(run_dir / "visual_continuity.json") or {}
     events = _read_events(run_dir)
     adjusted_storyboard = _read_json(run_dir / "adjusted_storyboard.json") or []
+    video_compose_timings = _read_json(run_dir / "video_compose_timings.json") or {}
 
     final_video = run_dir / "final.mp4"
     narration = run_dir / "audio" / "narration.mp3"
@@ -240,6 +241,9 @@ def build_run_report(run_dir: Path) -> dict:
             "music_error": music_error,
             "used_music_fallback": not bgm.exists(),
         },
+        "performance": {
+            "video_compose": video_compose_timings,
+        },
         "assets": {
             "images": images,
             "subtitle_images": subtitle_images,
@@ -320,6 +324,11 @@ def render_report_markdown(report: dict) -> str:
 ## Warnings
 
 {warning_text}
+
+## Performance
+
+- Video Compose Preset: {report.get('performance', {}).get('video_compose', {}).get('preset')}
+- Video Compose Timings: {report.get('performance', {}).get('video_compose', {}).get('timings')}
 
 ## Events
 
