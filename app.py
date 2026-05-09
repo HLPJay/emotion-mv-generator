@@ -353,10 +353,24 @@ def generate_reflection_video(
         stage = event.get("stage", "")
         label = stage_labels.get(stage, stage)
         duration = event.get("duration_seconds")
-        if duration is None:
-            step_state["video_compose"]["message"] = label
-        else:
+        elapsed = event.get("elapsed_seconds")
+        percent = event.get("percent")
+        eta = event.get("eta_seconds")
+        frame_index = event.get("frame_index")
+        frame_total = event.get("frame_total")
+        if duration is not None:
             step_state["video_compose"]["message"] = f"{label}完成，用时 {_format_duration(duration)}"
+        elif elapsed is not None:
+            detail = f"{label}中，已用 {_format_duration(elapsed)}"
+            if percent is not None:
+                detail += f"，进度 {float(percent):.1f}%"
+            if frame_index is not None and frame_total is not None:
+                detail += f"（{frame_index}/{frame_total} 帧）"
+            if eta is not None:
+                detail += f"，预计剩余 {_format_duration(eta)}"
+            step_state["video_compose"]["message"] = detail
+        else:
+            step_state["video_compose"]["message"] = label
 
     write_text(run_dir / "input.txt", reflection)
     log_event(run_dir, "run", "started", visual_style_id=visual_style_id, visual_world_id=visual_world_id)
@@ -572,6 +586,16 @@ with gr.Blocks(title="AI Reflection Video Generator") as demo:
                 interactive=True,
             )
             recompose_strict_audio = gr.Checkbox(label="严格复用已有音频（缺失则报错，不补生成）", value=True)
+            recompose_mode = gr.Dropdown(
+                label="重拼模式",
+                choices=[
+                    ("完整重拼（MoviePy，效果完整）", "moviepy"),
+                    ("仅替换音频（FFmpeg，最快）", "audio_only"),
+                ],
+                value="moviepy",
+                interactive=True,
+            )
+            recompose_mode_hint = gr.Markdown("* 仅替换音频模式不会应用字幕/画面修改，只适合换 BGM、替换音轨。", visible=True)
             recompose_generate_btn = gr.Button("重新拼接视频", variant="primary")
             recompose_video_output = gr.Video(label="重拼结果")
             recompose_report_output = gr.JSON(label="重拼报告")
@@ -594,12 +618,12 @@ with gr.Blocks(title="AI Reflection Video Generator") as demo:
                 path = path_and_label[1] if isinstance(path_and_label, tuple) else path_and_label
                 return {recompose_run_dir_input: path, recompose_status_output: f"已选择: {path}"}
 
-            def on_recompose(run_dir: str, strict_audio: bool):
+            def on_recompose(run_dir: str, strict_audio: bool, mode: str):
                 run_dir_path = Path(run_dir)
                 if not run_dir_path.exists():
                     raise gr.Error(f"目录不存在: {run_dir}")
                 try:
-                    result = recompose_run_video(run_dir_path, strict_audio=strict_audio)
+                    result = recompose_run_video(run_dir_path, strict_audio=strict_audio, mode=mode)
                     return {
                         recompose_video_output: str(run_dir_path / "final.mp4"),
                         recompose_report_output: result,
@@ -607,10 +631,12 @@ with gr.Blocks(title="AI Reflection Video Generator") as demo:
                     }
                 except FileNotFoundError as exc:
                     raise gr.Error(str(exc)) from exc
+                except RuntimeError as exc:
+                    raise gr.Error(str(exc)) from exc
 
             recompose_refresh_btn.click(fn=on_refresh_runs, outputs=[recompose_run_dropdown, recompose_status_output])
             recompose_run_dropdown.change(fn=on_run_selected, inputs=[recompose_run_dropdown], outputs=[recompose_run_dir_input, recompose_status_output])
-            recompose_generate_btn.click(fn=on_recompose, inputs=[recompose_run_dir_input, recompose_strict_audio], outputs=[recompose_video_output, recompose_report_output, recompose_status_output])
+            recompose_generate_btn.click(fn=on_recompose, inputs=[recompose_run_dir_input, recompose_strict_audio, recompose_mode], outputs=[recompose_video_output, recompose_report_output, recompose_status_output])
 
     generate_button.click(
         fn=generate_reflection_video,

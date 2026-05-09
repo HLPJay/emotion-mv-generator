@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from services.event_service import log_event, track_step
+from services.ffmpeg_service import replace_video_audio
 from services.report_service import write_run_report
 from services.run_service import write_json
 from services.video_service import compose_video
@@ -86,6 +87,7 @@ def recompose_run_video(
     *,
     backup_existing: bool = True,
     strict_audio: bool = False,
+    mode: str = "moviepy",
     progress_callback: Callable[[dict[str, Any]], None] | None = None,
 ) -> dict[str, Any]:
     """Recompose final.mp4 from existing assets without regenerating images or calling LLM.
@@ -96,10 +98,16 @@ def recompose_run_video(
         strict_audio: If True, raise error when BGM or narration audio is missing
                       instead of allowing regeneration. Use when you want to
                       guarantee no audio generation calls.
+        mode: "moviepy" for full recompose, "audio_only" for FFmpeg fast audio replacement.
         progress_callback: Optional callback for progress updates.
     """
     run_dir = Path(run_dir)
 
+    # Audio-only mode: fast path that doesn't regenerate video
+    if mode == "audio_only":
+        return _recompose_audio_only(run_dir, backup_existing=backup_existing, strict_audio=strict_audio)
+
+    # MoviePy mode: full recompose (original logic)
     for name in ["adjusted_storyboard.json", "audio_plan.json", "emotion.json"]:
         path = run_dir / name
         if not path.exists():
@@ -174,4 +182,122 @@ def recompose_run_video(
         }
     except Exception as exc:
         log_event(run_dir, "recompose", "failed", error=str(exc), error_type=exc.__class__.__name__)
+        raise
+
+
+def _recompose_audio_only(
+    run_dir: Path,
+    backup_existing: bool = True,
+    strict_audio: bool = False,
+) -> dict[str, Any]:
+    """Fast audio replacement using FFmpeg without re-encoding video.
+
+    Does not regenerate images, subtitles, or call LLM.
+    """
+    run_dir = Path(run_dir)
+    audio_dir = run_dir / "audio"
+    final_video = run_dir / "final.mp4"
+
+    # Validate existing final.mp4
+    if not final_video.exists():
+        error_msg = f"audio_only mode requires existing final.mp4, not found at {final_video}"
+        log_event(run_dir, "recompose", "failed", error=error_msg, mode="audio_only", error_type="FileNotFoundError")
+        raise FileNotFoundError(error_msg)
+
+    # Load audio_plan for narration info
+    audio_plan_path = run_dir / "audio_plan.json"
+    audio_plan = json.loads(audio_plan_path.read_text(encoding="utf-8-sig")) if audio_plan_path.exists() else {}
+
+    bgm_path = audio_dir / "bgm.mp3"
+
+    # Validate audio
+    if strict_audio:
+        missing_audio: list[str] = []
+        if not (bgm_path.exists() and bgm_path.stat().st_size > 0):
+            missing_audio.append("bgm.mp3")
+        # Check ALL narration files from audio_plan, not just the ones that exist
+        for idx, segment in enumerate((audio_plan.get("narration") or []), start=1):
+            role = segment.get("role", "primary")
+            seg_path = audio_dir / f"narration_{idx:02d}_{role}.mp3"
+            if not (seg_path.exists() and seg_path.stat().st_size > 0):
+                missing_audio.append(seg_path.name)
+        if missing_audio:
+            error_msg = f"strict_audio=True but missing audio files: {missing_audio}"
+            log_event(run_dir, "recompose", "failed", error=error_msg, mode="audio_only", error_type="FileNotFoundError")
+            raise FileNotFoundError(error_msg)
+
+    if not (bgm_path.exists() and bgm_path.stat().st_size > 0):
+        error_msg = f"BGM file not found: {bgm_path}"
+        log_event(run_dir, "recompose", "failed", error=error_msg, mode="audio_only", error_type="FileNotFoundError")
+        raise FileNotFoundError(error_msg)
+
+    # Build audio_tracks list with start/volume metadata for FFmpeg
+    bgm_volume = (audio_plan.get("music") or {}).get("volume", 0.22) or 0.22
+    audio_tracks: list[dict] = [
+        {"path": bgm_path, "start": 0.0, "volume": bgm_volume}
+    ]
+    for idx, segment in enumerate((audio_plan.get("narration") or []), start=1):
+        role = segment.get("role", "primary")
+        seg_path = audio_dir / f"narration_{idx:02d}_{role}.mp3"
+        if seg_path.exists() and seg_path.stat().st_size > 0:
+            audio_tracks.append({
+                "path": seg_path,
+                "start": segment.get("start", 0.0),
+                "volume": 1.0,  # narration uses full volume
+            })
+
+    # Backup original
+    backup_video = run_dir / "final_before_recompose.mp4"
+    if backup_existing and not backup_video.exists():
+        shutil.copy2(final_video, backup_video)
+
+    log_event(run_dir, "recompose", "started", mode="audio_only")
+
+    try:
+        result = replace_video_audio(
+            input_video=final_video,
+            output_video=final_video,
+            audio_tracks=audio_tracks,
+        )
+
+        if not result["success"]:
+            # FFmpeg failed - original video untouched since replace_video_audio writes to tmp first
+            log_event(
+                run_dir,
+                "recompose",
+                "failed",
+                engine="ffmpeg",
+                mode="audio_only",
+                error=result.get("error", "Unknown FFmpeg error"),
+                error_type=result.get("error_type", "FFmpegError"),
+            )
+            raise RuntimeError(f"FFmpeg audio replacement failed: {result.get('error')}")
+
+        # Success
+        log_event(
+            run_dir,
+            "recompose",
+            "success",
+            engine="ffmpeg",
+            mode="audio_only",
+            duration_seconds=result.get("elapsed_seconds"),
+            video_stream_copied=result.get("video_stream_copied"),
+            final_video=str(final_video),
+        )
+
+        return {
+            "success": True,
+            "run_dir": str(run_dir),
+            "output_path": str(final_video),
+            "backup_path": str(backup_video) if backup_video.exists() else None,
+            "engine": result.get("engine"),
+            "mode": "audio_only",
+            "video_stream_copied": result.get("video_stream_copied"),
+            "elapsed_seconds": result.get("elapsed_seconds"),
+            "output_duration_seconds": result.get("output_duration_seconds"),
+            "warnings": result.get("warnings", []),
+        }
+
+    except Exception as exc:
+        log_event(run_dir, "recompose", "failed", engine="ffmpeg", mode="audio_only", error=str(exc), error_type=exc.__class__.__name__)
         raise

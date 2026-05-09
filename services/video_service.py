@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Callable
 
 from PIL import Image, ImageDraw, ImageFont
+from proglog import ProgressBarLogger
 
 try:
     from moviepy.editor import AudioFileClip, CompositeAudioClip, CompositeVideoClip, ImageClip, concatenate_videoclips, vfx
@@ -68,6 +69,52 @@ def _video_config() -> dict:
         "preset": video_config.get("preset", VIDEO_PRESET),
         "threads": int(video_config.get("threads", VIDEO_THREADS)),
     }
+
+
+class _MoviePyProgressLogger(ProgressBarLogger):
+    def __init__(
+        self,
+        progress_callback: Callable[[dict], None],
+        *,
+        stage: str,
+        min_interval: float = 1.0,
+    ) -> None:
+        super().__init__(logged_bars=None)
+        self.progress_callback = progress_callback
+        self.stage = stage
+        self.started = time.perf_counter()
+        self.last_emit = 0.0
+        self.min_interval = min_interval
+
+    def bars_callback(self, bar, attr, value, old_value=None):
+        if attr != "index":
+            return
+
+        total = self.bars.get(bar, {}).get("total")
+        if not total:
+            return
+
+        now = time.perf_counter()
+        if value < total and now - self.last_emit < self.min_interval:
+            return
+        self.last_emit = now
+
+        elapsed = max(0.0, now - self.started)
+        percent = min(100.0, max(0.0, float(value) / float(total) * 100.0))
+        eta = None
+        if value > 0 and value < total:
+            eta = max(0.0, elapsed * (float(total) - float(value)) / float(value))
+
+        self.progress_callback({
+            "step": "video_compose",
+            "stage": self.stage,
+            "status": "running",
+            "elapsed_seconds": round(elapsed, 3),
+            "eta_seconds": round(eta, 3) if eta is not None else None,
+            "percent": round(percent, 1),
+            "frame_index": int(value),
+            "frame_total": int(total),
+        })
 
 
 def _font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
@@ -629,6 +676,7 @@ def compose_video(
     started = time.perf_counter()
     if progress_callback:
         progress_callback({"step": "video_compose", "stage": "write_videofile", "status": "running"})
+    logger = _MoviePyProgressLogger(progress_callback, stage="write_videofile") if progress_callback else None
     video.write_videofile(
         str(output),
         fps=video_config["fps"],
@@ -636,7 +684,9 @@ def compose_video(
         audio_codec=video_config["audio_codec"],
         preset=video_config["preset"],
         threads=video_config["threads"],
-        logger=None,
+        logger=logger,
+        temp_audiofile=str(output_dir / "temp_audio_for_final.m4a"),
+        remove_temp=True,
     )
     mark_timing("write_videofile", started)
     (output_dir / "video_compose_timings.json").write_text(

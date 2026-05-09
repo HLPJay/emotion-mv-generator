@@ -222,6 +222,25 @@ def build_run_report(run_dir: Path) -> dict:
     adjusted_storyboard = _read_json(run_dir / "adjusted_storyboard.json") or []
     video_compose_timings = _read_json(run_dir / "video_compose_timings.json") or {}
 
+    # Extract recompose info from events
+    recompose_events = [e for e in events if e.get("step") == "recompose"]
+    recompose_info: dict = {}
+    if recompose_events:
+        last_recompose = recompose_events[-1]
+        recompose_info = {
+            "success": last_recompose.get("status") == "success",
+            "engine": last_recompose.get("engine"),
+            "mode": last_recompose.get("mode"),
+            "timestamp": last_recompose.get("timestamp"),
+            "duration_seconds": last_recompose.get("duration_seconds"),
+        }
+        if last_recompose.get("status") == "success":
+            recompose_info["video_stream_copied"] = last_recompose.get("video_stream_copied")
+            recompose_info["output_path"] = last_recompose.get("final_video")
+        else:
+            recompose_info["error"] = last_recompose.get("error")
+            recompose_info["error_type"] = last_recompose.get("error_type")
+
     final_video = run_dir / "final.mp4"
     narration = run_dir / "audio" / "narration.mp3"
     bgm = run_dir / "audio" / "bgm.mp3"
@@ -364,6 +383,7 @@ def build_run_report(run_dir: Path) -> dict:
             "music_error": music_error,
             "used_music_fallback": not bgm.exists(),
         },
+        "recompose": recompose_info if recompose_info else None,
         "performance": {
             "video_compose": video_compose_timings,
         },
