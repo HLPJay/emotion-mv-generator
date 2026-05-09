@@ -6,6 +6,7 @@ import hashlib
 import json
 import textwrap
 from pathlib import Path
+import time
 from typing import Callable
 
 import requests
@@ -45,6 +46,7 @@ def _image_config() -> dict:
         "prompt_optimizer": bool(image_config.get("prompt_optimizer", True)),
         "fallback_on_error": bool(image_config.get("fallback_on_error", True)),
         "max_workers": int(image_config.get("max_workers", 3)),
+        "max_retries": int(image_config.get("max_retries", 2)),
     }
 
 
@@ -144,6 +146,17 @@ def _resize_and_save(image: Image.Image, path: Path) -> Path:
     return path
 
 
+def _is_retryable_image_error(exc: Exception) -> bool:
+    msg = str(exc)
+    if "status_code" in msg and "1033" in msg:
+        return True
+    if isinstance(exc, requests.exceptions.Timeout):
+        return True
+    if isinstance(exc, requests.exceptions.ConnectionError):
+        return True
+    return False
+
+
 def _generate_minimax_image(
     shot: dict,
     emotion: dict,
@@ -173,35 +186,53 @@ def _generate_minimax_image(
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
     }
-    response = requests.post(url, headers=headers, json=payload, timeout=180)
-    if response.status_code >= 400:
-        raise ImageGenerationError(f"MiniMax image request failed: {response.status_code} {response.text}")
-
-    data = response.json()
-    if data.get("base_resp", {}).get("status_code") not in (None, 0):
-        raise ImageGenerationError(f"MiniMax image generation failed: {data}")
 
     output = output_dir / f"scene_{index:02d}.png"
-    image_data = data.get("data", {})
-    if config["response_format"] == "base64":
-        images = image_data.get("image_base64") or image_data.get("images") or []
-        if not images:
-            raise ImageGenerationError(f"MiniMax image response missing base64 data: {data}")
-        image_bytes = base64.b64decode(images[0])
-        from io import BytesIO
+    max_retries = config.get("max_retries", 2)
+    last_exc: Exception | None = None
+    for attempt in range(max_retries + 1):
+        try:
+            response = requests.post(url, headers=headers, json=payload, timeout=180)
+            if response.status_code >= 400:
+                raise ImageGenerationError(f"MiniMax image request failed: {response.status_code} {response.text}")
 
-        image = Image.open(BytesIO(image_bytes))
-        return _resize_and_save(image, output)
+            data = response.json()
+            base_resp = data.get("base_resp", {})
+            status_code = base_resp.get("status_code")
+            if status_code not in (None, 0):
+                exc = ImageGenerationError(f"MiniMax image generation failed: {data}")
+                if attempt < max_retries and _is_retryable_image_error(exc):
+                    time.sleep(2 ** attempt)
+                    continue
+                raise exc
 
-    image_urls = image_data.get("image_urls") or []
-    if not image_urls:
-        raise ImageGenerationError(f"MiniMax image response missing image url: {data}")
-    image_response = requests.get(image_urls[0], timeout=120)
-    image_response.raise_for_status()
-    from io import BytesIO
+            image_data = data.get("data", {})
+            if config["response_format"] == "base64":
+                images = image_data.get("image_base64") or image_data.get("images") or []
+                if not images:
+                    raise ImageGenerationError(f"MiniMax image response missing base64 data: {data}")
+                image_bytes = base64.b64decode(images[0])
+                from io import BytesIO
 
-    image = Image.open(BytesIO(image_response.content))
-    return _resize_and_save(image, output)
+                image = Image.open(BytesIO(image_bytes))
+                return _resize_and_save(image, output)
+
+            image_urls = image_data.get("image_urls") or []
+            if not image_urls:
+                raise ImageGenerationError(f"MiniMax image response missing image url: {data}")
+            image_response = requests.get(image_urls[0], timeout=120)
+            image_response.raise_for_status()
+            from io import BytesIO
+
+            image = Image.open(BytesIO(image_response.content))
+            return _resize_and_save(image, output)
+        except Exception as exc:
+            last_exc = exc
+            if attempt < max_retries and _is_retryable_image_error(exc):
+                time.sleep(2 ** attempt)
+                continue
+            raise exc
+    raise last_exc or ImageGenerationError("Unexpected retry loop exit")
 
 
 def _generate_placeholder_image(shot: dict, emotion: dict, index: int, output_dir: Path) -> Path:

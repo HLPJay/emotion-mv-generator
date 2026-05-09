@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import time
 
 import requests
 
@@ -42,6 +43,7 @@ def _audio_config() -> dict:
         "emotion": audio_config.get("emotion", "sad"),
         "output_format": audio_config.get("output_format", "hex"),
         "fallback_on_error": bool(audio_config.get("fallback_on_error", True)),
+        "max_retries": int(audio_config.get("max_retries", 2)),
     }
 
 
@@ -70,6 +72,17 @@ def _voice_setting(config: dict, voice_plan: dict) -> dict:
     }
 
 
+def _is_retryable_audio_error(exc: Exception) -> bool:
+    msg = str(exc)
+    if "status_code" in msg and "1033" in msg:
+        return True
+    if isinstance(exc, requests.exceptions.Timeout):
+        return True
+    if isinstance(exc, requests.exceptions.ConnectionError):
+        return True
+    return False
+
+
 def _request_tts(text: str, voice_plan: dict, output: Path, config: dict) -> Path:
     url = f"{config['api_base'].rstrip('/')}/v1/t2a_v2"
     payload = {
@@ -92,29 +105,47 @@ def _request_tts(text: str, voice_plan: dict, output: Path, config: dict) -> Pat
         "Authorization": f"Bearer {config['api_key'].strip()}",
         "Content-Type": "application/json",
     }
-    response = requests.post(url, headers=headers, json=payload, timeout=180)
-    if response.status_code >= 400:
-        raise AudioGenerationError(f"MiniMax T2A request failed: {response.status_code} {response.text}")
 
-    data = response.json()
-    if data.get("base_resp", {}).get("status_code") not in (None, 0):
-        raise AudioGenerationError(f"MiniMax T2A generation failed: {data}")
+    max_retries = config.get("max_retries", 2)
+    last_exc: Exception | None = None
+    for attempt in range(max_retries + 1):
+        try:
+            response = requests.post(url, headers=headers, json=payload, timeout=180)
+            if response.status_code >= 400:
+                raise AudioGenerationError(f"MiniMax T2A request failed: {response.status_code} {response.text}")
 
-    result_data = data.get("data") or {}
-    if config["output_format"] == "url":
-        audio_url = result_data.get("audio")
-        if not audio_url:
-            raise AudioGenerationError(f"MiniMax T2A response missing audio url: {data}")
-        audio_response = requests.get(audio_url, timeout=120)
-        audio_response.raise_for_status()
-        output.write_bytes(audio_response.content)
-        return output
+            data = response.json()
+            base_resp = data.get("base_resp", {})
+            status_code = base_resp.get("status_code")
+            if status_code not in (None, 0):
+                exc = AudioGenerationError(f"MiniMax T2A generation failed: {data}")
+                if attempt < max_retries and _is_retryable_audio_error(exc):
+                    time.sleep(2 ** attempt)
+                    continue
+                raise exc
 
-    audio_hex = result_data.get("audio")
-    if not audio_hex:
-        raise AudioGenerationError(f"MiniMax T2A response missing audio data: {data}")
-    output.write_bytes(bytes.fromhex(audio_hex))
-    return output
+            result_data = data.get("data") or {}
+            if config["output_format"] == "url":
+                audio_url = result_data.get("audio")
+                if not audio_url:
+                    raise AudioGenerationError(f"MiniMax T2A response missing audio url: {data}")
+                audio_response = requests.get(audio_url, timeout=120)
+                audio_response.raise_for_status()
+                output.write_bytes(audio_response.content)
+                return output
+
+            audio_hex = result_data.get("audio")
+            if not audio_hex:
+                raise AudioGenerationError(f"MiniMax T2A response missing audio data: {data}")
+            output.write_bytes(bytes.fromhex(audio_hex))
+            return output
+        except Exception as exc:
+            last_exc = exc
+            if attempt < max_retries and _is_retryable_audio_error(exc):
+                time.sleep(2 ** attempt)
+                continue
+            raise exc
+    raise last_exc or AudioGenerationError("Unexpected retry loop exit")
 
 
 def _line_voice_plan(audio_plan: dict, item: dict) -> dict:
