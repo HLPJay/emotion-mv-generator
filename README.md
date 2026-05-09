@@ -149,6 +149,41 @@ generated/runs/<run_id>/run_events.jsonl
 
 ## Expression Plan
 
+在进入表达计划前，项目会先生成输入结构分析：
+
+```text
+raw input
+→ input_structure
+→ expression_plan
+```
+
+输出文件：
+
+```text
+generated/runs/<run_id>/input_structure.json
+```
+
+它负责拆出：
+
+```text
+main_text
+parenthetical_text
+relationship: none / explain / deepen / contrast / reveal / challenge / resolve / echo
+emotional_shift
+visual_transition
+usage
+question_analysis
+```
+
+这一步不是直接生成镜头，而是给后续模块一份“导演说明书”：括号是解释、加深、反转、点醒、质问、给方向，还是结尾余味。LLM 开启时该结构会由大模型分析；LLM 关闭时使用规则兜底。
+
+后续 V2 会继续考虑把括号内部拆成更细的功能单元，并和反问统一成 `secondary_layers`。详细设计记录在：
+
+```text
+docs/backlog.md
+docs/archive_2026-05-09.md
+```
+
 项目现在有一层统一的表达导演层：
 
 ```text

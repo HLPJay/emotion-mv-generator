@@ -21,7 +21,20 @@ MOOD_MAP = {
 }
 
 
-def analyze_emotion(reflection: str) -> dict:
+def _structure_prompt(input_structure: dict | None) -> str:
+    if not input_structure:
+        return ""
+    return f"""
+输入结构分析：
+main_theme: {input_structure.get('main_theme')}
+parenthetical_theme: {input_structure.get('parenthetical_theme')}
+relationship: {input_structure.get('relationship')}
+emotional_shift: {input_structure.get('emotional_shift')}
+注意：括号用于理解第二层意义，不要让括号完全覆盖主句。
+"""
+
+
+def analyze_emotion(reflection: str, input_structure: dict | None = None) -> dict:
     if llm_enabled():
         system_prompt = """
 你是一个情绪解析器，不是文案生成器。
@@ -39,6 +52,8 @@ def analyze_emotion(reflection: str) -> dict:
 用户原句：
 {reflection}
 
+{_structure_prompt(input_structure)}
+
 请输出：
 {{
   "emotion": "核心情绪，2-6个字",
@@ -55,7 +70,7 @@ def analyze_emotion(reflection: str) -> dict:
         return chat_json(system_prompt, user_prompt, temperature=0.35)
 
     scores = {
-        emotion: sum(1 for keyword in keywords if keyword in reflection)
+        emotion: sum(1 for keyword in keywords if keyword in " ".join([reflection, str(input_structure or {})]))
         for emotion, keywords in EMOTION_KEYWORDS.items()
     }
     emotion = max(scores, key=scores.get)

@@ -119,6 +119,7 @@ def _has_audio(media_info: dict) -> bool:
 
 def build_run_report(run_dir: Path) -> dict:
     input_text = _read_text(run_dir / "input.txt")
+    input_structure = _read_json(run_dir / "input_structure.json") or {}
     emotion = _read_json(run_dir / "emotion.json") or {}
     subtitle_plan = _read_json(run_dir / "subtitle_plan.json") or {}
     expression_plan = _read_json(run_dir / "expression_plan.json") or {}
@@ -180,8 +181,15 @@ def build_run_report(run_dir: Path) -> dict:
         "input": {
             "text": input_text,
             "length": len(input_text),
+            "structure": input_structure,
         },
         "content_summary": {
+            "main_theme": input_structure.get("main_theme"),
+            "parenthetical_theme": input_structure.get("parenthetical_theme"),
+            "parenthetical_relationship": input_structure.get("relationship"),
+            "parenthetical_emotional_shift": input_structure.get("emotional_shift"),
+            "parenthetical_visual_transition": input_structure.get("visual_transition"),
+            "question_analysis": input_structure.get("question_analysis"),
             "emotion": emotion.get("emotion"),
             "mood": emotion.get("mood"),
             "tone": emotion.get("tone"),
@@ -295,6 +303,9 @@ def render_report_markdown(report: dict) -> str:
 
 - Run ID: `{report['run_id']}`
 - Input: {report['input']['text']}
+- Main Theme: {content.get('main_theme')}
+- Parenthetical Relationship: {content.get('parenthetical_relationship')}
+- Parenthetical Theme: {content.get('parenthetical_theme')}
 - Emotion: {content.get('emotion')}
 - Mood: {content.get('mood')}
 - Tone: {content.get('tone')}

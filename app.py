@@ -14,6 +14,7 @@ from services.emotion_service import analyze_emotion
 from services.event_service import log_event, track_step
 from services.expression_service import build_expression_plan
 from services.image_service import generate_scene_images
+from services.input_structure_service import analyze_input_structure
 from services.narrative_service import build_narrative_plan
 from services.report_service import write_run_report
 from services.run_service import create_run_dir, write_json, write_text
@@ -34,6 +35,7 @@ DEFAULT_TEXT = "相比于生活的困境，\n我一直更害怕的是怯弱的�
 
 
 PIPELINE_STEPS = [
+    ("input_structure", "输入结构"),
     ("emotion", "情绪分析"),
     ("visual_style", "视觉风格"),
     ("visual_continuity", "视觉连续性"),
@@ -212,6 +214,9 @@ def _render_report_summary(report: dict[str, Any] | None) -> str:
 - 是否有音频: {video.get('has_audio')}
 
 **内容**
+- 主句主题: {content.get('main_theme')}
+- 括号关系: {content.get('parenthetical_relationship')}
+- 括号主题: {content.get('parenthetical_theme')}
 - 情绪: {content.get('emotion')}
 - 意境世界: {content.get('visual_world')}
 - 叙事弧线: {content.get('narrative_arc')}
@@ -236,6 +241,7 @@ def _render_report_summary(report: dict[str, Any] | None) -> str:
 
 def _outputs(
     video_path: str | None = None,
+    input_structure: dict[str, Any] | None = None,
     emotion: dict[str, Any] | None = None,
     visual_style: dict[str, Any] | None = None,
     expression_plan: dict[str, Any] | None = None,
@@ -251,6 +257,7 @@ def _outputs(
 ) -> tuple[Any, ...]:
     return (
         video_path,
+        input_structure or {},
         emotion or {},
         visual_style or {},
         expression_plan or {},
@@ -280,6 +287,7 @@ def generate_reflection_video(
     current_step = ""
     report: dict[str, Any] | None = None
     video_path: Path | None = None
+    input_structure: dict[str, Any] = {}
     emotion: dict[str, Any] = {}
     visual_style: dict[str, Any] = {}
     visual_continuity: dict[str, Any] = {}
@@ -293,6 +301,7 @@ def generate_reflection_video(
     def emit() -> tuple[Any, ...]:
         return _outputs(
             str(video_path) if video_path else None,
+            input_structure,
             emotion,
             visual_style,
             expression_plan,
@@ -346,10 +355,17 @@ def generate_reflection_video(
     yield emit()
 
     try:
+        start_step("input_structure")
+        yield emit()
+        with track_step(run_dir, "input_structure"):
+            input_structure = analyze_input_structure(reflection)
+        write_json(run_dir / "input_structure.json", input_structure)
+        _refresh_step_state_from_events(step_state, run_dir)
+
         start_step("emotion")
         yield emit()
         with track_step(run_dir, "emotion"):
-            emotion = analyze_emotion(reflection)
+            emotion = analyze_emotion(reflection, input_structure)
         write_json(run_dir / "emotion.json", emotion)
         _refresh_step_state_from_events(step_state, run_dir)
 
@@ -370,21 +386,21 @@ def generate_reflection_video(
         start_step("expression_plan")
         yield emit()
         with track_step(run_dir, "expression_plan"):
-            expression_plan = build_expression_plan(reflection, emotion)
+            expression_plan = build_expression_plan(reflection, emotion, input_structure=input_structure)
         write_json(run_dir / "expression_plan.json", expression_plan)
         _refresh_step_state_from_events(step_state, run_dir)
 
         start_step("visual_poetic_plan")
         yield emit()
         with track_step(run_dir, "visual_poetic_plan"):
-            visual_poetic_plan = build_visual_poetic_plan(reflection, expression_plan, emotion, visual_world_id)
+            visual_poetic_plan = build_visual_poetic_plan(reflection, expression_plan, emotion, visual_world_id, input_structure)
         write_json(run_dir / "visual_poetic_plan.json", visual_poetic_plan)
         _refresh_step_state_from_events(step_state, run_dir)
 
         start_step("narrative_plan")
         yield emit()
         with track_step(run_dir, "narrative_plan"):
-            narrative_plan = build_narrative_plan(reflection, expression_plan, visual_poetic_plan, emotion)
+            narrative_plan = build_narrative_plan(reflection, expression_plan, visual_poetic_plan, emotion, input_structure)
         write_json(run_dir / "narrative_plan.json", narrative_plan)
         _refresh_step_state_from_events(step_state, run_dir)
 
@@ -408,6 +424,7 @@ def generate_reflection_video(
                 expression_plan,
                 visual_poetic_plan,
                 narrative_plan,
+                input_structure,
             )
         write_json(run_dir / "storyboard.json", storyboard)
         _refresh_step_state_from_events(step_state, run_dir)
@@ -510,6 +527,7 @@ with gr.Blocks(title="AI Reflection Video Generator") as demo:
     with gr.Tabs():
         with gr.Tab("核心"):
             with gr.Row():
+                input_structure_output = gr.JSON(label="输入结构")
                 emotion_output = gr.JSON(label="情绪解析")
                 visual_style_output = gr.JSON(label="视觉风格")
                 visual_poetic_output = gr.JSON(label="视觉意境")
@@ -530,6 +548,7 @@ with gr.Blocks(title="AI Reflection Video Generator") as demo:
         inputs=[reflection_input, visual_style_input, visual_world_input],
         outputs=[
             video_output,
+            input_structure_output,
             emotion_output,
             visual_style_output,
             expression_plan_output,

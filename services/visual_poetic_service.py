@@ -88,9 +88,11 @@ def build_visual_poetic_plan(
     expression_plan: dict | None = None,
     emotion: dict | None = None,
     preferred_world_id: str = "random",
+    input_structure: dict | None = None,
 ) -> dict:
     config = _load_config()
-    text = " ".join([reflection, _expression_text(expression_plan), json.dumps(emotion or {}, ensure_ascii=False)])
+    structure_text = json.dumps(input_structure or {}, ensure_ascii=False)
+    text = " ".join([reflection, _expression_text(expression_plan), json.dumps(emotion or {}, ensure_ascii=False), structure_text])
     archetype_id, archetype, archetype_score = _select_scored(config.get("archetypes", {}), text)
 
     worlds = config.get("worlds", {})
@@ -118,6 +120,13 @@ def build_visual_poetic_plan(
             "selection_mode": selection_mode,
         },
         "motif": motif,
+        "input_structure": {
+            "relationship": (input_structure or {}).get("relationship"),
+            "main_theme": (input_structure or {}).get("main_theme"),
+            "parenthetical_theme": (input_structure or {}).get("parenthetical_theme"),
+            "visual_transition": (input_structure or {}).get("visual_transition"),
+            "question_analysis": (input_structure or {}).get("question_analysis"),
+        },
         "continuity_rules": [
             "one video must stay in one visual world",
             "repeat the same recurring symbols across shots",

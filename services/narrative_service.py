@@ -133,18 +133,31 @@ def _fallback_narrative_plan(
     expression_plan: dict | None,
     visual_poetic_plan: dict | None,
     emotion: dict | None,
+    input_structure: dict | None = None,
 ) -> dict:
     units = _spoken_units(expression_plan)
     world_id = _world_id(visual_poetic_plan)
     world = WORLD_INTENTS.get(world_id, WORLD_INTENTS["ordinary_life"])
     shots = []
     total = len(units)
+    relationship = (input_structure or {}).get("relationship", "none")
+    transition = (input_structure or {}).get("visual_transition", {})
+    parenthetical_theme = (input_structure or {}).get("parenthetical_theme", "")
+    question_analysis = (input_structure or {}).get("question_analysis", {})
     for index, unit in enumerate(units):
         role = unit.get("role", "primary")
         function = _function_for_index(index, total, role)
         visual = world["visuals"][min(index, len(world["visuals"]) - 1)]
         if role == "secondary":
-            visual = f"括号内容进入，画面从主句状态轻微转向：{visual}"
+            target = transition.get("to") or parenthetical_theme or visual
+            visual = f"括号层进入，关系是 {relationship}。不要重复前半段压力画面，转向：{target}。同一视觉世界中保留连续人物和光线。"
+            if relationship in {"resolve", "deepen"}:
+                function = DEFAULT_FUNCTIONS[4 if index < total - 1 else 5]
+            elif relationship in {"contrast", "reveal", "challenge"}:
+                function = DEFAULT_FUNCTIONS[3]
+        if role == "question":
+            visual = f"反问或自我追问进入，画面更静、更近，形成悬置感：{visual}"
+            function = DEFAULT_FUNCTIONS[3]
         shots.append(
             {
                 "unit_id": unit.get("id"),
@@ -156,14 +169,18 @@ def _fallback_narrative_plan(
                 "visual_intent": visual,
                 "camera_intent": function["camera_intent"],
                 "generation_mode": "text_to_image",
+                "parenthetical_relationship": relationship if role == "secondary" else "",
+                "parenthetical_theme": parenthetical_theme if role == "secondary" else "",
+                "question_strategy": question_analysis.get("strategy_hint", "") if role == "question" else "",
             }
         )
     return {
         "arc": world["arc"],
-        "turning_point": "括号内容、提问或核心承认进入时",
-        "visual_strategy": world["strategy"],
+        "turning_point": transition.get("transition_point") or "括号内容、提问或核心承认进入时",
+        "visual_strategy": f"{world['strategy']} 括号关系：{relationship}；后半段视觉转向：{transition.get('to', '')}",
         "principle": "每个镜头必须承担叙事任务，而不是只做关键词配图。",
         "source_text": reflection,
+        "input_structure": input_structure or {},
         "shots": shots,
     }
 
@@ -193,8 +210,9 @@ def build_narrative_plan(
     expression_plan: dict | None,
     visual_poetic_plan: dict | None,
     emotion: dict | None = None,
+    input_structure: dict | None = None,
 ) -> dict:
-    fallback = _fallback_narrative_plan(reflection, expression_plan, visual_poetic_plan, emotion)
+    fallback = _fallback_narrative_plan(reflection, expression_plan, visual_poetic_plan, emotion, input_structure)
     if not llm_enabled():
         return fallback
 
@@ -217,6 +235,9 @@ def build_narrative_plan(
 情绪：
 {emotion or {}}
 
+输入结构分析：
+{input_structure or {}}
+
 请输出：
 {{
   "arc": "整条视频的情绪弧线",
@@ -232,7 +253,10 @@ def build_narrative_plan(
       "emotion": "这一镜的具体情绪",
       "visual_intent": "这一镜应该怎么画",
       "camera_intent": "establishing/close_detail/static_hold/slow_push/action_detail",
-      "generation_mode": "text_to_image"
+      "generation_mode": "text_to_image",
+      "parenthetical_relationship": "如果本镜来自括号层，填写括号和主句关系，否则为空",
+      "parenthetical_theme": "如果本镜来自括号层，填写括号主题，否则为空",
+      "question_strategy": "如果本镜来自反问/提问，填写悬置策略，否则为空"
     }}
   ]
 }}

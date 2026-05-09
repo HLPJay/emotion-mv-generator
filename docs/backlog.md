@@ -222,7 +222,15 @@ subject / location / recurring objects / lighting / palette
 当前状态：
 - 已有 `expression_plan` 区分 `primary / secondary`。
 - 已有 `narrative_plan` 参与镜头叙事。
-- 仍缺少专门的主句/括号关系分析模块。
+- 已新增 `input_structure.json`，分析 `main_text / parenthetical_text / relationship / emotional_shift / visual_transition / usage / question_analysis`。
+- 已将括号关系注入情绪、表达、意境、叙事、分镜和图片 prompt。
+- 后续仍需通过真实生成结果继续校准关系分类和后半段镜头质量。
+
+V2 待优化：
+- 支持 `primary_relationship + secondary_relationships + confidence`，避免复杂括号只落到一个关系。
+- 增加 `parenthetical_units`，把括号内部拆成 burden / direction / reveal / echo 等功能单元。
+- 将括号和反问统一到 `secondary_layers`，为后续提问环节打通结构。
+- 增加质量检查，确认括号是否真的推动后半段镜头，而不是被当成普通补充。
 
 #### 7. 提问环节
 

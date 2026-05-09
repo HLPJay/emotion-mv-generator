@@ -156,7 +156,19 @@ def _unit_timing(unit: dict, profile: dict) -> dict:
     }
 
 
-def _build_units(reflection: str, profile: dict) -> list[dict]:
+def _parenthetical_meta(input_structure: dict | None) -> dict:
+    if not input_structure or not input_structure.get("has_parenthetical"):
+        return {}
+    return {
+        "parenthetical_relationship": input_structure.get("relationship"),
+        "parenthetical_theme": input_structure.get("parenthetical_theme"),
+        "parenthetical_usage": input_structure.get("usage", {}),
+        "emotional_shift": input_structure.get("emotional_shift", {}),
+        "visual_transition": input_structure.get("visual_transition", {}),
+    }
+
+
+def _build_units(reflection: str, profile: dict, input_structure: dict | None = None) -> list[dict]:
     raw_items = []
     cursor = 0
     for match in PAREN_RE.finditer(reflection):
@@ -178,8 +190,7 @@ def _build_units(reflection: str, profile: dict) -> list[dict]:
     for index, item in enumerate(normalized):
         semantic = _semantic_role(item, index, total)
         timing = _unit_timing({"role": item["role"], "semantic_role": semantic}, profile)
-        units.append(
-            {
+        unit_data = {
                 "id": f"unit_{index + 1:02d}",
                 "role": item["role"],
                 "semantic_role": semantic,
@@ -189,13 +200,22 @@ def _build_units(reflection: str, profile: dict) -> list[dict]:
                 "emphasis_words": _emphasis_words(item["text"], semantic),
                 **timing,
             }
-        )
+        if item["role"] == "secondary":
+            unit_data.update(_parenthetical_meta(input_structure))
+        if item["role"] == "question":
+            unit_data["question_analysis"] = (input_structure or {}).get("question_analysis", {})
+        units.append(unit_data)
     return units
 
 
-def build_expression_plan(reflection: str, emotion: dict | None = None, profile_id: str = DEFAULT_PROFILE_ID) -> dict:
+def build_expression_plan(
+    reflection: str,
+    emotion: dict | None = None,
+    profile_id: str = DEFAULT_PROFILE_ID,
+    input_structure: dict | None = None,
+) -> dict:
     profile = _profile(profile_id)
-    units = _build_units(reflection, profile)
+    units = _build_units(reflection, profile, input_structure)
     return {
         "profile_id": profile_id,
         "profile_label": profile.get("label", profile_id),
@@ -205,6 +225,7 @@ def build_expression_plan(reflection: str, emotion: dict | None = None, profile_
             "mood": (emotion or {}).get("mood"),
             "tone": (emotion or {}).get("tone"),
         },
+        "input_structure": input_structure or {},
         "units": units,
         "controls": {
             "meaning_preservation": "strict",

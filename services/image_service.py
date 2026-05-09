@@ -115,6 +115,9 @@ def _build_image_prompt(
     narrative_function = shot.get("narrative_function", "")
     emotional_purpose = shot.get("emotional_purpose", "")
     visual_intent = shot.get("visual_intent", "")
+    parenthetical_relationship = shot.get("parenthetical_relationship", "")
+    parenthetical_theme = shot.get("parenthetical_theme", "")
+    question_strategy = shot.get("question_strategy", "")
 
     prompt = "\n".join(
         [
@@ -124,6 +127,9 @@ def _build_image_prompt(
             f"Narrative function: {narrative_function}.",
             f"Emotional purpose: {emotional_purpose}.",
             f"Visual intent: {visual_intent}.",
+            f"Parenthetical layer relationship: {parenthetical_relationship}. Parenthetical theme: {parenthetical_theme}.",
+            f"Question or rhetorical strategy: {question_strategy}.",
+            "If this frame belongs to the parenthetical layer, keep the same visual world but show the second-layer meaning; do not merely repeat the main pressure image.",
             f"One-video visual world: {poetic_world.get('label', shot.get('visual_world', 'ordinary reflective world'))}; {poetic_world.get('texture', '')}.",
             f"Visual archetype: {poetic_archetype.get('label', '')}; relation: {poetic_archetype.get('core_relation', '')}; motion: {poetic_archetype.get('emotional_motion', '')}.",
             f"Shared motif symbols in this shot: {motif_symbols}. Progression: {motif_progression}.",
