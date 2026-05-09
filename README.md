@@ -426,6 +426,96 @@ python scripts\test_step.py storyboard
 python scripts\test_step.py all
 ```
 
+## 音乐与重拼视频
+
+项目默认会调用 MiniMax Music API 生成真实 BGM：
+
+```text
+generated/runs/<run_id>/audio/bgm.mp3
+```
+
+如果 `bgm.mp3` 不存在，说明音乐生成失败，视频会退回本地兜底音：
+
+```text
+generated/runs/<run_id>/audio/generated_ambient.wav
+```
+
+同时还可能生成一层低音量环境声：
+
+```text
+generated/runs/<run_id>/audio/environment_*.wav
+```
+
+最终报告会记录音频状态，重点看：
+
+```json
+{
+  "audio_status": {
+    "bgm_exists": true,
+    "fallback_ambient_exists": true,
+    "environment_sound_count": 1,
+    "music_error": "",
+    "used_music_fallback": false
+  }
+}
+```
+
+如果音乐接口失败，错误原因会写入：
+
+```text
+generated/runs/<run_id>/audio/music_generation_error.txt
+```
+
+并同步进入 `run_report.json` 的 `warnings`。
+
+单步测试音乐生成：
+
+```powershell
+python scripts\test_music_generation.py --model music-2.6 --prompt "cinematic emotional ambient score, soft piano motif, warm pads, slow tempo, no vocal, no lyrics"
+```
+
+使用最近一次生成的 `audio_plan.json` 测试音乐：
+
+```powershell
+python scripts\test_music_generation.py --use-latest-plan --model music-2.6
+```
+
+如果图片已经生成成功，只想重新生成 BGM 并重拼最终视频，不重新生成图片：
+
+```powershell
+python scripts\recompose_run_video.py
+```
+
+指定某个 run 重拼：
+
+```powershell
+python scripts\recompose_run_video.py --run-dir "generated\runs\<run_id>"
+```
+
+重拼脚本会复用已有：
+
+```text
+adjusted_storyboard.json
+audio_plan.json
+emotion.json
+images/scene_*.png
+audio/narration_*.mp3
+```
+
+然后重新生成或复用 BGM，重写：
+
+```text
+final.mp4
+run_report.json
+run_report.md
+```
+
+如果原来已有 `final.mp4`，默认会先备份为：
+
+```text
+final_before_recompose.mp4
+```
+
 
 ## 目录
 

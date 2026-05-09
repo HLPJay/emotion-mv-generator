@@ -159,6 +159,16 @@ def generate_narration_audio_segments(audio_plan: dict, output_dir: Path | None 
             text = f"{text}<#{pause_after:.2f}#>"
         role = item.get("role", "primary")
         output = output_dir / f"narration_{index:02d}_{role}.mp3"
+        if output.exists() and output.stat().st_size > 0:
+            segments.append(
+                {
+                    "path": output,
+                    "start": float(item.get("start", 0.0)),
+                    "role": role,
+                    "volume": float(item.get("volume", 0.88 if role == "secondary" else 1.0)),
+                }
+            )
+            continue
         try:
             path = _request_tts(text, _line_voice_plan(audio_plan, item), output, config)
         except Exception:
@@ -197,4 +207,6 @@ def generate_narration_audio(storyboard_or_audio_plan, output_dir: Path | None =
     output_dir = output_dir or AUDIO_DIR
     output_dir.mkdir(parents=True, exist_ok=True)
     output = output_dir / "narration.mp3"
+    if output.exists() and output.stat().st_size > 0:
+        return output
     return _request_tts(text, voice_plan, output, config)

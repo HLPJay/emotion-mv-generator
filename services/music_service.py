@@ -16,6 +16,9 @@ class MusicGenerationError(RuntimeError):
     pass
 
 
+FREE_MUSIC_MODEL = "music-2.6-free"
+
+
 def _config() -> dict:
     if not CONFIG_PATH.exists():
         return {}
@@ -41,24 +44,11 @@ def music_enabled() -> bool:
     return bool(_music_config()["enabled"])
 
 
-def generate_music_audio(audio_plan: dict, output_dir: Path | None = None) -> Path | None:
-    config = _music_config()
-    if not config["enabled"]:
-        return None
-
-    api_key = config["api_key"].strip()
-    if not api_key:
-        raise MusicGenerationError("Missing music API key. Set music.api_key or top-level api_key in config/model_config.json.")
-
-    music_plan = audio_plan.get("music", {})
-    prompt = music_plan.get("prompt", "").strip()
-    if not prompt:
-        return None
-
+def _request_music(config: dict, music_plan: dict, model: str, output_dir: Path) -> Path:
     url = f"{config['api_base'].rstrip('/')}/v1/music_generation"
     payload = {
-        "model": music_plan.get("model", config["model"]),
-        "prompt": prompt,
+        "model": model,
+        "prompt": music_plan["prompt"],
         "stream": False,
         "output_format": config["output_format"],
         "aigc_watermark": False,
@@ -71,7 +61,7 @@ def generate_music_audio(audio_plan: dict, output_dir: Path | None = None) -> Pa
         },
     }
     headers = {
-        "Authorization": f"Bearer {api_key}",
+        "Authorization": f"Bearer {config['api_key'].strip()}",
         "Content-Type": "application/json",
     }
     response = requests.post(url, headers=headers, json=payload, timeout=240)
@@ -100,3 +90,46 @@ def generate_music_audio(audio_plan: dict, output_dir: Path | None = None) -> Pa
         raise MusicGenerationError(f"MiniMax music response missing audio data: {data}")
     output.write_bytes(bytes.fromhex(audio_hex))
     return output
+
+
+def _candidate_models(config_model: str, requested_model: str) -> list[str]:
+    candidates = [requested_model]
+    if requested_model == "music-2.6" and config_model != FREE_MUSIC_MODEL:
+        candidates.append(FREE_MUSIC_MODEL)
+    unique = []
+    for model in candidates:
+        if model and model not in unique:
+            unique.append(model)
+    return unique
+
+
+def generate_music_audio(audio_plan: dict, output_dir: Path | None = None) -> Path | None:
+    config = _music_config()
+    if not config["enabled"]:
+        return None
+
+    api_key = config["api_key"].strip()
+    if not api_key:
+        raise MusicGenerationError("Missing music API key. Set music.api_key or top-level api_key in config/model_config.json.")
+
+    music_plan = audio_plan.get("music", {})
+    prompt = music_plan.get("prompt", "").strip()
+    if not prompt:
+        return None
+
+    output_dir = output_dir or AUDIO_DIR
+    output_dir.mkdir(parents=True, exist_ok=True)
+    request_plan = dict(music_plan)
+    request_plan["prompt"] = prompt
+
+    requested_model = music_plan.get("model", config["model"])
+    errors = []
+    for model in _candidate_models(config["model"], requested_model):
+        try:
+            return _request_music(config, request_plan, model, output_dir)
+        except Exception as exc:
+            errors.append(f"{model}: {exc}")
+            if not config["fallback_on_error"]:
+                break
+
+    raise MusicGenerationError("MiniMax music generation failed for all candidate models: " + " | ".join(errors))

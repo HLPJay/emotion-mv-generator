@@ -126,10 +126,12 @@ def _make_ambient_bgm(duration: float, emotion: dict, output_dir: Path | None = 
         frames = bytearray()
         for i in range(total_frames):
             t = i / sample_rate
-            envelope = min(1.0, t / 2.0, max(0.0, (duration - t) / 2.0))
-            wave_a = math.sin(2 * math.pi * base_freq * t)
-            wave_b = math.sin(2 * math.pi * (base_freq * 1.5) * t) * 0.35
-            sample = int((wave_a + wave_b) * envelope * 4200)
+            envelope = min(1.0, t / 3.0, max(0.0, (duration - t) / 3.0))
+            slow_pulse = 0.72 + 0.28 * math.sin(2 * math.pi * 0.055 * t)
+            wave_a = math.sin(2 * math.pi * base_freq * t) * 0.56
+            wave_b = math.sin(2 * math.pi * (base_freq * 1.5) * t + 0.4) * 0.22
+            wave_c = math.sin(2 * math.pi * (base_freq * 2.0) * t + 1.1) * 0.08
+            sample = int((wave_a + wave_b + wave_c) * slow_pulse * envelope * 2600)
             frames.extend(sample.to_bytes(2, byteorder="little", signed=True))
         wav.writeframes(bytes(frames))
 
@@ -314,7 +316,8 @@ def compose_video(
 
     try:
         music_path = generate_music_audio(audio_plan or {}, audio_dir)
-    except Exception:
+    except Exception as exc:
+        (audio_dir / "music_generation_error.txt").write_text(str(exc), encoding="utf-8")
         music_path = None
 
     narration = None

@@ -133,6 +133,7 @@ def build_run_report(run_dir: Path) -> dict:
     final_video = run_dir / "final.mp4"
     narration = run_dir / "audio" / "narration.mp3"
     bgm = run_dir / "audio" / "bgm.mp3"
+    music_error = _read_text(run_dir / "audio" / "music_generation_error.txt")
     narration_segments = _asset_list(run_dir / "audio", "narration_*.mp3")
     environment_sounds = _asset_list(run_dir / "audio", "environment_*.wav")
 
@@ -155,6 +156,8 @@ def build_run_report(run_dir: Path) -> dict:
         warnings.append("旁白文件不存在，未找到 narration.mp3 或 narration_*.mp3")
     if not bgm.exists():
         warnings.append("BGM 文件 bgm.mp3 不存在，可能使用了 fallback ambient")
+    if music_error:
+        warnings.append(f"music_generation_failed: {music_error}")
     guard = subtitle_plan.get("guard") or {}
     if guard.get("changed"):
         warnings.append(f"subtitle_guard_changed: {', '.join(guard.get('actions', []))}")
@@ -201,6 +204,7 @@ def build_run_report(run_dir: Path) -> dict:
             "adjusted_storyboard_count": len(adjusted_storyboard),
             "target_duration": audio_plan.get("target_duration"),
             "music_prompt": (audio_plan.get("music") or {}).get("prompt"),
+            "music_error": music_error,
             "visual_style": (visual_style.get("style") or {}).get("label"),
             "visual_style_id": (visual_style.get("style") or {}).get("id"),
             "visual_continuity_subject": (visual_continuity.get("subject") or {}).get("identity"),
@@ -228,6 +232,13 @@ def build_run_report(run_dir: Path) -> dict:
                 "info": bgm_info,
                 "duration": _duration(bgm_info),
             },
+        },
+        "audio_status": {
+            "bgm_exists": bgm.exists(),
+            "fallback_ambient_exists": (run_dir / "audio" / "generated_ambient.wav").exists(),
+            "environment_sound_count": len(environment_sounds),
+            "music_error": music_error,
+            "used_music_fallback": not bgm.exists(),
         },
         "assets": {
             "images": images,

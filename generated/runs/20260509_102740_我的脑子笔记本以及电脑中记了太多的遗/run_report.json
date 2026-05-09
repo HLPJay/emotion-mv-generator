@@ -1,0 +1,461 @@
+{
+  "run_id": "20260509_102740_我的脑子笔记本以及电脑中记了太多的遗",
+  "generated_at": "2026-05-09T11:07:51",
+  "paths": {
+    "run_dir": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗",
+    "final_video": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\final.mp4",
+    "narration": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\audio\\narration.mp3",
+    "narration_segments": [
+      "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\audio\\narration_01_primary.mp3",
+      "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\audio\\narration_02_primary.mp3",
+      "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\audio\\narration_03_primary.mp3",
+      "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\audio\\narration_04_primary.mp3",
+      "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\audio\\narration_05_secondary.mp3",
+      "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\audio\\narration_06_secondary.mp3"
+    ],
+    "bgm": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\audio\\bgm.mp3",
+    "environment_sounds": [
+      "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\audio\\environment_ordinary_life.wav"
+    ]
+  },
+  "input": {
+    "text": "我的脑子，笔记本，以及电脑中记了太多的遗留待办，却一直都只是遗留。（机会青睐的，永远是那些已经行动的人儿）",
+    "length": 53
+  },
+  "content_summary": {
+    "emotion": "拖延焦灼",
+    "mood": "深夜独醒",
+    "tone": "自语反思",
+    "subtitles_count": 12,
+    "subtitle_guard": {
+      "changed": false,
+      "actions": [
+        "built_from_expression_plan"
+      ],
+      "spoken_count": 6,
+      "max_spoken_lines": null,
+      "note": "expression_plan controls line count; legacy Subtitle Guard limit is bypassed here",
+      "roles": {
+        "primary": "main reflection",
+        "secondary": "parenthetical context",
+        "question": "direct question"
+      }
+    },
+    "expression_profile": "普通人反思",
+    "visual_archetype": "从遗留到行动",
+    "visual_world": "现实工作台",
+    "visual_motif_symbols": [
+      "电脑",
+      "草稿",
+      "AI 对话界面",
+      "键盘",
+      "发布按钮"
+    ],
+    "expression_units_count": 6,
+    "expression_roles": [
+      {
+        "text": "我的脑子，",
+        "role": "primary",
+        "semantic_role": "setup",
+        "voice_layer": "main",
+        "emphasis_words": []
+      },
+      {
+        "text": "笔记本，",
+        "role": "primary",
+        "semantic_role": "turn",
+        "voice_layer": "main",
+        "emphasis_words": []
+      },
+      {
+        "text": "以及电脑中记了太多的遗留待办，",
+        "role": "primary",
+        "semantic_role": "turn",
+        "voice_layer": "main",
+        "emphasis_words": []
+      },
+      {
+        "text": "却一直都只是遗留。",
+        "role": "primary",
+        "semantic_role": "turn",
+        "voice_layer": "main",
+        "emphasis_words": []
+      },
+      {
+        "text": "机会青睐的，",
+        "role": "secondary",
+        "semantic_role": "context_note",
+        "voice_layer": "inner",
+        "emphasis_words": []
+      },
+      {
+        "text": "永远是那些已经行动的人儿。",
+        "role": "secondary",
+        "semantic_role": "context_note",
+        "voice_layer": "inner",
+        "emphasis_words": [
+          "行动"
+        ]
+      }
+    ],
+    "storyboard_count": 12,
+    "adjusted_storyboard_count": 12,
+    "target_duration": 25.8,
+    "music_prompt": "cinematic emotional ambient score, wide atmospheric space, soft piano motif, warm evolving pads, low cello or soft synth bass foundation, gentle pulse underneath, slow tempo, gradual emotional build, medium-low dynamic range, clear immersive atmosphere, intimate and reflective, no vocal, no lyrics, not melodramatic, do not overpower narration, mood: 深夜独醒, emotion: 拖延焦灼",
+    "music_error": "",
+    "visual_style": "自然日光胶片",
+    "visual_style_id": "natural_daylight_film",
+    "visual_continuity_subject": "same ordinary adult throughout the video",
+    "visual_continuity_location": "selected visual world from visual_poetic_plan"
+  },
+  "models": {
+    "text": "config:model",
+    "image": "config:image.model",
+    "speech": "speech-2.8-hd",
+    "music": "music-2.6"
+  },
+  "media": {
+    "video": {
+      "info": {
+        "programs": [],
+        "streams": [
+          {
+            "index": 0,
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 1080,
+            "height": 1920
+          },
+          {
+            "index": 1,
+            "codec_name": "aac",
+            "codec_type": "audio",
+            "sample_rate": "44100",
+            "channels": 2
+          }
+        ],
+        "format": {
+          "duration": "27.220000",
+          "size": "17006126"
+        },
+        "exists": true
+      },
+      "duration": 27.22,
+      "resolution": "1080x1920",
+      "has_audio": true,
+      "volume": {
+        "exists": true,
+        "mean_volume": "-27.5 dB",
+        "max_volume": "-7.6 dB"
+      }
+    },
+    "narration": {
+      "info": {
+        "exists": false
+      },
+      "duration": null
+    },
+    "bgm": {
+      "info": {
+        "programs": [],
+        "streams": [
+          {
+            "index": 0,
+            "codec_name": "mp3",
+            "codec_type": "audio",
+            "sample_rate": "44100",
+            "channels": 2
+          }
+        ],
+        "format": {
+          "duration": "150.151837",
+          "size": "4806833"
+        },
+        "exists": true
+      },
+      "duration": 150.152
+    }
+  },
+  "audio_status": {
+    "bgm_exists": true,
+    "fallback_ambient_exists": true,
+    "environment_sound_count": 1,
+    "music_error": "",
+    "used_music_fallback": false
+  },
+  "assets": {
+    "images": [
+      {
+        "name": "scene_01.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\images\\scene_01.png",
+        "size": 1675551
+      },
+      {
+        "name": "scene_02.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\images\\scene_02.png",
+        "size": 1596373
+      },
+      {
+        "name": "scene_03.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\images\\scene_03.png",
+        "size": 1474080
+      },
+      {
+        "name": "scene_04.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\images\\scene_04.png",
+        "size": 1427491
+      },
+      {
+        "name": "scene_05.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\images\\scene_05.png",
+        "size": 1581440
+      },
+      {
+        "name": "scene_06.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\images\\scene_06.png",
+        "size": 1484417
+      },
+      {
+        "name": "scene_07.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\images\\scene_07.png",
+        "size": 1424472
+      },
+      {
+        "name": "scene_08.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\images\\scene_08.png",
+        "size": 1578551
+      },
+      {
+        "name": "scene_09.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\images\\scene_09.png",
+        "size": 1556083
+      },
+      {
+        "name": "scene_10.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\images\\scene_10.png",
+        "size": 1264264
+      },
+      {
+        "name": "scene_11.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\images\\scene_11.png",
+        "size": 1759760
+      },
+      {
+        "name": "scene_12.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\images\\scene_12.png",
+        "size": 1498172
+      }
+    ],
+    "subtitle_images": [
+      {
+        "name": "subtitle_01.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\subtitles\\subtitle_01.png",
+        "size": 20409
+      },
+      {
+        "name": "subtitle_03.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\subtitles\\subtitle_03.png",
+        "size": 17639
+      },
+      {
+        "name": "subtitle_05.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\subtitles\\subtitle_05.png",
+        "size": 44288
+      },
+      {
+        "name": "subtitle_07.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\subtitles\\subtitle_07.png",
+        "size": 25577
+      },
+      {
+        "name": "subtitle_09.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\subtitles\\subtitle_09.png",
+        "size": 18156
+      },
+      {
+        "name": "subtitle_11.png",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\subtitles\\subtitle_11.png",
+        "size": 30174
+      }
+    ],
+    "narration_segments": [
+      {
+        "name": "narration_01_primary.mp3",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\audio\\narration_01_primary.mp3",
+        "size": 42612
+      },
+      {
+        "name": "narration_02_primary.mp3",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\audio\\narration_02_primary.mp3",
+        "size": 57012
+      },
+      {
+        "name": "narration_03_primary.mp3",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\audio\\narration_03_primary.mp3",
+        "size": 105972
+      },
+      {
+        "name": "narration_04_primary.mp3",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\audio\\narration_04_primary.mp3",
+        "size": 86388
+      },
+      {
+        "name": "narration_05_secondary.mp3",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\audio\\narration_05_secondary.mp3",
+        "size": 62196
+      },
+      {
+        "name": "narration_06_secondary.mp3",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\audio\\narration_06_secondary.mp3",
+        "size": 91572
+      }
+    ],
+    "environment_sounds": [
+      {
+        "name": "environment_ordinary_life.wav",
+        "path": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\audio\\environment_ordinary_life.wav",
+        "size": 2400848
+      }
+    ]
+  },
+  "events": [
+    {
+      "timestamp": "2026-05-09T10:27:40.066",
+      "step": "run",
+      "status": "started",
+      "visual_style_id": "random",
+      "visual_world_id": "random"
+    },
+    {
+      "timestamp": "2026-05-09T10:27:40.068",
+      "step": "emotion",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-09T10:27:52.008",
+      "step": "emotion",
+      "status": "success",
+      "duration_seconds": 11.94
+    },
+    {
+      "timestamp": "2026-05-09T10:27:52.012",
+      "step": "visual_style",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-09T10:27:52.014",
+      "step": "visual_style",
+      "status": "success",
+      "duration_seconds": 0.002
+    },
+    {
+      "timestamp": "2026-05-09T10:27:52.017",
+      "step": "visual_continuity",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-09T10:27:52.018",
+      "step": "visual_continuity",
+      "status": "success",
+      "duration_seconds": 0.001
+    },
+    {
+      "timestamp": "2026-05-09T10:27:52.022",
+      "step": "expression_plan",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-09T10:27:52.024",
+      "step": "expression_plan",
+      "status": "success",
+      "duration_seconds": 0.002
+    },
+    {
+      "timestamp": "2026-05-09T10:27:52.028",
+      "step": "visual_poetic_plan",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-09T10:27:52.030",
+      "step": "visual_poetic_plan",
+      "status": "success",
+      "duration_seconds": 0.002
+    },
+    {
+      "timestamp": "2026-05-09T10:27:52.033",
+      "step": "subtitle_plan",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-09T10:27:52.034",
+      "step": "subtitle_plan",
+      "status": "success",
+      "duration_seconds": 0.001
+    },
+    {
+      "timestamp": "2026-05-09T10:27:52.042",
+      "step": "storyboard",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-09T10:28:27.339",
+      "step": "storyboard",
+      "status": "success",
+      "duration_seconds": 35.297
+    },
+    {
+      "timestamp": "2026-05-09T10:28:27.343",
+      "step": "audio_plan",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-09T10:28:27.346",
+      "step": "audio_plan",
+      "status": "success",
+      "duration_seconds": 0.003
+    },
+    {
+      "timestamp": "2026-05-09T10:28:27.354",
+      "step": "image_generation",
+      "status": "started",
+      "image_count": 12
+    },
+    {
+      "timestamp": "2026-05-09T10:31:02.755",
+      "step": "image_generation",
+      "status": "success",
+      "duration_seconds": 155.401
+    },
+    {
+      "timestamp": "2026-05-09T10:31:02.756",
+      "step": "video_compose",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-09T10:46:54.805",
+      "step": "video_compose",
+      "status": "success",
+      "duration_seconds": 952.048
+    },
+    {
+      "timestamp": "2026-05-09T10:46:54.809",
+      "step": "report",
+      "status": "started"
+    },
+    {
+      "timestamp": "2026-05-09T10:46:55.007",
+      "step": "report",
+      "status": "success",
+      "duration_seconds": 0.198
+    },
+    {
+      "timestamp": "2026-05-09T10:46:55.008",
+      "step": "run",
+      "status": "success",
+      "final_video": "D:\\claude_code\\20260508_个人感悟生成情绪mv\\generated\\runs\\20260509_102740_我的脑子笔记本以及电脑中记了太多的遗\\final.mp4"
+    }
+  ],
+  "warnings": [
+    "字幕节奏项超过 8 条"
+  ]
+}
