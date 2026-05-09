@@ -208,6 +208,51 @@ def _make_environment_sound(duration: float, storyboard: list[dict], output_dir:
     return path
 
 
+def _fit_audio_to_duration(clip, duration: float):
+    if clip.duration < duration:
+        return clip.with_duration(duration)
+    return clip.subclipped(0, duration)
+
+
+def _merge_windows(windows: list[tuple[float, float]], duration: float, pad: float = 0.18) -> list[tuple[float, float]]:
+    normalized = []
+    for start, end in windows:
+        start = max(0.0, float(start) - pad)
+        end = min(duration, float(end) + pad)
+        if end > start:
+            normalized.append((start, end))
+    if not normalized:
+        return []
+
+    normalized.sort()
+    merged = [normalized[0]]
+    for start, end in normalized[1:]:
+        last_start, last_end = merged[-1]
+        if start <= last_end + 0.05:
+            merged[-1] = (last_start, max(last_end, end))
+        else:
+            merged.append((start, end))
+    return merged
+
+
+def _duck_background_clip(clip, duration: float, narration_windows: list[tuple[float, float]], base_volume: float, duck_ratio: float):
+    windows = _merge_windows(narration_windows, duration)
+    if not windows:
+        return _fit_audio_to_duration(clip, duration).with_volume_scaled(base_volume)
+
+    segments = []
+    cursor = 0.0
+    duck_volume = base_volume * duck_ratio
+    for start, end in windows:
+        if start > cursor:
+            segments.append(clip.subclipped(cursor, start).with_start(cursor).with_volume_scaled(base_volume))
+        segments.append(clip.subclipped(start, end).with_start(start).with_volume_scaled(duck_volume))
+        cursor = end
+    if cursor < duration:
+        segments.append(clip.subclipped(cursor, duration).with_start(cursor).with_volume_scaled(base_volume))
+    return CompositeAudioClip(segments).with_duration(duration)
+
+
 def _clip_with_motion(image_path: Path, duration: float, index: int):
     clip = ImageClip(str(image_path)).with_duration(duration).resized(height=SIZE[1])
     if clip.w < SIZE[0]:
@@ -264,34 +309,17 @@ def compose_video(
     ambient = None
     environment = None
     music = None
+    background = None
+    background_source = None
 
     try:
         music_path = generate_music_audio(audio_plan or {}, audio_dir)
     except Exception:
         music_path = None
 
-    if music_path:
-        music_volume = float(mix_plan.get("music_volume", (audio_plan or {}).get("music", {}).get("volume", 0.22)))
-        music = AudioFileClip(str(music_path))
-        if music.duration < video.duration:
-            music = music.with_duration(video.duration)
-        else:
-            music = music.subclipped(0, video.duration)
-        audio_clips.append(music.with_volume_scaled(music_volume))
-    else:
-        bgm_path = _make_ambient_bgm(video.duration, emotion, audio_dir)
-        ambient_volume = float(mix_plan.get("ambient_fallback_volume", 0.18))
-        ambient = AudioFileClip(str(bgm_path)).with_volume_scaled(ambient_volume)
-        audio_clips.append(ambient)
-
-    if mix_plan.get("environment_sound", True):
-        environment_path = _make_environment_sound(video.duration, storyboard, audio_dir)
-        environment_volume = float(mix_plan.get("environment_volume", 0.14))
-        environment = AudioFileClip(str(environment_path)).with_volume_scaled(environment_volume)
-        audio_clips.append(environment)
-
     narration = None
     narration_segments = []
+    narration_windows: list[tuple[float, float]] = []
     if audio_plan and audio_plan.get("narration"):
         try:
             narration_segments = generate_narration_audio_segments(audio_plan, audio_dir)
@@ -309,6 +337,7 @@ def compose_video(
                 .with_start(float(segment.get("start", 0.0)))
             )
             narration_end = max(narration_end, clip.start + clip.duration)
+            narration_windows.append((float(clip.start), float(clip.start + clip.duration)))
             narration_clips.append(clip)
         if narration_end + 0.4 > video.duration:
             extension = narration_end + 0.8 - video.duration
@@ -319,18 +348,63 @@ def compose_video(
         audio_clips.extend(narration_clips)
         narration = CompositeAudioClip(narration_clips)
     else:
-        narration_path = generate_narration_audio(audio_plan or storyboard, audio_dir)
+        narration_source = audio_plan if isinstance(audio_plan, dict) and "narration" in audio_plan else storyboard
+        try:
+            narration_path = generate_narration_audio(narration_source, audio_dir)
+        except Exception:
+            narration_path = None
         if narration_path:
             narration_volume = float(mix_plan.get("narration_volume", 1.0))
-            narration = AudioFileClip(str(narration_path)).with_volume_scaled(narration_volume)
-            if narration.duration + 0.4 > video.duration:
-                extension = narration.duration + 0.8 - video.duration
+            lead_in = float((audio_plan or {}).get("lead_in", 0.0))
+            narration = AudioFileClip(str(narration_path)).with_volume_scaled(narration_volume).with_start(lead_in)
+            narration_windows.append((lead_in, lead_in + narration.duration))
+            if lead_in + narration.duration + 0.4 > video.duration:
+                extension = lead_in + narration.duration + 0.8 - video.duration
                 if extension > 0 and clips:
                     last = clips[-1].with_duration(clips[-1].duration + extension)
                     clips[-1] = last
                     video.close()
                     video = concatenate_videoclips(clips, method="compose")
             audio_clips.append(narration)
+
+    tail_silence = float((audio_plan or {}).get("tail_silence", 0.0))
+    if tail_silence > 0 and clips and storyboard and storyboard[-1].get("subtitle") == "...":
+        clips[-1] = clips[-1].with_duration(clips[-1].duration + tail_silence)
+        video.close()
+        video = concatenate_videoclips(clips, method="compose")
+
+    duck_ratio = float(mix_plan.get("music_duck_ratio", 0.68))
+    if music_path:
+        music_volume = float(mix_plan.get("music_volume", (audio_plan or {}).get("music", {}).get("volume", 0.22)))
+        background_source = _fit_audio_to_duration(AudioFileClip(str(music_path)), video.duration)
+        background = _duck_background_clip(
+            background_source,
+            video.duration,
+            narration_windows if mix_plan.get("duck_music_under_voice", True) else [],
+            music_volume,
+            duck_ratio,
+        )
+        music = background
+        audio_clips.append(background)
+    else:
+        bgm_path = _make_ambient_bgm(video.duration, emotion, audio_dir)
+        ambient_volume = float(mix_plan.get("ambient_fallback_volume", 0.18))
+        background_source = _fit_audio_to_duration(AudioFileClip(str(bgm_path)), video.duration)
+        background = _duck_background_clip(
+            background_source,
+            video.duration,
+            narration_windows if mix_plan.get("duck_music_under_voice", True) else [],
+            ambient_volume,
+            duck_ratio,
+        )
+        ambient = background
+        audio_clips.append(background)
+
+    if mix_plan.get("environment_sound", True):
+        environment_path = _make_environment_sound(video.duration, storyboard, audio_dir)
+        environment_volume = float(mix_plan.get("environment_volume", 0.14))
+        environment = AudioFileClip(str(environment_path)).with_volume_scaled(environment_volume)
+        audio_clips.append(environment)
 
     audio = CompositeAudioClip(audio_clips).with_duration(video.duration)
     video = video.with_audio(audio)
@@ -352,6 +426,8 @@ def compose_video(
         environment.close()
     if music:
         music.close()
+    if background_source:
+        background_source.close()
     if narration:
         narration.close()
     video.close()
