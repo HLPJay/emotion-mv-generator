@@ -123,12 +123,34 @@ subject / location / recurring objects / lighting / palette
 
 当前最后合成 MP4 较慢，后期应把更多拼接、缩放、字幕叠加、音频混合工作下沉到 FFmpeg，减少 Python/MoviePy 逐帧处理压力。
 
+当前已完成的 FFmpeg 能力：
+
+- `audio_only` 快速重拼：复用 `final.mp4` 视频流，只替换/重混 BGM 和旁白。
+- 使用 `-c:v copy` 避免重新编码画面。
+- 使用 `adelay` 按 `audio_plan.narration[].start` 放置旁白。
+- 使用 `atrim` / `-shortest` 控制快速重拼输出时长。
+- 使用 `ffprobe` 做媒体信息探测和报告字段补充。
+
+需要明确：这些只是 FFmpeg 的第一阶段验证入口，不是最终目标。FFmpeg 的最终目标是替换 MoviePy 成为主视频合成引擎，而不是只作为“仅替换音频”的重拼工具。
+
 后期优化方向：
 
+- 新增 `compose_video_ffmpeg(...)`，保持和当前 `compose_video(...)` 接近的输入输出接口。
 - 优先用 FFmpeg filtergraph 完成图片转视频、转场、缩放裁切、字幕叠加和音频混合。
+- 第一阶段可先在重拼入口验证 `ffmpeg_standard`，稳定后接入首次完整生成的 `video_compose`。
+- 主流程支持配置切换合成引擎：`video.engine = moviepy | ffmpeg`。
+- MoviePy 保留为 fallback，FFmpeg 稳定后再作为默认引擎。
 - 复用已生成图片和音频，只重跑最终合成时避免重新进入上游步骤。
 - 配置化 `preset`、`threads`、`crf`、`fps`、`audio_codec`，在质量和速度之间提供可调档位。
 - 输出 `video_compose_timings.json`，记录图片准备、字幕、音频、编码等阶段耗时，方便 UI 显示瓶颈。
+
+验收目标：
+
+- 首次完整生成可以通过 FFmpeg 输出 `final.mp4`。
+- 重拼可以通过 FFmpeg 输出版本文件到 `recomposed/`。
+- 字幕、图片、BGM、旁白、时长都正确。
+- 输出速度明显快于 MoviePy。
+- MoviePy fallback 可用，FFmpeg 失败时不破坏原始 `final.mp4`。
 
 ## 优化罗盘与执行规划
 
@@ -255,13 +277,19 @@ V2 待优化：
 #### 8. FFmpeg 性能优化（待做）
 
 目标：
-- 减少 MoviePy 逐帧处理压力。
-- 把最终视频合成迁移到 FFmpeg filtergraph。
+- 将 FFmpeg 从“仅替换音频的快速重拼能力”升级为“可替代 MoviePy 的视频合成引擎”。
+- 减少 MoviePy 逐帧处理压力，把最终视频合成迁移到 FFmpeg filtergraph。
+- 支持主生成流程和重拼流程共用同一套 FFmpeg 合成接口。
 
 完成标准：
+- 新增 `compose_video_ffmpeg(...)`，接口尽量贴近 `compose_video(...)`。
+- `config/model_config.json` 支持 `video.engine = moviepy | ffmpeg`。
+- 首次完整生成可用 FFmpeg 产出 `final.mp4`。
+- 重拼可用 FFmpeg 产出 `recomposed/final_ffmpeg_recompose_*.mp4`。
 - 最终合成耗时明显下降。
 - `video_compose_timings.json` 能区分图片准备、字幕、音频、编码耗时。
 - 视频参数可配置：`preset / threads / crf / fps / audio_codec`。
+- MoviePy 作为 fallback 保留。
 
 #### 9. 配置中心
 
